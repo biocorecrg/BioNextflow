@@ -7,7 +7,6 @@
  */
 
 /* 
- * Main ChIPSeq pipeline script for Bioinformatics Core @ CRG
  *
  * @authors
  * Luca Cozzuto <lucacozzuto@gmail.com>
