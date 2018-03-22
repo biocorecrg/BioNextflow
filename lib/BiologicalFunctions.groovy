@@ -40,10 +40,12 @@
  	 */
 	
     static def trimPairsWithSkewer( pair_id, reads, minread, cpus, debug="no") { 
-		"""
-			skewer -t ${cpus} -l ${minread} -n -u -o ${pair_id} -z ${reads}
+	"""
+		if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi
+		\$print	skewer -t ${cpus} -l ${minread} -n -u -o ${pair_id} -z ${reads}
     	"""
-	}
+        .stripIndent()
+     }
 
 
 
