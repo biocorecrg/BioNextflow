@@ -38,9 +38,10 @@
 	 * Function for trimming read pairs with Skewer
  	 */
 	
-    static def trimPairsWithSkewer( pair_id, reads, minread, cpus, debug="no") { 
+    static def trimPairsWithSkewer( pair_id, reads, minread, cpus, debug="no") {
+    	if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi
 		"""
-			skewer -t ${cpus} -l ${minread} -n -u -o ${pair_id} -z ${reads}
+			\$print skewer -t ${cpus} -l ${minread} -n -u -o ${pair_id} -z ${reads}
     	"""
 	}
 
