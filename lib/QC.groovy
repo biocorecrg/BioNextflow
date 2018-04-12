@@ -13,6 +13,7 @@
 	
     static def qualimapRNAseq ( bamfile, annotation_file, outfolder="QUALIMAP", strand="strand-specific-reverse", memory="2G", single="YES", extrapars="", debug="no") { 
 
+
     """
        if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi
        if [ `echo ${single} == "YES"` ]; then pe_mode="-pe"; else pe_mode=""; fi
