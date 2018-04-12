@@ -25,43 +25,17 @@
  *
  * 
  */
+    
 
 /* 
  * Check that helper function `mappingPairsWithSTAR` returns the exepcted result
 
-
-assert BiologicalFunctions.mappingPairsWithSTAR("idA","genome.fa","fastq1",4) == """
-        	if [ `echo no == "debug"` ]; then print="echo "; else print=""; fi
-			if [ `echo fastq1 | grep ".gz"` ]; then gzip="--readFilesCommand zcat"
-			else gzip=""
-			fi
-            	\$print STAR --genomeDir genome.fa \
-                     --readFilesIn fastq1 \
-                     \$gzip \
-                     --outSAMunmapped None \
-                     --outSAMtype BAM SortedByCoordinate \
-                     --runThreadN 4 \
-                     --quantMode GeneCounts \
-                     --outFileNamePrefix idA
-
-                \$print mkdir STAR_idA
-                \$print mv idAAligned* STAR_idA/.
-                \$print mv idASJ* STAR_idA/.
-                \$print mv idAReadsPerGene* STAR_idA/.
-                \$print mv idALog* STAR_idA/.   
-        """
-        .stripIndent()
-*/     
-
-/* 
- * Check that helper function `mappingPairsWithSTAR` returns the exepcted result
  */
 
 	process testFunction {
 	echo true
-
-	script:
-		BiologicalFunctions.indexingGenomeWithBowtie1("genomeFile.fa.gz","single_reads.fq","genome",4, "debug") 
+		script:
+  		QC.qualimapRNAseq ("bamfile", "annotation_file", "QUALIMAP_out", "strand-specific-reverse", "8G","yes","","debug")  
 	
 	}
 	
