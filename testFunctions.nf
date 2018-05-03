@@ -34,8 +34,8 @@
 
 	process testFunction {
 	echo true
-		script:
-  		QC.qualimapRNAseq ("bamfile", "annotation_file", "QUALIMAP_out", "strand-specific-reverse", "8G","yes","","debug")  
 	
+		script:
+		Misc.samtoolSort("bamfile", "sortedfile", "1", "debug")
 	}
 	
