@@ -24,6 +24,38 @@
 		fi
         """
     }
+    
+    /*
+	 * Indexing a transcriptome with Salmon mapper. It reads both gzipped and plain fasta
+ 	 */
+	
+    static def indexWithSalmon( transcript_file, indexname="transcript.index", kmer, cpus, extrapars="", debug="no") { 
+ 
+        """	
+		if [ `echo ${transcript_file} | grep ".gz"` ]; then 
+			zcat ${transcript_file} > `basename ${transcript_file} .gz`;
+   		    salmon index -t `basename ${transcript_file} .gz` -i ${indexname} --type quasi -k ${kmer} ${extrapars} -p ${cpus};
+   		    rm `basename ${transcript_file} .gz`;
+		else salmon index -t ${transcript_file} -i ${indexname} --type quasi -k ${kmer} ${extrapars} -p ${cpus}
+		fi
+        """
+    }
+
+    /*
+	 * Mapping to a transcriptome index with Salmon mapper. 
+ 	 */
+	
+    static def mapPEWithSalmon( transcript_index, readsA, readsB, output, libtype="ISF", cpus, extrapars="", debug="no") { 
+ 
+        """	
+                
+		if [ `echo ${readsA} | grep ".gz"` ]; then 
+			        salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 <(gunzip -c ${readsA}) -2 <(gunzip -c ${readsB}) ${extrapars} -o ${output}
+		else         salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 ${readsA} -2 ${readsB} ${extrapars} -o ${output}
+		fi
+        """
+    }
+    
 
 	/*
 	 * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
