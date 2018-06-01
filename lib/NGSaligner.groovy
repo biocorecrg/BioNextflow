@@ -47,11 +47,11 @@
 	
     static def mapPEWithSalmon( transcript_index, readsA, readsB, output, libtype="ISF", cpus, extrapars="", debug="no") { 
  
-        """	
-                
+        """	               
 		if [ `echo ${readsA} | grep ".gz"` ]; then 
-			        salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 <(gunzip -c ${readsA}) -2 <(gunzip -c ${readsB}) ${extrapars} -o ${output}
-		else         salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 ${readsA} -2 ${readsB} ${extrapars} -o ${output}
+			 salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 <(gunzip -c ${readsA}) -2 <(gunzip -c ${readsB}) ${extrapars} -o ${output}
+		else  
+			salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 ${readsA} -2 ${readsB} ${extrapars} -o ${output}
 		fi
         """
     }
@@ -71,32 +71,60 @@
         """
 	}
  	
-	/* 
-	 * Mapping SE or PE reads with STAR mapper. It reads both gzipped and plain fastq
-
+ 	/*
+	 * Indexing a genome with STAR mapper. It reads both gzipped and plain fasta
+	*/ 
 	
-    static def mappingWithSTAR( seq_id, indexGenome, reads, cpus, extrapars="", debug="no") { 
+    static def indexWithSTAR( genome_file, outfolder, outprefix, annotation, readsize, cpus, extrapars="") { 
         """
-        	if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi
-			if [ `echo ${reads} | grep ".gz"` ]; then gzip="--readFilesCommand zcat"
-			else gzip=""
-			fi
-            	\$print STAR --genomeDir ${STARgenome} \
-                     --readFilesIn ${reads} \
-                     \$gzip \
-                     --outSAMunmapped None \
-                     --outSAMtype BAM SortedByCoordinate \
-                     --runThreadN ${cpus} \
-                     --quantMode GeneCounts \
-                     ${extrapars} \
-                     --outFileNamePrefix ${seq_id}
-
-                \$print mkdir STAR_${seq_id}
-                \$print mv ${seq_id}Aligned* STAR_${seq_id}/.
-                \$print mv ${seq_id}SJ* STAR_${seq_id}/.
-                \$print mv ${seq_id}ReadsPerGene* STAR_${seq_id}/.
-                \$print mv ${seq_id}Log* STAR_${seq_id}/.   
+		mkdir ${outfolder}
+     	if [ `echo ${genome_file} | grep ".gz"` ]; then 
+			zcat ${genome_file} > `basename ${genome_file} .gz`
+			STAR --runMode genomeGenerate --genomeDir ${outfolder} --runThreadN ${cpus} \
+			--genomeFastaFiles `basename ${genome_file} .gz` --sjdbGTFfile ${annotation} \
+			--sjdbOverhang ${readsize} --outFileNamePrefix ${outprefix};
+			rm `basename ${genome_file} .gz`
+		else 
+			STAR --runMode genomeGenerate --genomeDir ${outfolder} --runThreadN ${cpus} \
+			--genomeFastaFiles ${genome_file} --sjdbGTFfile ${annotation} \
+			--sjdbOverhang ${readsize} --outFileNamePrefix ${outprefix}
+		fi
+		"""
+    }
+    
+    /*
+	 * Mapping SE and PE reads with START. Reads can be both gzipped and plain fastq
+	*/ 	     
+    static def mappingWithSTAR(pair_id, genome, reads, cpus, extrapars="") { 
+    """
+	if [ `echo "${reads}"| cut -f 1 -d " " | grep ".gz"` ]; then gzipped=" --readFilesCommand zcat "; else gzipped=""; fi
+		STAR --genomeDir ${genome} \
+				 --readFilesIn ${reads} \
+				 \$gzipped \
+				 --outSAMunmapped None \
+				 --outSAMtype BAM SortedByCoordinate \
+				 --runThreadN ${cpus} \
+				 --quantMode GeneCounts \
+				 --outFileNamePrefix ${pair_id}
+			 
+			mkdir STAR_${pair_id}
+			mv ${pair_id}Aligned* STAR_${pair_id}/.
+			mv ${pair_id}SJ* STAR_${pair_id}/.
+			mv ${pair_id}ReadsPerGene* STAR_${pair_id}/.
+			mv ${pair_id}Log* STAR_${pair_id}/.   
+    """
+	}
+    
+    
+    /*
+	 * Indexing bam alignments with samtools
+ 	 */
+	
+    static def indexAlnWithSamtools( bamfile) { 
+ 
+        """
+        samtools index ${bamfile}
         """
     }
- 	 */
+
 }

@@ -9,22 +9,22 @@
 
 	/* 
 	 * Function for qualimap QC
-
+    */
 	
-    static def qualimapRNAseq ( bamfile, annotation_file, outfolder="QUALIMAP", strand="strand-specific-reverse", memory="2G", read_type="SINGLE", extrapars="", debug="no") { 
+    static def qualimapRNAseq ( bamfile, annotation_file, outfolder="QUALIMAP", strand="strand-specific-reverse", memory="2G", read_single="NO", extrapars="") { 
 
     """
-       if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi
-       if [ `echo ${single} == "SINGLE"` ]; then pe_mode="-pe"; else if [`echo ${single} == "PAIRED"`] pe_mode=""; fi; fi
-      
-	   \$print unset DISPLAY
-       \$print mkdir tmp
-       \$print export JAVA_OPTS="-Djava.awt.headless=true -Xmx${memory} -Djava.io.tmpdir=\$PWD/tmp"    
-       \$print qualimap rnaseq \${pe_mode} --java-mem-size=${memory} -bam ${bamfile} -gtf ${annotation_file} -outdir ${outfolder} -p ${strand} ${extrapars}
-       \$print rm -fr tmp
+	   pe_mode="";
+       if [ `echo ${read_single} == "NO"` ]; then pe_mode="-pe"; fi
+       
+	   unset DISPLAY
+       mkdir tmp
+       export JAVA_OPTS="-Djava.awt.headless=true -Xmx${memory} -Djava.io.tmpdir=\$PWD/tmp"    
+       qualimap rnaseq \${pe_mode} --java-mem-size=${memory} -bam ${bamfile} -gtf ${annotation_file} -outdir ${outfolder} -p ${strand} ${extrapars}
+       rm -fr tmp
     """
     }
-	*/
+
  	 
 	/* 
 	 * Function for running fastQC on input samples
@@ -38,9 +38,20 @@
     """
 	}
 
+	/*
+	 * check ribosomal content using riboPicker
+	 */
+
+    static def checkRibo(subsample, fastqfile, output, debug="no") {
+
+    """
+        if [ `echo ${fastqfile} | grep "gz"` ]; then gzipped=" -gz "; else gzipped=""; fi
+		check_rRNA_contam.pl \$gzipped -s ${subsample} -f ${fastqfile} > ${output}
+    """
+	}
+
 	/* 
-	 * Function for running fastQC on input samples
-	 | 
+	 * Function for getting the read size on fastq files
  	 */
 	
     static def getReadSize(read, debug="no") {
