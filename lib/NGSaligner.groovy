@@ -25,9 +25,9 @@
         """
     }
     
-    /*
-	 * Indexing a transcriptome with Salmon mapper. It reads both gzipped and plain fasta
- 	 */
+   /*
+    * Indexing a transcriptome with Salmon mapper. It reads both gzipped and plain fasta
+    */
 	
     static def indexWithSalmon( transcript_file, indexname="transcript.index", kmer, cpus, extrapars="", debug="no") { 
  
@@ -42,8 +42,8 @@
     }
 
     /*
-	 * Mapping to a transcriptome index with Salmon mapper. 
- 	 */
+     * Mapping to a transcriptome index with Salmon mapper. 
+     */
 	
     static def mapPEWithSalmon( transcript_index, readsA, readsB, output, libtype="ISF", cpus, extrapars="", debug="no") { 
  
@@ -57,9 +57,9 @@
     }
     
 
-	/*
-	 * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
-	*/ 	     
+     /*
+      * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
+      */ 	     
     static def mappingSEWithBowtie2(reads, indexGenome, alnfile, cpus, extrapars="", debug="no") { 
         """ 
     	if [ `echo ${debug} == "debug"` ]; then 
@@ -71,9 +71,9 @@
         """
 	}
  	
- 	/*
-	 * Indexing a genome with STAR mapper. It reads both gzipped and plain fasta
-	*/ 
+      /*
+       * Indexing a genome with STAR mapper. It reads both gzipped and plain fasta
+       */ 
 	
     static def indexWithSTAR( genome_file, outfolder, outprefix, annotation, readsize, cpus, extrapars="") { 
         """
@@ -93,8 +93,8 @@
     }
     
     /*
-	 * Mapping SE and PE reads with START. Reads can be both gzipped and plain fastq
-	*/ 	     
+     * Mapping SE and PE reads with START. Reads can be both gzipped and plain fastq
+     */ 	     
     static def mappingWithSTAR(pair_id, genome, reads, cpus, extrapars="") { 
     """
 	if [ `echo "${reads}"| cut -f 1 -d " " | grep ".gz"` ]; then gzipped=" --readFilesCommand zcat "; else gzipped=""; fi
@@ -117,8 +117,8 @@
     
     
     /*
-	 * Indexing bam alignments with samtools
- 	 */
+     * Indexing bam alignments with samtools
+     */
 	
     static def indexAlnWithSamtools( bamfile) { 
  
