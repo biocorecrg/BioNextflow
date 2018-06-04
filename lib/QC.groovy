@@ -7,8 +7,8 @@
  
  class QC {
 
-	/* 
-	 * Function for qualimap QC
+   /* 
+    * Function for qualimap QC
     */
 	
     static def qualimapRNAseq ( bamfile, annotation_file, outfolder="QUALIMAP", strand="strand-specific-reverse", memory="2G", read_single="NO", extrapars="") { 
@@ -26,9 +26,9 @@
     }
 
  	 
-	/* 
-	 * Function for running fastQC on input samples
- 	 */
+    /* 
+     * Function for running fastQC on input samples
+     */
 	
     static def fastqc(read, cpus="1", debug="no") {
 
@@ -38,9 +38,9 @@
     """
 	}
 
-	/*
-	 * check ribosomal content using riboPicker
-	 */
+      /*
+       * check ribosomal content using riboPicker
+       */
 
     static def checkRibo(subsample, fastqfile, output, debug="no") {
 
@@ -50,9 +50,9 @@
     """
 	}
 
-	/* 
-	 * Function for getting the read size on fastq files
- 	 */
+      /* 
+       * Function for getting the read size on fastq files
+       */
 	
     static def getReadSize(read, debug="no") {
 
