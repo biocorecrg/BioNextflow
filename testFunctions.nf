@@ -36,6 +36,7 @@
 	echo true
 	
 		script:
-		Misc.samtoolSort("bamfile", "sortedfile", "1", "debug")
+	myclass = new NGSaligner2(reads:"luca.fastq", output:"toni.qual")
+	myclass.test()
 	}
 	

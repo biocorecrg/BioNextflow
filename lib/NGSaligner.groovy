@@ -11,6 +11,7 @@
 	 * Indexing a genome with Bowtie2 mapper. It reads both gzipped and plain fasta
  	 */
 	
+	
     static def indexWithBowtie2( genome_file, indexname="bowtie2genome", cpus, extrapars="", debug="no") { 
  
         """			    

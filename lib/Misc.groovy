@@ -37,8 +37,20 @@
     """
 	}
 	
+	/* 
+	 * Function for making coverage profiles
+	 * WARNING there is no distinction between strands and it will be replaced in near future with something better
 
+    static def makeAlnProfiles(bamfile, readsize, genome_file, output="profile.bw") {
 
-
-
+	"""
+	ratio=`samtools idxstats $1| grep -v '*' | awk -v readsize=$2 '{sum+=\$3}END{print 1000000000/(sum*readsize)}'`;
+	echo $ratio > ratio.txt
+	bedtools genomecov -bg -split -ibam $1 -g $3 -scale $ratio > `basename $1`.bg
+	bedSort `basename $1`.bg `basename $1`.bg
+	bedGraphToBigWig `basename $1`.bg $3 $4
+	rm `basename $1`.bg
+	"""
+	}
+	*/
 }
