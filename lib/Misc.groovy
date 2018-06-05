@@ -1,5 +1,5 @@
 /* 
- * Repository for biological functions
+ * Class for misc functions (to be splitted?) 
  *
  * @authors
  * Luca Cozzuto <lucacozzuto@gmail.com>
@@ -7,19 +7,41 @@
  
  class Misc {
 
- 	 
+	/*
+	 * Properties definition
+	 */
+	
+     String input = ''
+     String output = ''
+     String mode = ''
+     Integer number = 0
+     Integer read_size = 0
+     String memory = 0
+     String chr_size_file = ''
+     Integer cpus = 1
+     String extrapars = ''
+
 	/* 
-	 * Function for running fastQC on input samples
+	 *  Sorting bam files with samtools
  	 */	
-    static def samtoolSort(bamfile, sortedfile, cpus="1", debug="no") {
+    def public st_sortBam() {
 
     """
-    	if [ `echo ${debug} == "debug"` ]; then 
-    	echo samtools sort -@ ${cpus} ${bamfile} '>' ${sortedfile}; else 	
-		samtools sort -@ ${cpus} ${bamfile} > ${sortedfile};
-		fi
+		samtools sort -@ ${this.cpus} ${this.input} > ${this.output};
     """
 	}
+
+    /*
+	 * Indexing bam alignments with samtools
+ 	 */
+	
+ 	def public st_indexBam() { 
+ 
+        """
+        samtools index ${this.input}
+        """
+    }
+
 	
 	/* 
 	 * Function for running fastQC on input samples
@@ -38,19 +60,20 @@
 	}
 	
 	/* 
-	 * Function for making coverage profiles
+	 * Function for making coverage profiles. It needs samtools, bedtools, bedSort and bedGraphToBigWig
 	 * WARNING there is no distinction between strands and it will be replaced in near future with something better
+     */
 
-    static def makeAlnProfiles(bamfile, readsize, genome_file, output="profile.bw") {
+    def public makeAlnProfiles() {
 
 	"""
-	ratio=`samtools idxstats $1| grep -v '*' | awk -v readsize=$2 '{sum+=\$3}END{print 1000000000/(sum*readsize)}'`;
-	echo $ratio > ratio.txt
-	bedtools genomecov -bg -split -ibam $1 -g $3 -scale $ratio > `basename $1`.bg
-	bedSort `basename $1`.bg `basename $1`.bg
-	bedGraphToBigWig `basename $1`.bg $3 $4
-	rm `basename $1`.bg
+	ratio=`samtools idxstats ${this.input}| grep -v '*' | awk -v readsize=${this.read_size} '{sum+=\$3}END{print 1000000000/(sum*readsize)}'`;
+	echo \$ratio > ratio.txt
+	bedtools genomecov -bg -split -ibam ${this.input} -g ${this.chr_size_file} -scale \$ratio > `basename ${this.input}`.bg
+	bedSort `basename ${this.input}`.bg `basename ${this.input}`.bg
+	bedGraphToBigWig `basename ${this.input}`.bg ${this.chr_size_file} ${this.output}
+	rm `basename ${this.input}`.bg
 	"""
 	}
-	*/
+
 }

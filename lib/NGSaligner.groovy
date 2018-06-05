@@ -1,5 +1,5 @@
 /* 
- * Repository of functions about aligners
+ * Class for NGS mappers 
  *
  * @authors
  * Luca Cozzuto <lucacozzuto@gmail.com>
@@ -8,124 +8,104 @@
  class NGSaligner {
 
 	/*
-	 * Indexing a genome with Bowtie2 mapper. It reads both gzipped and plain fasta
- 	 */
+	 * Properties definition
+	 */
 	
+     String aligner = ''
+     String reference_file = ''
+     String annotation_file = ''
+     String id = ''
+     String index = ''
+     String lib_type = ''
+     String reads = ''
+     Integer read_size = 0
+     String read1 = ''
+     String read2 = ''
+     String output = ''
+     String result = ''
+     Integer cpus = 1
+     Integer memory = 2
+     String extrapars = ''
 	
-    static def indexWithBowtie2( genome_file, indexname="bowtie2genome", cpus, extrapars="", debug="no") { 
- 
-        """			    
-    	if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi	
-
-     	if [ `echo ${genome_file} | grep ".gz"` ]; then 
-			\$print zcat ${genome_file} > `basename ${genome_file} .gz`
-        	\$print bowtie2-build --threads ${cpus} `basename ${genome_file} .gz` ${indexname}
-        	\$print rm `basename ${genome_file} .gz`
-		else \$print bowtie2-build --threads ${cpus} ${genome_file} ${indexname}
-		fi
-        """
-    }
-    
-   /*
-    * Indexing a transcriptome with Salmon mapper. It reads both gzipped and plain fasta
-    */
-	
-    static def indexWithSalmon( transcript_file, indexname="transcript.index", kmer, cpus, extrapars="", debug="no") { 
- 
-        """	
-		if [ `echo ${transcript_file} | grep ".gz"` ]; then 
-			zcat ${transcript_file} > `basename ${transcript_file} .gz`;
-   		    salmon index -t `basename ${transcript_file} .gz` -i ${indexname} --type quasi -k ${kmer} ${extrapars} -p ${cpus};
-   		    rm `basename ${transcript_file} .gz`;
-		else salmon index -t ${transcript_file} -i ${indexname} --type quasi -k ${kmer} ${extrapars} -p ${cpus}
-		fi
-        """
-    }
-
-    /*
-     * Mapping to a transcriptome index with Salmon mapper. 
+	/*
+	 * Methods definition
      */
-	
-    static def mapPEWithSalmon( transcript_index, readsA, readsB, output, libtype="ISF", cpus, extrapars="", debug="no") { 
- 
-        """	               
-		if [ `echo ${readsA} | grep ".gz"` ]; then 
-			 salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 <(gunzip -c ${readsA}) -2 <(gunzip -c ${readsB}) ${extrapars} -o ${output}
-		else  
-			salmon quant -i ${transcript_index} --gcBias -l ${libtype} -1 ${readsA} -2 ${readsB} ${extrapars} -o ${output}
-		fi
-        """
+     
+    def public test() {
+        output = this.dump()
+    """
+     echo '${output}'
+    """
     }
-    
 
-     /*
-      * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
-      */ 	     
-    static def mappingSEWithBowtie2(reads, indexGenome, alnfile, cpus, extrapars="", debug="no") { 
-        """ 
-    	if [ `echo ${debug} == "debug"` ]; then 
-    	echo "bowtie2 --non-deterministic -x ${indexGenome} -U ${reads} -p ${cpus}" '| samtools view -Sb -@ ' ${cpus} '- >' ${alnfile}; 
-    	else 
-    	bowtie2 --non-deterministic -x ${indexGenome} -U ${reads} -p ${cpus} | samtools view -Sb -@ ${cpus} - > ${alnfile}
-    	fi
-    		
-        """
+    def public doAlignment(String aligner) { 
+     switch (aligner) {
+        case "STAR":
+			this.alignWithStar()
+            break
+        default:
+            break
+    	}	
 	}
- 	
+	
+    def public doIndexing(String aligner) { 
+     switch (aligner) {
+        case "STAR":
+			this.indexWithSTAR()
+            break
+        default:
+            break
+    	}	
+	}
+
+	/*
+     * Mapping SE and PE reads with STAR. Reads can be both gzipped and plain fastq
+     */ 
+	def private alignWithStar(){
+        """
+   		if [ `echo "${this.reads}"| cut -f 1 -d " " | grep ".gz"` ]; then gzipped=" --readFilesCommand zcat "; else gzipped=""; fi
+				STAR --genomeDir ${this.index} \
+						 --readFilesIn ${this.reads} \
+						 \$gzipped \
+						 --outSAMunmapped None \
+						 --outSAMtype BAM SortedByCoordinate \
+						 --runThreadN ${this.cpus} \
+						 --quantMode GeneCounts \
+						 --outFileNamePrefix ${this.id} \
+						${this.extrapars}
+
+			 
+					mkdir ${output}
+					mv ${this.id}Aligned* ${this.output}/.
+					mv ${this.id}SJ* ${this.output}/.
+					mv ${this.id}ReadsPerGene* ${this.output}/.
+					mv ${this.id}Log* ${this.output}/. 		
+		"""		
+	}
+
       /*
        * Indexing a genome with STAR mapper. It reads both gzipped and plain fasta
        */ 
 	
-    static def indexWithSTAR( genome_file, outfolder, outprefix, annotation, readsize, cpus, extrapars="") { 
+    def private indexWithSTAR() {
         """
-		mkdir ${outfolder}
-     	if [ `echo ${genome_file} | grep ".gz"` ]; then 
-			zcat ${genome_file} > `basename ${genome_file} .gz`
-			STAR --runMode genomeGenerate --genomeDir ${outfolder} --runThreadN ${cpus} \
-			--genomeFastaFiles `basename ${genome_file} .gz` --sjdbGTFfile ${annotation} \
-			--sjdbOverhang ${readsize} --outFileNamePrefix ${outprefix};
-			rm `basename ${genome_file} .gz`
+		mkdir ${this.index}
+     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+			zcat ${this.reference_file} > `basename ${this.reference_file} .gz`
+			STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
+			--genomeFastaFiles `basename ${this.reference_file} .gz` --sjdbGTFfile ${this.annotation_file} \
+			--sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
+			${this.extrapars};
+			rm `basename ${this.reference_file} .gz`
 		else 
-			STAR --runMode genomeGenerate --genomeDir ${outfolder} --runThreadN ${cpus} \
-			--genomeFastaFiles ${genome_file} --sjdbGTFfile ${annotation} \
-			--sjdbOverhang ${readsize} --outFileNamePrefix ${outprefix}
+			STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
+			--genomeFastaFiles ${this.reference_file} --sjdbGTFfile ${this.annotation_file} \
+			--sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
+			${this.extrapars}
 		fi
 		"""
     }
-    
-    /*
-     * Mapping SE and PE reads with START. Reads can be both gzipped and plain fastq
-     */ 	     
-    static def mappingWithSTAR(pair_id, genome, reads, cpus, extrapars="") { 
-    """
-	if [ `echo "${reads}"| cut -f 1 -d " " | grep ".gz"` ]; then gzipped=" --readFilesCommand zcat "; else gzipped=""; fi
-		STAR --genomeDir ${genome} \
-				 --readFilesIn ${reads} \
-				 \$gzipped \
-				 --outSAMunmapped None \
-				 --outSAMtype BAM SortedByCoordinate \
-				 --runThreadN ${cpus} \
-				 --quantMode GeneCounts \
-				 --outFileNamePrefix ${pair_id}
-			 
-			mkdir STAR_${pair_id}
-			mv ${pair_id}Aligned* STAR_${pair_id}/.
-			mv ${pair_id}SJ* STAR_${pair_id}/.
-			mv ${pair_id}ReadsPerGene* STAR_${pair_id}/.
-			mv ${pair_id}Log* STAR_${pair_id}/.   
-    """
-	}
-    
-    
-    /*
-     * Indexing bam alignments with samtools
-     */
-	
-    static def indexAlnWithSamtools( bamfile) { 
- 
-        """
-        samtools index ${bamfile}
-        """
-    }
+
+
 
 }
