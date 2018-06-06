@@ -5,7 +5,7 @@
  * Luca Cozzuto <lucacozzuto@gmail.com>
  */
  
- class QC {
+ class QualityChecker {
 
 	/*
 	 * Properties definition

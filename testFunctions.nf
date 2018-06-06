@@ -27,16 +27,12 @@
  */
     
 
-/* 
- * Check that helper function `mappingPairsWithSTAR` returns the exepcted result
-
- */
 
 	process testFunction {
 	echo true
 	
 		script:
-	myclass = new NGSaligner2(reads:"luca.fastq", output:"toni.qual")
+	def myclass = new QC(input:"luca.fastq", output:"toni.qual")
 	myclass.test()
 	}
 	
