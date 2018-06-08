@@ -30,14 +30,14 @@
     }
 
    /* 
-    * Function for qualimap QC
+    * Function for qualimap QC for RNAseq
     */
 	
     def public qualimapRNAseq() {
     
     """
 	   pe_mode="";
-       if [ `echo ${this.mode} == "pe"` ]; then pe_mode="-pe"; fi
+       if [[ "${this.mode}" = "pe" ]]; then pe_mode="-pe"; fi
        
 	   unset DISPLAY
        mkdir tmp
@@ -47,6 +47,23 @@
     """
     }
 
+   /* 
+    * Function for qualimap QC for bam QC
+    */
+	
+    def public qualimapBamQC() {
+    
+    """
+	   pe_mode="";
+       if [[ "${this.mode}" = "pe" ]]; then pe_mode="-pe"; fi
+       
+	   unset DISPLAY
+       mkdir tmp
+       export JAVA_OPTS="-Djava.awt.headless=true -Xmx${this.memory} -Djava.io.tmpdir=\$PWD/tmp"    
+       qualimap bamqc \${pe_mode} --java-mem-size=${this.memory} -bam ${this.input} -gff ${this.annotation_file} -outdir ${this.output} ${this.extrapars}
+       rm -fr tmp
+    """
+    }
  	 
     /* 
      * Function for running fastQC on input samples

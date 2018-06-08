@@ -11,7 +11,6 @@
 	 * Properties definition
 	 */
 	
-     String aligner = ''
      String reference_file = ''
      String annotation_file = ''
      String id = ''
@@ -43,6 +42,9 @@
         case "STAR":
 			this.alignWithStar()
             break
+        case "bowtie2":
+			this.alignWithBowtie2()
+            break
         default:
             break
     	}	
@@ -53,6 +55,9 @@
         case "STAR":
 			this.indexWithSTAR()
             break
+         case "bowtie2":
+			this.indexWithBowtie2()
+            break       
         default:
             break
     	}	
@@ -106,6 +111,41 @@
 		"""
     }
 
+	/*
+     * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
+     */ 
+
+    def private alignWithBowtie2() { 
+        """
+     	if [[ "${this.read1}" == "" &&  ${this.reads} != "" ]]; then 
+    		bowtie2 --non-deterministic -x ${this.index} -U ${this.reads} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}
+    	else 
+      		bowtie2 -x ${this.index} -1 ${this.read1} -2 ${this.read2} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}  		
+    	fi	
+        """
+	}
+	
+    def private indexWithBowtie2() { 
+ 
+        """			    
+     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+			zcat ${this.reference_file} > `basename ${this.reference_file} .gz`
+        	bowtie2-build --threads ${this.cpus} `basename ${this.reference_file} .gz` ${this.index} ${this.extrapars}
+        	rm `basename ${this.reference_file} .gz`
+		else bowtie2-build --threads ${this.cpus} ${this.reference_file} ${this.index} ${this.extrapars}
+		fi
+        """
+    }
+
+	/*
+     * Get genome STATS from Bowtie index
+     */ 
+
+    def public genomeStatsFromBowtie2Index() { 
+        """
+		   bowtie2-inspect --summary ${this.index} | awk -F"\t" '{if (\$1~"Sequence") {split(\$2, a, " "); print a[1]"\t"\$3}}' > ${this.output}
+        """
+	}
 
 
 }
