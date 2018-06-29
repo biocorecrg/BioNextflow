@@ -22,6 +22,7 @@
      String PI = ''
      String user = ''
      String config_file = ''
+     String application = ''
 	 
 
     def public test() {
@@ -92,7 +93,7 @@ report_header_info:
     - User: ${this.user}
     - Date: `date`
     - Contact E-mail: \'${this.email}\'  
-    - Application Type: \'ChIP-seq\'
+    - Application Type: \'${this.application}\'
     - Reference Genome: \'${this.id}\'
 " > config.yaml;
 cat ${this.config_file} >> config.yaml;   
