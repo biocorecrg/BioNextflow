@@ -32,7 +32,7 @@
 	echo true
 	
 		script:
-	def myclass = new QC(input:"luca.fastq", output:"toni.qual")
+	def myclass = new NGSaligner()
 	myclass.test()
 	}
 	

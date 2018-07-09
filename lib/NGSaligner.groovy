@@ -24,6 +24,7 @@
      String result = ''
      Integer cpus = 1
      Integer memory = 2
+     Integer mismatches = 0
      String extrapars = ''
 	
 	/*
@@ -37,6 +38,10 @@
     """
     }
 
+	/*
+	 * unique interface for alignment
+	 */
+	 
     def public doAlignment(String aligner) { 
      switch (aligner) {
         case "STAR":
@@ -45,11 +50,21 @@
         case "bowtie2":
 			this.alignWithBowtie2()
             break
+        case "bowtie":
+			this.alignWithBowtie()
+            break
+        case "shortStack":
+            this.alignWithShortStack()
+            break
         default:
             break
     	}	
 	}
-	
+
+	/*
+	 * unique interface for indexing genomes / transcriptomes
+	 */	
+
     def public doIndexing(String aligner) { 
      switch (aligner) {
         case "STAR":
@@ -57,7 +72,10 @@
             break
          case "bowtie2":
 			this.indexWithBowtie2()
-            break       
+            break
+         case "bowtie":
+			this.indexWithBowtie()
+            break      
         default:
             break
     	}	
@@ -79,8 +97,7 @@
 						 --outFileNamePrefix ${this.id} \
 						${this.extrapars}
 
-			 
-					mkdir ${output}
+					mkdir ${this.output}
 					mv ${this.id}Aligned* ${this.output}/.
 					mv ${this.id}SJ* ${this.output}/.
 					mv ${this.id}ReadsPerGene* ${this.output}/.
@@ -114,7 +131,6 @@
 	/*
      * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
      */ 
-
     def private alignWithBowtie2() { 
         """
      	if [[ "${this.read1}" == "" &&  ${this.reads} != "" ]]; then 
@@ -124,7 +140,12 @@
     	fi	
         """
 	}
-	
+
+
+	/*
+     *Indexing genomes with Bowtie2. Sequence can be both gzipped and plain fasta
+     */
+
     def private indexWithBowtie2() { 
  
         """			    
@@ -136,6 +157,48 @@
 		fi
         """
     }
+    
+	/*
+     * Mapping SE and PE reads with Bowtie. Reads can be both gzipped and plain fastq
+     */ 
+
+    def private alignWithBowtie() { 
+        """
+     	if [[ "${this.read1}" == "" &&  ${this.reads} != "" ]]; then 
+    		bowtie --non-deterministic -x ${this.index} -U ${this.reads} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}
+    	else 
+      		bowtie -x ${this.index} -1 ${this.read1} -2 ${this.read2} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}  		
+    	fi	
+        """
+	}
+
+	/*
+     * Indexing genome with Bowtie. Sequence can be both gzipped and plain fasta
+     */ 
+     
+    def private indexWithBowtie() { 
+ 
+        """	
+     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+			zcat ${this.reference_file} > ${this.index}.fa			
+        	bowtie-build --threads ${this.cpus} ${this.index}.fa ${this.index} ${this.extrapars}
+		else ln -s ${this.reference_file} ${this.index}.fa 
+			bowtie-build --threads ${this.cpus} ${this.index}.fa ${this.index} ${this.extrapars}
+		fi
+        """
+    }
+
+	/*
+     * Mapping SE reads with ShortStack. This tool is wraps bowtie1.
+     */ 
+
+    def private alignWithShortStack() { 
+        """
+     		ShortStack ${this.extrapars} --mismatches ${this.mismatches} --nohp --readfile ${this.reads} --outdir ${this.output} --genomefile ${this.index} --bowtie_cores ${this.cpus}
+			cp ${this.output}/ErrorLogs.txt ${this.output}/${id}.txt
+        """
+	}
+	
 
 	/*
      * Get genome STATS from Bowtie index

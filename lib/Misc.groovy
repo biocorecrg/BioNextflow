@@ -25,7 +25,6 @@
 	 *  Sorting bam files with samtools
  	 */	
     def public st_sortBam() {
-
     """
 		samtools sort -@ ${this.cpus} ${this.input} > ${this.output};
     """
@@ -38,23 +37,37 @@
  	def public st_indexBam() { 
  
         """
+        
         samtools index ${this.input}
         """
     }
 
+    /*
+	 * Indexing genome with samtools faidx (compressed sequences too)
+ 	 */
+	
+ 	def public st_indexGenome() { 
+    """
+        if [ `echo ${this.input} | grep ".gz"` ]; then 
+        zcat ${this.input} > `basename ${this.input} .gz`
+        samtools faidx `basename ${this.input} .gz`
+        else samtools faidx ${this.input}
+        fi
+    """
+    }
 	
 	/* 
-	 * Function for running fastQC on input samples
+	 * Function for getting transcript from GTF 
  	 */
     static def getTranscriptsFromGTF(genome_file, annotation, output="transcript.fa", debug="no") {
 
     """
-    	if [ `echo ${debug} == "debug"` ]; then print="echo "; else print=""; fi	
+
      	if [ `echo ${genome_file} | grep ".gz"` ]; then 
-			\$print zcat ${genome_file} > `basename ${genome_file} .gz`
-			\$print gffread -g `basename ${genome_file} .gz` -w ${output} ${annotation}
-        	\$print rm `basename ${genome_file} .gz`
-        else \$print gffread -g ${genome_file} -w ${output} ${annotation}
+			zcat ${genome_file} > `basename ${genome_file} .gz`
+			gffread -g `basename ${genome_file} .gz` -w ${output} ${annotation}
+        	rm `basename ${genome_file} .gz`
+        else gffread -g ${genome_file} -w ${output} ${annotation}
 		fi
     """
 	}
