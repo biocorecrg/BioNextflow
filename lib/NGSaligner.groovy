@@ -201,7 +201,7 @@
 	
 
 	/*
-     * Get genome STATS from Bowtie index
+     * Get genome STATS from Bowtie2 index
      */ 
 
     def public genomeStatsFromBowtie2Index() { 
