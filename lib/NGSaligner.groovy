@@ -82,6 +82,24 @@
 	}
 
 	/*
+	 * unique interface for extracting information from indexes
+	 */	
+
+    def public genomeStatsFromIndex(String aligner) { 
+     switch (aligner) {
+         case "bowtie2":
+			this.genomeStatsFromBowtie2Index()
+            break
+         case "bowtie":
+			this.genomeStatsFromBowtieIndex()
+            break      
+        default:
+            break
+    	}	
+	}
+
+
+	/*
      * Mapping SE and PE reads with STAR. Reads can be both gzipped and plain fastq
      */ 
 	def private alignWithStar(){
@@ -209,6 +227,15 @@
 		   bowtie2-inspect --summary ${this.index} | awk -F"\t" '{if (\$1~"Sequence") {split(\$2, a, " "); print a[1]"\t"\$3}}' > ${this.output}
         """
 	}
+	
+	/*
+     * Get genome STATS from Bowtie index
+     */ 
 
+    def private genomeStatsFromBowtieIndex() { 
+        """
+		   bowtie-inspect --summary ${this.index} | awk -F"\t" '{if (\$1~"Sequence") {split(\$2, a, " "); print a[1]"\t"\$3}}' > ${this.output}
+        """
+	}
 
 }
