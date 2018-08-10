@@ -116,7 +116,7 @@
 		-T "Fingerprints"  \
 		--plotFile ${this.output}.png \
 		--outRawCounts ${this.output}_rawcounts.tab \
-		--numberOfProcessors ${this.cpus} \
+		--numberOfProcessors ${this.cpus} ${this.extrapars} \
     """
 	}
 
@@ -133,7 +133,7 @@
 		 -b ${this.input} \
  		--smartLabels \
 		--outFileName ${this.output} \
-		--numberOfProcessors ${this.cpus} \
+		--numberOfProcessors ${this.cpus} ${this.extrapars} \
     """
 	}
 	
@@ -186,7 +186,7 @@
                               --regionBodyLength 5000 \
                               --afterRegionStartLength 3000 \
 							  --numberOfProcessors ${this.cpus} \
-                              --skipZeros -o ${this.output} 
+                              --skipZeros -o ${this.output} ${this.extrapars}
     """
 	}
 
@@ -205,7 +205,7 @@
 							  --beforeRegionStartLength 3000 \
 							  --afterRegionStartLength 3000 \
 							  --numberOfProcessors ${this.cpus} \
-							  --skipZeros -o ${this.output} 
+							  --skipZeros -o ${this.output} ${this.extrapars}
     """
 	}
 

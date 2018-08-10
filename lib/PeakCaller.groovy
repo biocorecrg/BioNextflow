@@ -45,12 +45,12 @@
 
     """
     export PYTHONPATH=""
-    macs2 callpeak \\
-        -t ${this.sample} \\
-        -f BAM \\
-        -n ${this.id} \\
-        --extsize ${this.frag_len} \\
-        ${extrapars} \\
+    macs2 callpeak \
+        -t ${this.sample} \
+        -f BAM \
+        -n ${this.id} \
+        --extsize ${this.frag_len} \
+        ${extrapars} \
 		-g ${this.genome_size} 2>${this.id}_log.txt
     """
 	}
@@ -61,13 +61,13 @@
     def private peakCallWithEpic() {
 
     """
-		epic --treatment ${this.sample} \\
-		     --control ${this.control} \\
-		     --chromsizes ${this.chr_sizes} \\
-		     --effective-genome-fraction ${this.genome_size} \\
-		     -o ${this.id}.out \\
-		     -b ${this.id}.bed \\
-		     --fragment-size ${this.frag_len} \\
+		epic --treatment ${this.sample} \
+		     --control ${this.control} \
+		     --chromsizes ${this.chr_sizes} \
+		     --effective-genome-fraction ${this.genome_size} \
+		     -o ${this.id}.out \
+		     -b ${this.id}.bed \
+		     --fragment-size ${this.frag_len} \
 		     ${extrapars}
     """
 	}

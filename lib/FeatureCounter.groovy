@@ -26,7 +26,7 @@
     def public htseqCount() {
 
     """
-		htseq-count ${this.extrapars} -s ${this.strand} -f bam ${this.input} ${this.annotation} > ${this.output}
+		htseq-count ${this.extrapars} -s ${this.strand} -f bam ${this.input} ${this.annotation} ${this.extrapars} > ${this.output}
     """
 	}
 

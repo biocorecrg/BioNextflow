@@ -100,11 +100,12 @@
     def public makeAlnProfilesWithDeepTools() {
 
 	"""
-		bamCoverage --bam ${this.input} -o ${this.output} \\
-    	--binSize 10 \\
-    	--normalizeUsing RPGC \\
-    	--effectiveGenomeSize ${this.genome_size} \\
-    	--extendReads  ${this.read_size}  \\
+		bamCoverage --bam ${this.input} -o ${this.output} \
+    	--binSize 10 \
+    	--normalizeUsing RPGC \
+    	--effectiveGenomeSize ${this.genome_size} \
+    	--extendReads  ${this.read_size}  \
+    	${this.extrapars} \
     	-p ${this.cpus} 
 	"""
 	}
@@ -136,13 +137,14 @@
     def public markDuplicateWithPicard() {
 
 		"""
-			java -jar ${this.java_path} MarkDuplicates \\
-        	INPUT=${this.input} \\
-        	OUTPUT=${this.output} \\
-        	ASSUME_SORTED=true \\
-        	REMOVE_DUPLICATES=true \\
-        	METRICS_FILE=${this.id}.metrics.txt \\
-        	VALIDATION_STRINGENCY=LENIENT 
+			java -jar ${this.java_path} MarkDuplicates \
+        	INPUT=${this.input} \
+        	OUTPUT=${this.output} \
+        	ASSUME_SORTED=true \
+        	REMOVE_DUPLICATES=true \
+        	METRICS_FILE=${this.id}.metrics.txt \
+        	VALIDATION_STRINGENCY=LENIENT \
+        	${this.extrapars}
 		"""
 	}
 	
