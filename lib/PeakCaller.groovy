@@ -18,6 +18,7 @@
      String id = ''
      String frag_len = ''
      String genome_size = ''
+     String chr_sizes = ''
      String memory = ''
      Integer cpus = 1
      String extrapars = ''
@@ -28,6 +29,9 @@
         case "macs2":
 			this.peakCallWithMacs2()
             break
+       case "epic":
+			this.peakCallWithEpic()
+            break
         default:
             break
     	}	
@@ -35,7 +39,7 @@
 	
 	
 	/* 
-	 *  Sorting bam files with samtools
+	 *  Peak call with MACS
  	 */	
     def private peakCallWithMacs2() {
 
@@ -45,15 +49,27 @@
         -t ${this.sample} \\
         -f BAM \\
         -n ${this.id} \\
-        --fix-bimodal \\
         --extsize ${this.frag_len} \\
-        -B \\
-        --SPMR \\
         ${extrapars} \\
 		-g ${this.genome_size} 2>${this.id}_log.txt
     """
 	}
 
- 
+ 	/* 
+	 *  Peak call with EPIC
+ 	 */	
+    def private peakCallWithEpic() {
+
+    """
+		epic --treatment ${this.sample} \\
+		     --control ${this.control} \\
+		     --chromsizes ${this.chr_sizes} \\
+		     --effective-genome-fraction ${this.genome_size} \\
+		     -o ${this.id}.out \\
+		     -b ${this.id}.bed \\
+		     --fragment-size ${this.frag_len} \\
+		     ${extrapars}
+    """
+	}
 
 }
