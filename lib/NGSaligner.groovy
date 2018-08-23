@@ -15,6 +15,7 @@
      String annotation_file = ''
      String id = ''
      String index = ''
+     String dbtype = ''
      String lib_type = ''
      String reads = ''
      Integer read_size = 0
@@ -56,6 +57,9 @@
         case "shortStack":
             this.alignWithShortStack()
             break
+        case "blast":
+            this.alignWithBlast()
+            break
         default:
             break
     	}	
@@ -75,7 +79,10 @@
             break
          case "bowtie":
 			this.indexWithBowtie()
-            break      
+            break
+        case "blast":
+            this.indexWithBlast()
+            break   
         default:
             break
     	}	
@@ -98,10 +105,37 @@
     	}	
 	}
 
+/*******************************************************************
+* INDEXING
+********************************************************************/
+   /*
+    * Indexing a genome with STAR mapper. It reads both gzipped and plain fasta
+    */ 
+	
+    def private indexWithSTAR() {
+        """
+		mkdir ${this.index}
+     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+			zcat ${this.reference_file} > `basename ${this.reference_file} .gz`
+			STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
+			--genomeFastaFiles `basename ${this.reference_file} .gz` --sjdbGTFfile ${this.annotation_file} \
+			--sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
+			${this.extrapars};
+			rm `basename ${this.reference_file} .gz`
+		else 
+			STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
+			--genomeFastaFiles ${this.reference_file} --sjdbGTFfile ${this.annotation_file} \
+			--sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
+			${this.extrapars}
+		fi
+		"""
+    }
+
 
 	/*
      * Mapping SE and PE reads with STAR. Reads can be both gzipped and plain fastq
      */ 
+     
 	def private alignWithStar(){
         """
    		if [ `echo "${this.reads}"| cut -f 1 -d " " | grep ".gz"` ]; then gzipped=" --readFilesCommand zcat "; else gzipped=""; fi
@@ -123,45 +157,8 @@
 		"""		
 	}
 
-      /*
-       * Indexing a genome with STAR mapper. It reads both gzipped and plain fasta
-       */ 
-	
-    def private indexWithSTAR() {
-        """
-		mkdir ${this.index}
-     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
-			zcat ${this.reference_file} > `basename ${this.reference_file} .gz`
-			STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
-			--genomeFastaFiles `basename ${this.reference_file} .gz` --sjdbGTFfile ${this.annotation_file} \
-			--sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
-			${this.extrapars};
-			rm `basename ${this.reference_file} .gz`
-		else 
-			STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
-			--genomeFastaFiles ${this.reference_file} --sjdbGTFfile ${this.annotation_file} \
-			--sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
-			${this.extrapars}
-		fi
-		"""
-    }
-
 	/*
-     * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
-     */ 
-    def private alignWithBowtie2() { 
-        """
-     	if [[ "${this.read1}" == "" &&  ${this.reads} != "" ]]; then 
-    		bowtie2 --non-deterministic -x ${this.index} -U ${this.reads} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}
-    	else 
-      		bowtie2 -x ${this.index} -1 ${this.read1} -2 ${this.read2} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}  		
-    	fi	
-        """
-	}
-
-
-	/*
-     *Indexing genomes with Bowtie2. Sequence can be both gzipped and plain fasta
+     * Indexing genomes with Bowtie2. Sequence can be both gzipped and plain fasta
      */
 
     def private indexWithBowtie2() { 
@@ -176,6 +173,54 @@
         """
     }
     
+    /*
+     * Indexing genome with Bowtie. Sequence can be both gzipped and plain fasta
+     */ 
+     
+    def private indexWithBowtie() { 
+ 
+        """	
+     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+			zcat ${this.reference_file} > ${this.index}.fa			
+        	bowtie-build --threads ${this.cpus} ${this.index}.fa ${this.index} ${this.extrapars}
+		else ln -s ${this.reference_file} ${this.index}.fa 
+			bowtie-build --threads ${this.cpus} ${this.index}.fa ${this.index} ${this.extrapars}
+		fi
+        """
+    }
+    
+    /*
+     * Indexing genome / proteome with Blast. Sequence can be both gzipped and plain fasta
+     */ 
+     
+    def private indexWithBlast() { 
+ 
+        """	
+     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+			zcat ${this.reference_file} > ${this.index}			
+		else ln -s ${this.reference_file} ${this.index} 
+		fi
+		makeblastdb -in ${this.index} -dbtype ${this.dbtype} ${this.extrapars}
+        """
+    }
+ 
+/*******************************************************************
+* MAPPING
+********************************************************************/
+
+	/*
+     * Mapping SE and PE reads with Bowtie2. Reads can be both gzipped and plain fastq
+     */ 
+    def private alignWithBowtie2() { 
+        """
+     	if [[ "${this.read1}" == "" &&  ${this.reads} != "" ]]; then 
+    		bowtie2 --non-deterministic -x ${this.index} -U ${this.reads} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}
+    	else 
+      		bowtie2 -x ${this.index} -1 ${this.read1} -2 ${this.read2} -p ${this.cpus} ${this.extrapars} | samtools view -Sb -@ ${this.cpus} - > ${this.output}  		
+    	fi	
+        """
+	}
+
 	/*
      * Mapping SE and PE reads with Bowtie. Reads can be both gzipped and plain fastq
      */ 
@@ -191,22 +236,6 @@
 	}
 
 	/*
-     * Indexing genome with Bowtie. Sequence can be both gzipped and plain fasta
-     */ 
-     
-    def private indexWithBowtie() { 
- 
-        """	
-     	if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
-			zcat ${this.reference_file} > ${this.index}.fa			
-        	bowtie-build --threads ${this.cpus} ${this.index}.fa ${this.index} ${this.extrapars}
-		else ln -s ${this.reference_file} ${this.index}.fa 
-			bowtie-build --threads ${this.cpus} ${this.index}.fa ${this.index} ${this.extrapars}
-		fi
-        """
-    }
-
-	/*
      * Mapping SE reads with ShortStack. This tool is wraps bowtie1.
      */ 
 
@@ -217,6 +246,19 @@
         """
 	}
 	
+	/*
+     * Aligning sequences with Blast. Sequences can be both gzipped orr plain fasta file
+     */ 
+
+    def private alignWithBlast() { 
+        """
+			blastn -out ${this.output} -db ${this.index} -query ${this.reads} -num_threads ${this.cpus} ${this.extrapars}
+        """
+	}		
+	
+/*******************************************************************
+* OTHER
+********************************************************************/
 
 	/*
      * Get genome STATS from Bowtie2 index
