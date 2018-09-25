@@ -31,8 +31,8 @@
 	process testFunction {
 	echo true
 	
-		script:
-	def myclass = new NGSaligner()
-	myclass.test()
+	script:
+	    def myclass = new Reporter(PI:"Luca", user:"Luca", email:"lucacozzuto@gmail.com", application:"NGS", id:"mm9", title:"RNAseq", subtitle:"subtitle")
+	    myclass.makeMultiQCreport()
 	}
 	

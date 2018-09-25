@@ -78,28 +78,31 @@ maxHeightPixels 128:60:11
 	"""
 	}
 	
+	
+	/*
+	 * write multiQC config file (config.yaml)
+ 	 */
+
+    def public assembleConfigForMultiQC() {
+        def myString = "title: \"${this.title}\"\nsubtitle: \"${this.subtitle}\"\nintro_text: False\n\nreport_header_info:"
+        if (this.PI) {myString +=  "- PI: ${this.PI}\n"} 
+        if (this.user) {myString +=  "- User: ${this.user}\n"} 
+        myString +=  "    - Date: `date`\n    - Contact E-mail: \'${this.email}\'\n    - Application Type: \'${this.application}\'\n    - Reference Genome: \'${this.id}\'\n"
+        return (myString)
+}
+	
    /* 
     * Method for writing multiQC report in a super custom way
     */
     def public makeMultiQCreport() {
-
-	"""
-echo "title: \"${this.title}\"
-subtitle: \"${this.subtitle}\"
-intro_text: False
-
-report_header_info:
-    - PI: ${this.PI}
-    - User: ${this.user}
-    - Date: `date`
-    - Contact E-mail: \'${this.email}\'  
-    - Application Type: \'${this.application}\'
-    - Reference Genome: \'${this.id}\'
-" > config.yaml;
-cat ${this.config_file} >> config.yaml;   
-	    multiqc -c config.yaml .
-	"""
+        def myString = this.assembleConfigForMultiQC()
+        File config = new File ("config.yaml")
+        config.text = myString
+        """
+            echo `ls *`
+            #cat ${this.config_file} >> config.yaml;   
+            #multiqc -c config.yaml .
+        """
 	}
-
 
 }
