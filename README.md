@@ -13,10 +13,10 @@ You need to install the library in your nextflow pipeline for being automaticall
     if [ `echo ${reference_file} | grep ".gz"` ]; then 
        zcat ${reference_file} > ${index}.fa			
        bowtie-build --threads ${task.cpus} ${index}.fa ${index}
-       else 
+    else 
             ln -s ${reference_file} ${index}.fa 
             bowtie-build --threads ${tasks.cpus} ${index}.fa ${index}
-       fi
+    fi
     """
 
 ### Code after
