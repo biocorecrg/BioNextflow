@@ -7,10 +7,10 @@
  
  class Reporter {
 
-	/*
-	 * Properties definition
-	 */
-	
+    /*
+     * Properties definition
+     */
+    
      String email = ''
      String id = ''
      String title = ''
@@ -23,25 +23,25 @@
      String user = ''
      String config_file = ''
      String application = ''
-	 
+     
 
     def public test() {
         output = this.dump()
     """
-     echo '${output}'
+        echo '${output}'
     """
     }
 
    /* 
     * Method for writing files needed for an HUB @ UCSC Genome Browser
     */
-	
+    
     def public makeGenomeUcscHub() {
     
     """
-		echo "genome ${this.id}
+        echo "genome ${this.id}
 trackDb ${this.id}/trackDb.txt" > genomes.txt;
-		echo "hub ${this.id}
+        echo "hub ${this.id}
 shortLabel ${this.title}
 longLabel ${this.subtitle}
 genomesFile genomes.txt
@@ -54,8 +54,8 @@ email ${this.email}" > hub.txt
     */
     def public makeBigWigTrackDB() {
 
-	    """
-	    echo "track ${this.id} 
+        """
+         echo "track ${this.id} 
 type ${this.type}  
 compositeTrack on 
 shortLabel RNAseq profiles (${this.title})
@@ -65,44 +65,44 @@ color 0,0,255
 autoScale on
 maxHeightPixels 128:60:11
 " >>  trackDb.txt;
-	for i in *.${this.extension}; \\
-	do NAME=`echo \$i | sed s/\\.${this.extension}//g`; \\
-	echo track \$NAME; \\
-	echo bigDataUrl \$i; \\
-	echo shortLabel \$NAME; \\
-	echo longLabel \$NAME; \\
-	echo "type ${this.type}"; \\
-	echo "parent ${this.id}"; \\
-	echo ""; \\
-	done >> trackDb.txt;
-	"""
-	}
-	
-	
-	/*
-	 * write multiQC config file (config.yaml)
- 	 */
+    for i in *.${this.extension}; \\
+        do NAME=`echo \$i | sed s/\\.${this.extension}//g`; \\
+        echo track \$NAME; \\
+        echo bigDataUrl \$i; \\
+        echo shortLabel \$NAME; \\
+        echo longLabel \$NAME; \\
+        echo "type ${this.type}"; \\
+        echo "parent ${this.id}"; \\
+    echo ""; \\
+         done >> trackDb.txt;
+    """
+    }
+    
+    
+    /*
+     * write multiQC config file (config.yaml)
+     */
 
     def public assembleConfigForMultiQC() {
-        def myString = "title: \"${this.title}\"\nsubtitle: \"${this.subtitle}\"\nintro_text: False\n\nreport_header_info:"
-        if (this.PI) {myString +=  "- PI: ${this.PI}\n"} 
-        if (this.user) {myString +=  "- User: ${this.user}\n"} 
+        def myString = "title: \"${this.title}\"\nsubtitle: \"${this.subtitle}\"\nintro_text: False\n\nreport_header_info:\n"
+        if (this.PI) { myString +=  "    - PI: ${this.PI}\n" } 
+        if (this.user) { myString +=  "    - User: ${this.user}\n" } 
         myString +=  "    - Date: `date`\n    - Contact E-mail: \'${this.email}\'\n    - Application Type: \'${this.application}\'\n    - Reference Genome: \'${this.id}\'\n"
         return (myString)
 }
-	
+    
    /* 
     * Method for writing multiQC report in a super custom way
     */
     def public makeMultiQCreport() {
         def myString = this.assembleConfigForMultiQC()
-        File config = new File ("config.yaml")
-        config.text = myString
         """
-            echo `ls *`
-            #cat ${this.config_file} >> config.yaml;   
-            #multiqc -c config.yaml .
+            cat > config.yaml << EOL
+${myString}
+EOL
+            cat ${this.config_file} >> config.yaml;   
+            multiqc -c config.yaml .
         """
-	}
+    }
 
 }

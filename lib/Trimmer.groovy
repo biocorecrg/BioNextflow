@@ -7,10 +7,10 @@
  
  class Trimmer {
 
-	/*
-	 * Properties definition
-	 */
-	
+    /*
+     * Properties definition
+     */
+    
      String reads = ''
      String read = ''
      String read_A = ''
@@ -21,13 +21,13 @@
      Integer cpus = 0
      String extrapars = ''
 
-	/* 
-	 * Function for trimming read pairs with Skewer
- 	 */
-	
+    /* 
+     * Function for trimming read pairs with Skewer
+     */
+    
     def public trimWithSkewer() { 
-	    """
-		skewer ${this.extrapars} -t ${this.cpus} -l ${this.min_read_size} -n -u -o ${this.id} -z ${this.reads}
+        """
+            skewer ${this.extrapars} -t ${this.cpus} -l ${this.min_read_size} -n -u -o ${this.id} -z ${this.reads}
         """
      }
 

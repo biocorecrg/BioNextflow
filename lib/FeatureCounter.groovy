@@ -7,10 +7,10 @@
  
  class FeatureCounter {
 
-	/*
-	 * Properties definition
-	 */
-	
+    /*
+     * Properties definition
+     */
+    
      String input = ''
      String output = ''
      String annotation = ''
@@ -19,16 +19,16 @@
      Integer cpus = 1
      String extrapars = ''
 
-	/* 
-	 *  count feature with htseq-count
- 	 */	
- 	 
+    /* 
+     *  count feature with htseq-count
+     */ 
+     
     def public htseqCount() {
 
     """
-		htseq-count ${this.extrapars} -s ${this.strand} -f bam ${this.input} ${this.annotation} ${this.extrapars} > ${this.output}
+        htseq-count ${this.extrapars} -s ${this.strand} -f bam ${this.input} ${this.annotation} ${this.extrapars} > ${this.output}
     """
-	}
+    }
 
  
 
