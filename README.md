@@ -26,7 +26,7 @@ You need to install the library in your nextflow pipeline for being automaticall
 ### Installation
 Edit the INSTALL.sh file to select the required version
 
-   sh INSTALL.sh 
+    sh INSTALL.sh 
 
 ### Get started 
 
