@@ -82,6 +82,9 @@
         case "blast":
             this.indexWithBlast()
             break   
+        case "bwa":
+            this.indexWithBWA()
+            break   
         default:
             break
         }   
@@ -201,7 +204,22 @@
         makeblastdb -in ${this.index} -dbtype ${this.dbtype} ${this.extrapars}
         """
     }
- 
+
+    /*
+     * Indexing with BWA
+     */ 
+     
+    def private indexWithBWA() { 
+
+        """ 
+        if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
+            zcat ${this.reference_file} > ${this.index}.fa 
+            bwa index ${this.index}.fa
+        else ln -s ${this.reference_file} ${this.index}.fa
+            bwa index ${this.index}.fa 
+        fi
+        """
+    }
 /*******************************************************************
 * MAPPING
 ********************************************************************/
@@ -253,7 +271,8 @@
             blastn -out ${this.output} -db ${this.index} -query ${this.reads} -num_threads ${this.cpus} ${this.extrapars}
         """
     }       
-    
+ 
+      
 /*******************************************************************
 * OTHER
 ********************************************************************/
