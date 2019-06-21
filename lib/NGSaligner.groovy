@@ -143,7 +143,6 @@
             STAR --genomeDir ${this.index} \
                  --readFilesIn ${this.reads} \
                   \$gzipped \
-                  --outSAMunmapped None \
                   --outSAMtype BAM SortedByCoordinate \
                   --runThreadN ${this.cpus} \
                   --quantMode GeneCounts \
