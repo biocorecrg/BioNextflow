@@ -82,9 +82,6 @@
         case "blast":
             this.indexWithBlast()
             break   
-        case "bwa":
-            this.indexWithBWA()
-            break   
         default:
             break
         }   
@@ -115,18 +112,22 @@
     
     def private indexWithSTAR() {
         """
+        annotation_cmd=""
+        if [[ `echo ${this.annotation_file}` != "" ]]; then
+	    annotation_cmd="--sjdbOverhang ${this.read_size} --sjdbGTFfile ${this.annotation_file}"
+        fi
         mkdir ${this.index}
         if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
             zcat ${this.reference_file} > `basename ${this.reference_file} .gz`
             STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
-            --genomeFastaFiles `basename ${this.reference_file} .gz` --sjdbGTFfile ${this.annotation_file} \
-            --sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
+            --genomeFastaFiles `basename ${this.reference_file} .gz` \$annotation_cmd \
+            --outFileNamePrefix ${this.index} \
             ${this.extrapars};
             rm `basename ${this.reference_file} .gz`
         else 
             STAR --runMode genomeGenerate --genomeDir ${this.index} --runThreadN ${this.cpus} \
-            --genomeFastaFiles ${this.reference_file} --sjdbGTFfile ${this.annotation_file} \
-            --sjdbOverhang ${this.read_size} --outFileNamePrefix ${this.index} \
+            --genomeFastaFiles ${this.reference_file} \$annotation_cmd \
+            --outFileNamePrefix ${this.index} \
             ${this.extrapars}
         fi
         """
@@ -143,6 +144,7 @@
             STAR --genomeDir ${this.index} \
                  --readFilesIn ${this.reads} \
                   \$gzipped \
+                  --outSAMunmapped None \
                   --outSAMtype BAM SortedByCoordinate \
                   --runThreadN ${this.cpus} \
                   --quantMode GeneCounts \
@@ -203,22 +205,7 @@
         makeblastdb -in ${this.index} -dbtype ${this.dbtype} ${this.extrapars}
         """
     }
-
-    /*
-     * Indexing with BWA
-     */ 
-     
-    def private indexWithBWA() { 
-
-        """ 
-        if [ `echo ${this.reference_file} | grep ".gz"` ]; then 
-            zcat ${this.reference_file} > ${this.index}.fa 
-            bwa index ${this.index}.fa
-        else ln -s ${this.reference_file} ${this.index}.fa
-            bwa index ${this.index}.fa 
-        fi
-        """
-    }
+ 
 /*******************************************************************
 * MAPPING
 ********************************************************************/
@@ -270,8 +257,7 @@
             blastn -out ${this.output} -db ${this.index} -query ${this.reads} -num_threads ${this.cpus} ${this.extrapars}
         """
     }       
- 
-      
+    
 /*******************************************************************
 * OTHER
 ********************************************************************/

@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Check pipeline dependency
-bionext_ver="0.3"
+bionext_ver="0.7.2"
 
 # Check presence of a lib
 if [ -d "lib" ]; then {
