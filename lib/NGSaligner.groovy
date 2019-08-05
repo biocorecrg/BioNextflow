@@ -153,8 +153,10 @@
                   mkdir ${this.output}
                   mv ${this.id}Aligned* ${this.output}/.
                   mv ${this.id}SJ* ${this.output}/.
-                  mv ${this.id}ReadsPerGene* ${this.output}/.
-                  mv ${this.id}Log* ${this.output}/.      
+                  mv ${this.id}Log* ${this.output}/.
+                  if test -f "${this.id}ReadsPerGene*"; then
+                      mv ${this.id}ReadsPerGene* ${this.output}/.
+                  fi      
         """
     }
 
