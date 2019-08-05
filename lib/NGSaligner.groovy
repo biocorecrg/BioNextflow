@@ -147,7 +147,6 @@
                   --outSAMunmapped None \
                   --outSAMtype BAM SortedByCoordinate \
                   --runThreadN ${this.cpus} \
-                  --quantMode GeneCounts \
                   --outFileNamePrefix ${this.id} \
                   ${this.extrapars}
 
