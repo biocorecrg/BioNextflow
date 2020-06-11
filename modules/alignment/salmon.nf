@@ -1,5 +1,5 @@
 /*
-*  slamon module
+*  salmon module
 */
 
 params.LABEL = ""
