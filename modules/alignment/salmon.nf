@@ -1,5 +1,6 @@
 /*
-*  slamon module
+*  salmon module
+* INPUT IS a channel with [ val(ID), [READL1, READL2, ...], optional [READR1, READR2, ...] ]
 */
 
 params.LABEL = ""
