@@ -6,11 +6,13 @@
 
 params.LABEL = ""
 params.CONTAINER = "quay.io/biocontainers/fastqc:0.11.9--0"
+params.OUTPUT = "fastqc_out"
 
 process fastQC {
     tag { fastq }
     label (params.LABEL)
     container params.CONTAINER
+    publishDir(params.OUTPUT, mode:'copy')
 
     input:
     path(fastq)
@@ -35,3 +37,39 @@ workflow FASTQC {
     out
 
 }
+
+process getVersion {
+    container params.CONTAINER
+
+    output:
+	stdout emit: out    
+    
+    shell:
+    """
+    fastqc --version
+    """
+}
+
+
+workflow FASTQCP {
+    take: 
+    fastqp
+    
+    main:
+    fastqp.map{
+		[it[1]]
+	}.flatten().set{fastq}	
+    out = fastQC(fastq)
+    
+    emit:
+    out
+
+}
+
+workflow GET_VERSION {
+    main:
+		getVersion()
+    emit:
+    	getVersion.out
+}   
+ 
