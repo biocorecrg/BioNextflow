@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = "bwa_out"
-params.CONTAINER = "quay.io/repository/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8"
+params.CONTAINER = "quay.io/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8:aeac8200e5c50c5acf4dd14792fd8453255af835-0"
 
 process getVersion {
     container params.CONTAINER

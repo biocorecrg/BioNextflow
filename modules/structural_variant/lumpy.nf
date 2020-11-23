@@ -26,7 +26,7 @@ process getDiscordant {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    publishDir("${params.OUTPUT}/lumpy_bam", mode:'copy')
 
     input:
     tuple val(pair_id), path(reads)
@@ -47,13 +47,13 @@ process getSplitReads {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    publishDir("${params.OUTPUT}/lumpy_bam", mode:'copy')
 
     input:
     tuple val(pair_id), path(reads)
 
     output:
-    tuple val(pair_id), path("${pair_id}.discordants.bam") 
+    tuple val(pair_id), path("${pair_id}.splitters.bam") 
  
     """    
 	samtools view -@ {task.cpus} -h ${reads} \
@@ -65,6 +65,7 @@ process getSplitReads {
 }
 
 process lumpy_express_single {
+    publishDir("${params.OUTPUT}/lumpy_vcf", mode:'copy')
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -73,7 +74,7 @@ process lumpy_express_single {
     tuple val(pair_id), path(bam), path(discordant), path(split)
 
     output:
-    tuple val(pair_id), path("${pair_id}.discordants.bam") 
+    tuple val(pair_id), path("${pair_id}.vcf") 
  
     """    
 	lumpyexpress \
