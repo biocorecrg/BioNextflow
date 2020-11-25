@@ -5,7 +5,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 
-params.OUTPUT = "bwa_out"
+params.OUTPUT = "lumpy_out"
 params.CONTAINER = "quay.io/biocontainers/lumpy-sv:0.3.0--py27hfbaaabd_6"
 
 process getVersion {
@@ -21,8 +21,6 @@ process getVersion {
 }
 
 process getDiscordant {
-    publishDir(params.OUTPUT, mode:'copy')
-
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -42,8 +40,6 @@ process getDiscordant {
 }
 
 process getSplitReads {
-    publishDir(params.OUTPUT, mode:'copy')
-
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -71,13 +67,14 @@ process lumpy_express_single {
     container params.CONTAINER
 
     input:
-    tuple val(pair_id), path(bam), path(discordant), path(split)
+    tuple val(pair_id), path(bam), path(split)
 
     output:
     tuple val(pair_id), path("${pair_id}.vcf") 
  
-    """    
+    """
 	lumpyexpress \
+		${params.EXTRAPARS} \
     	-B ${bam} \
     	-S ${split} \
     	-D ${discordant} \
@@ -90,9 +87,9 @@ workflow LUMPY_ALL_SINGLE {
     input
     
     main:
-		discordant = getDiscordant(input)
+		//discordant = getDiscordant(input)
 		split = getSplitReads(input)
-		out = lumpy_express_single(input.join(discordant).join(split))
+		out = lumpy_express_single(input.join(split))
     emit:
     	out
 }

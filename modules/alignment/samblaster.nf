@@ -24,7 +24,7 @@ process getVersion {
     """
 }
 
-process map {
+process mapPE {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -46,26 +46,72 @@ process map {
     """
 }
 
+process mapSE {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
 
-workflow SAMBLASTER_MAP {
+    input:
+    tuple val(pair_id), path(reads)
+    path(indexes)
+
+    output:
+    tuple val(pair_id), path("${pair_id}.bam") 
+    
+	script:
+    def indexname = indexes[0].baseName
+
+    """    
+    bwa mem -R "@RG\\tID:id\\tSM:sample\\tLB:lib" -t ${task.cpus} ${indexname} ${reads} \
+    | samblaster --excludeDups --ignoreUnmated --maxSplitCount 2 --minNonOverlap 20 \
+    | samtools view  -@ ${task.cpus} -S -b - > ${pair_id}.bam;
+    """
+}
+
+
+workflow SAMBLASTER_MAP_PE {
     take: 
     input
     indexes
     
     main:
-		out = map(input, indexes)
+		out = mapPE(input, indexes)
     emit:
     	out
 }
 
-workflow SAMBLASTER_ALL {
+workflow SAMBLASTER_MAP_SE {
+    take: 
+    input
+    indexes
+    
+    main:
+		out = mapSE(input, indexes)
+    emit:
+    	out
+}
+
+
+workflow SAMBLASTER_ALL_PE {
     take: 
     reference
     input
     
     main:
 		index = BWA_INDEX(reference)
-		out = SAMBLASTER_MAP(input, index)
+		out = SAMBLASTER_MAP_PE(input, index)
+    emit:
+    	out
+}
+
+workflow SAMBLASTER_ALL_SE {
+    take: 
+    reference
+    input
+    
+    main:
+		index = BWA_INDEX(reference)
+		out = SAMBLASTER_MAP_SE(input, index)
     emit:
     	out
 }
