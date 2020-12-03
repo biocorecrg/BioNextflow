@@ -1,10 +1,28 @@
 /*
-*  bwa module + samtools 
+* bwa subworkflows (samtools embedded for converting the output) 
+* The accessible subworkflows are:
+* GET_VERSION that emits the version of bwa and samtools as stdout
+* BWA_INDEX that takes:
+*	a channel with an optionally gzipped fasta file
+*   it emits a list of files as index
+* BWA_MAP that takes:
+*	a channel list with index files as produced by BWA_INDEX
+*	a channel containing one or two (gzipped) fastq files 
+*	it emits a channel containing a tuple of id, bam file
+* BWA_ALL (BWA_INDEX + BWA_MAP) that takes:
+*	a channel with an optionally gzipped fasta file
+*   a channel containing one or two (gzipped) fastq files
+*   it emits a channel containing a tuple of id, bam file
+*
+* The parameters are: 
+*	LABEL that allows connecting labels specified in nextflow.config with the subworkflows
+*	EXTRAPARS only for mapping step for adding custom command line parameters for bwa
+*	OUTPUT for storing the final sub-workflow output 
+*	CONTAINER that can be eventually overridden for feeding a custom container from the main.nf file
 */
 
 params.LABEL = ""
 params.EXTRAPARS = ""
-
 params.OUTPUT = "bwa_out"
 params.CONTAINER = "quay.io/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8:aeac8200e5c50c5acf4dd14792fd8453255af835-0"
 
@@ -34,7 +52,7 @@ process index {
     path("${reference}.*")
     
     """
-    bwa index ${params.EXTRAPARS} ${reference}
+    bwa index ${reference}
     """
 }
 
@@ -55,7 +73,7 @@ process map {
     def indexname = indexes[0].baseName
 
     """    
-    bwa mem -t ${task.cpus} ${indexname} ${reads} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
+    bwa mem -t ${task.cpus} ${params.EXTRAPARS} ${indexname} ${reads} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
     """
 }
 
@@ -94,8 +112,6 @@ workflow BWA_ALL {
     emit:
     	out
 }
-
-
 
 workflow GET_VERSION {
     main:
