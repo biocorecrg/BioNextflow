@@ -7,11 +7,11 @@
 *   it emits a list of files as index
 * BWA_MAP that takes:
 *	a channel list with index files as produced by BWA_INDEX
-*	a channel containing one or two (gzipped) fastq files 
+*	a channel containing a tuple with id, and one or two (gzipped) fastq files 
 *	it emits a channel containing a tuple of id, bam file
 * BWA_ALL (BWA_INDEX + BWA_MAP) that takes:
 *	a channel with an optionally gzipped fasta file
-*   a channel containing one or two (gzipped) fastq files
+*	a channel containing a tuple with id, and one or two (gzipped) fastq files 
 *   it emits a channel containing a tuple of id, bam file
 *
 * The parameters are: 

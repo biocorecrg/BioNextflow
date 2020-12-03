@@ -1,6 +1,23 @@
 /*
-*  bwa module + samblaster + samtools 
+* samblaster subworkflows (samtools and bwa embedded)
+* It requires the subworkflow bwa index 
+* The accessible subworkflows are:
+* GET_VERSION that emits the version of bwa, samtools and samblaster as stdout
+* SAMBLASTER_MAP that takes:
+*	a channel list with index files as produced by BWA_INDEX
+*	a channel containing a tuple with id and one or two (gzipped) fastq files
+*	it emits a channel containing a tuple of id, bam file
+* SAMBLASTER_ALL (BWA_INDEX + SAMBLASTER_MAP) that takes:
+*	a channel with an optionally gzipped fasta file
+*   a channel containing one or two (gzipped) fastq files
+*   it emits a channel containing a tuple of id, bam file
+* The parameters are: 
+*	LABEL that allows connecting labels specified in nextflow.config with the subworkflows
+*	EXTRAPARS only for mapping step for adding custom command line parameters for bwa
+*	OUTPUT for storing the final sub-workflow output 
+*	CONTAINER that can be eventually overridden for feeding a custom container from the main.nf file
 */
+
 
 include { BWA_INDEX as BWA_INDEX } from "./bwa"
 
@@ -24,7 +41,7 @@ process getVersion {
     """
 }
 
-process mapPE {
+process map {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -38,80 +55,41 @@ process mapPE {
     
 	script:
     def indexname = indexes[0].baseName
-
-    """    
-    bwa mem -R "@RG\\tID:id\\tSM:sample\\tLB:lib" -t ${task.cpus} ${indexname} ${reads} \
-    | samblaster --excludeDups --addMateTags --maxSplitCount 2 --minNonOverlap 20 \
-    | samtools view  -@ ${task.cpus} -S -b - > ${pair_id}.bam;
-    """
+	if (reads[1]) {
+	    """
+	    bwa mem -R "@RG\\tID:id\\tSM:sample\\tLB:lib" -t ${task.cpus} ${indexname} ${reads} \
+	    | samblaster --excludeDups --addMateTags --maxSplitCount 2 --minNonOverlap 20 \
+	    | samtools view  -@ ${task.cpus} -S -b - > ${pair_id}.bam;
+	    """
+	} else {
+    	""" 
+   		bwa mem -R "@RG\\tID:id\\tSM:sample\\tLB:lib" -t ${task.cpus} ${indexname} ${reads} \
+    	| samblaster --excludeDups --ignoreUnmated --maxSplitCount 2 --minNonOverlap 20 \
+    	| samtools view  -@ ${task.cpus} -S -b - > ${pair_id}.bam;
+    	"""		
+	}
 }
 
-process mapSE {
-    label (params.LABEL)
-    tag { pair_id }
-    container params.CONTAINER
-
-    input:
-    tuple val(pair_id), path(reads)
-    path(indexes)
-
-    output:
-    tuple val(pair_id), path("${pair_id}.bam") 
-    
-	script:
-    def indexname = indexes[0].baseName
-
-    """    
-    bwa mem -R "@RG\\tID:id\\tSM:sample\\tLB:lib" -t ${task.cpus} ${indexname} ${reads} \
-    | samblaster --excludeDups --ignoreUnmated --maxSplitCount 2 --minNonOverlap 20 \
-    | samtools view  -@ ${task.cpus} -S -b - > ${pair_id}.bam;
-    """
-}
-
-
-workflow SAMBLASTER_MAP_PE {
+workflow SAMBLASTER_MAP {
     take: 
     input
     indexes
     
     main:
-		out = mapPE(input, indexes)
-    emit:
-    	out
-}
-
-workflow SAMBLASTER_MAP_SE {
-    take: 
-    input
-    indexes
-    
-    main:
-		out = mapSE(input, indexes)
+		out = map(input, indexes)
     emit:
     	out
 }
 
 
-workflow SAMBLASTER_ALL_PE {
+workflow SAMBLASTER_ALL {
     take: 
     reference
     input
     
     main:
 		index = BWA_INDEX(reference)
-		out = SAMBLASTER_MAP_PE(input, index)
-    emit:
-    	out
-}
-
-workflow SAMBLASTER_ALL_SE {
-    take: 
-    reference
-    input
-    
-    main:
-		index = BWA_INDEX(reference)
-		out = SAMBLASTER_MAP_SE(input, index)
+		out = SAMBLASTER_MAP(input, index)
     emit:
     	out
 }
