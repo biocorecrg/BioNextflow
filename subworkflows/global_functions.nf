@@ -8,15 +8,16 @@ def unzipNamedPipe(filename) {
 }
 
 // unzip command 
-def unzipCmd(filename, unzippedname, copy="") { 
-    def cmd = "ln -s ${filename} ${unzippedname}"
-	if (copy!="") {
-		cmd = "cp ${filename} ${unzippedname}"
-	}
+def unzipCmd(filename) {
     def ext = filename.getExtension()
+    def fname = filename
+    def cmd = ""
+    def clean = ""
     if (ext == "gz") {
-    	cmd = "zcat ${filename} > ${unzippedname}"
-    }
-    return cmd
+    	fname = filename.baseName
+    	cmd = "zcat ${filename} > ${fname}"
+        clean = "rm ${fname}"
+    }	
+    return [fname, cmd, clean]
 }
 
