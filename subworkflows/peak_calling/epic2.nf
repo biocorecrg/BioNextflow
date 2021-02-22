@@ -34,27 +34,22 @@ process peakCall {
     path(annofile)
 
     output:
-    tuple val(comp_id), path("${comp_id}/*.bed"), emit: bedPeaks
+    tuple val(pair_id), path("*.bed") 
     
 	script:
-	def filecontent = "SampleID\tBamIP\tBamInput"
+	def filecontent = "SampleID\tBamIP\tBamInput\n${comp_id}\t${sample}\t${input}"
     def unzip_anno = unzipCmd(annofile)
     def cmd_anno = unzip_anno[1]
     def anno_name = unzip_anno[0]
     def cmd_clean = unzip_anno[2]
 
     """
-	${cmd_anno}
+    ${cmd_anno}
 	echo "${filecontent}" > sample_info_file
-	echo -e "${comp_id}\t\$PWD/${sample}\t\$PWD/${input}" >> sample_info_file 
-	echo 'library(moaims)' > R.cmd;
-	echo 'moaims(sample_info_file = "'\$PWD/sample_info_file'", gtf_file ="'\$PWD/${anno_name}'", strand_specific = 1, is_paired = F, proj_name="'${comp_id}'")' >> R.cmd   
-	Rscript R.cmd
-	${cmd_clean}
-
+	Rscript -e "library(moaims); moaims(sample_info_file = ./sample_info_file, gtf_file =./${anno_name}, strand_specific = 1, is_paired = F, proj_name=${comp_id})"
+    ${cmd_clean}
     """
 }
-
 
 
 workflow MOAIMS_CALL {
@@ -63,9 +58,10 @@ workflow MOAIMS_CALL {
     annotation
     
     main:
-		peakCall(comparisons, annotation)
+    	
+		out = peakCall(comparisons, annotation)
     emit:
-    	peaks = peakCall.out.bedPeaks
+    	out
 }
 
 

@@ -21,8 +21,6 @@ process getVersion {
 }
 
 
-
-
 process sortAln {
     label (params.LABEL)
     tag { pair_id }
@@ -41,12 +39,41 @@ process sortAln {
     """
 }
 
+process viewBam {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    publishDir(params.OUTPUT, mode:'copy')
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_f.bam") 
+    
+	script:
+    """    
+	samtools view ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
+    """
+}
+
+
 workflow SAMTOOLS_SORT {
     take: 
     reads
     
     main:
 		out = sortAln(reads)
+    emit:
+    	out
+}
+
+workflow SAMTOOLS_BVIEW {
+    take: 
+    reads
+    
+    main:
+		out = viewBam(reads)
     emit:
     	out
 }
