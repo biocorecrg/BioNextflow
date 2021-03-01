@@ -25,7 +25,7 @@
 
 params.LABEL = ""
 params.EXTRAPARS = ""
-params.OUTPUT = "bwa_out"
+params.OUTPUT = "star_out"
 params.CONTAINER = "quay.io/biocontainers/star:2.7.7a--0"
 
 include { unzipCmd } from '../global_functions.nf'
@@ -38,7 +38,7 @@ process getVersion {
     
     shell:
     """
-    STAR --version
+    echo "STAR "`STAR --version`
     """
 }
 
@@ -133,7 +133,7 @@ process map {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy', pattern: '*.bam')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.bam') }
 
     input:
     path(indexes)
@@ -141,8 +141,8 @@ process map {
 
     output:
     tuple val(pair_id), path("${pair_id}*.bam"), emit: bams 
-    tuple val(pair_id), path("${pair_id}PerGene*"), emit: quants optional true
-    tuple val(pair_id), path("${pair_id}Log*"), emit: logs 
+    tuple val(pair_id), path("${pair_id}ReadsPerGene.out.tab"), emit: quants optional true
+    tuple val(pair_id), path("${pair_id}Log.final.out"), emit: logs 
     tuple val(pair_id), path("${pair_id}SJ*"),  emit: junctions
          
 	script:

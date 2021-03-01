@@ -12,7 +12,7 @@ process fastQC {
     tag { fastq }
     label (params.LABEL)
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     path(fastq)

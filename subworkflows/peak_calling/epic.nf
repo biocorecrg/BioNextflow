@@ -20,7 +20,7 @@ process getVersion {
     
     shell:
     """
-	epic --versiomn
+	epic --version
     """
 }
 

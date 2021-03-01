@@ -2,6 +2,8 @@
 *  MoAIMS 
 */
 
+include { BEDTOOLS_SORT } from "../misc/bedtools" addParams(EXTRAPARS: '')
+ 
 params.LABEL = ""
 params.EXTRAPARS = ""
 
@@ -18,7 +20,7 @@ process getVersion {
     
     shell:
     """
-    Rscript -e "library('moaims'); packageVersion('moaims')" 2>/dev/null
+    echo moaims' '`Rscript -e "library('moaims'); packageVersion('moaims')"` 2>/dev/null
     """
 }
 
@@ -27,7 +29,7 @@ process peakCall {
     label (params.LABEL)
     tag { comp_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    //if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(comp_id), path(sample), path(input)
@@ -48,10 +50,9 @@ process peakCall {
 	echo "${filecontent}" > sample_info_file
 	echo -e "${comp_id}\t\$PWD/${sample}\t\$PWD/${input}" >> sample_info_file 
 	echo 'library(moaims)' > R.cmd;
-	echo 'moaims(sample_info_file = "'\$PWD/sample_info_file'", gtf_file ="'\$PWD/${anno_name}'", strand_specific = 1, is_paired = F, proj_name="'${comp_id}'")' >> R.cmd   
+	echo 'moaims(sample_info_file = "'\$PWD/sample_info_file'", gtf_file ="'\$PWD/${anno_name}'", ${params.EXTRAPARS}, is_paired = F, proj_name="'${comp_id}'")' >> R.cmd   
 	Rscript R.cmd
 	${cmd_clean}
-
     """
 }
 
@@ -64,8 +65,9 @@ workflow MOAIMS_CALL {
     
     main:
 		peakCall(comparisons, annotation)
+		out = BEDTOOLS_SORT(peakCall.out.bedPeaks)
     emit:
-    	peaks = peakCall.out.bedPeaks
+    	out
 }
 
 

@@ -25,7 +25,7 @@ process sortAln {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(pair_id), path(reads)
@@ -43,7 +43,7 @@ process viewBam {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(pair_id), path(reads)

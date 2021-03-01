@@ -27,7 +27,7 @@ process peakCall {
     label (params.LABEL)
     tag { comp_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(comp_id), path(sample), path(input)

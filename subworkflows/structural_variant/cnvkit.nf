@@ -78,7 +78,7 @@ process doCNV {
     tag { pair_id }
     label (params.LABEL)
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     path(reference)

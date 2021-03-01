@@ -24,7 +24,7 @@ process sortSamCoord {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(pair_id), path(reads)
@@ -35,26 +35,32 @@ process sortSamCoord {
 	script:
 
     """    
-	picard SortSam I=${reads} O=${pair_id}_s.bam SORT_ORDER=coordinate
+	picard SortSam I=${reads} TMP_DIR=`pwd`/tmp O=${pair_id}_s.bam SORT_ORDER=coordinate
+	rm -fr tmp
     """
 }
 
-process removeDuplicates {
+process markDuplicates {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(pair_id), path(reads)
+	val(remove)
 
     output:
     tuple val(pair_id), path("${pair_id}_dedup.bam") 
     
-	script:
 
+	script:
+    def remove_cmd = ""
+    if (remove == "remove") {
+    	remove_cmd = "REMOVE_SEQUENCING_DUPLICATES=TRUE"
+    }     
     """    
-	picard MarkDuplicates ${params.EXTRAPARS} REMOVE_SEQUENCING_DUPLICATES=TRUE I=${reads} O=${pair_id}_dedup.bam M=${pair_id}.dupmet.txt 
+	picard MarkDuplicates ${params.EXTRAPARS} ${remove_cmd} I=${reads} O=${pair_id}_dedup.bam M=${pair_id}.dupmet.txt 
     """
 }
 
@@ -74,7 +80,17 @@ workflow PICARD_REM_DUP {
     input
     
     main:
-		out = removeDuplicates(input)
+		out = markDuplicates(input, "remove")
+    emit:
+    	out
+}
+
+workflow PICARD_MARK_DUP {
+    take: 
+    input
+    
+    main:
+		out =  markDuplicates(input, "no")
     emit:
     	out
 }

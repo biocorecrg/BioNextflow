@@ -1,12 +1,12 @@
 /*
-*  MoAIMS 
+*  Epic2 
 */
 
 params.LABEL = ""
 params.EXTRAPARS = ""
 
-params.OUTPUT = "moaims_out"
-params.CONTAINER = "biocorecrg/moaims:1.0"
+params.OUTPUT = "epic2_out"
+params.CONTAINER = "quay.io/biocontainers/epic2:0.0.48--py37hd0e48df_0"
 
 include { unzipCmd } from '../global_functions.nf'
 
@@ -18,48 +18,38 @@ process getVersion {
     
     shell:
     """
-    Rscript -e "library('moaims'); packageVersion('moaims')" 2>/dev/null
+    echo "epic2 "`epic2 --version`
     """
 }
 
 
 process peakCall {
+
     label (params.LABEL)
     tag { comp_id }
     container params.CONTAINER
-    publishDir(params.OUTPUT, mode:'copy')
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(comp_id), path(sample), path(input)
-    path(annofile)
+    val(gfrac)
 
     output:
-    tuple val(pair_id), path("*.bed") 
+    tuple val(comp_id), path("${comp_id}_epic2_peaks.bed")
     
 	script:
-	def filecontent = "SampleID\tBamIP\tBamInput\n${comp_id}\t${sample}\t${input}"
-    def unzip_anno = unzipCmd(annofile)
-    def cmd_anno = unzip_anno[1]
-    def anno_name = unzip_anno[0]
-    def cmd_clean = unzip_anno[2]
-
     """
-    ${cmd_anno}
-	echo "${filecontent}" > sample_info_file
-	Rscript -e "library(moaims); moaims(sample_info_file = ./sample_info_file, gtf_file =./${anno_name}, strand_specific = 1, is_paired = F, proj_name=${comp_id})"
-    ${cmd_clean}
+    epic2 ${params.EXTRAPARS} -t ${sample} -c ${input} -a --effective-genome-fraction ${gfrac} --output ${comp_id}_epic2_peaks.bed
     """
 }
 
-
-workflow MOAIMS_CALL {
+workflow EPIC2_CALL {
     take: 
     comparisons
-    annotation
+    gsize
     
     main:
-    	
-		out = peakCall(comparisons, annotation)
+		out = peakCall(comparisons, gsize)
     emit:
     	out
 }

@@ -24,7 +24,7 @@ process getDiscordant {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    publishDir("${params.OUTPUT}/lumpy_bam", mode:'copy')
+    if (params.OUTPUT != "") { publishDir("${params.OUTPUT}/lumpy_bam", mode:'copy') }
 
     input:
     tuple val(pair_id), path(reads)
