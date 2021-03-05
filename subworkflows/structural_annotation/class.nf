@@ -22,7 +22,7 @@ process getVersion {
 
     shell:
     """
-    echo CLASS 0.0
+    echo CLASS 20200626
     """
 }
 
