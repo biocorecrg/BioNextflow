@@ -9,7 +9,7 @@
 
 params.LABEL = ""
 params.EXTRAPARS = ""
-params.OUTPUT = "strawberry_out"
+params.OUTPUT = ""
 params.CONTAINER = "ruolinliu/strawberry:v1.1.1"
 
 include { unzipCmd } from '../global_functions.nf'
