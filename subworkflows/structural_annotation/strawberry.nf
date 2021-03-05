@@ -34,13 +34,13 @@ process runStrawberry {
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
   input:
-  path(bam_alignment)
+  tuple val(id), path(bam_alignment)
 
   output:
-  path("*.gtf")
+  tuple val(id), path("${id}.strawberry.gtf")
 
   """
-  /home/strawberry/bin/strawberry -p ${task.cpus} ${params.EXTRAPARS} -o ${bam_alignment}.strawberry.gtf ${bam_alignment}
+  /home/strawberry/bin/strawberry -p ${task.cpus} ${params.EXTRAPARS} -o ${id}.strawberry.gtf ${bam_alignment}
   """
 
 }
