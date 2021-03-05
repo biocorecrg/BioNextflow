@@ -10,7 +10,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = ""
+params.CONTAINER = "biocorecrg/class-transcripts:20200626"
 
 include { unzipCmd } from '../global_functions.nf'
 
