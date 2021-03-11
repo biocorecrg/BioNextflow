@@ -138,13 +138,25 @@ process generatePASAtrainingSet {
 }
 
 
-workflow PASAPIPELINE {
+workflow PASAPIPELINE_SEQ_CLEAN {
     take:
     fasta
     filterfasta
 
     main:
     out = seqClean(fasta, filterfasta)
+
+    emit:
+    out
+
+}
+
+workflow PASAPIPELINE_IMPORT_MYSQL {
+    take:
+    pasaconffilegeneral
+
+    main:
+    out = importMySQLPasa(pasaconffilegeneral)
 
     emit:
     out
