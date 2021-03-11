@@ -54,16 +54,18 @@ process seqClean {
 // Consider including droping database via parameter
 process importMySQLPasa {
 
-	label 'pasa'
+  tag { pasapipeline }
+  label (params.LABEL)
 
-	publishDir outputdir, mode: 'copy'
+  container params.CONTAINER
+  if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
 	input:
-	file (pasaconffilegeneral) from file(params.pasaconffilegeneral)
+	path(pasaconffilegeneral)
 
 	output:
-	file "done_mysql" into done_mysql
-	file "conftxt" into conftxt
+	path("done_mysql")
+	path("conftxt")
 
 	"""
 	mysql -u$params.dbuser -p$params.dbpass -h$dbhost -P$params.dbport -e "DROP DATABASE IF EXISTS $params.dbname; CREATE DATABASE $params.dbname;"
@@ -99,7 +101,8 @@ process runPASA {
  file "*assemblies.gff3" into pasa_assemblies_gff3
 
 
-	// TODO: Docker and Singularity options. Bad for cloud
+	// TODO: Docker and Singularity options. Bad for cloud. It seems it can be changed with --PASACONF
+
 	containerOptions "--bind ${outputdir}/conftxt:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
 
 	"""
