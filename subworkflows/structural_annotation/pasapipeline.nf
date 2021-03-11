@@ -124,20 +124,21 @@ process generatePASAtrainingSet {
 
   input:
   path(pasa_assemblies_fasta)
-  path(pasa_assemblies_gff3)
+  path(pasa_assemblies_gff3
+  path(conftxt)
 
   output:
   path("*.transdecoder.gff3")
   path("*.transdecoder.pep")
 
 	"""
- /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
+ /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --PASACONF ${conftxt} --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
  """
 
 }
 
 
-workflow PASAPIPELINE_SEQ_CLEAN {
+workflow PASA_SEQ_CLEAN {
     take:
     fasta
     filterfasta
@@ -150,7 +151,7 @@ workflow PASAPIPELINE_SEQ_CLEAN {
 
 }
 
-workflow PASAPIPELINE_IMPORT_MYSQL {
+workflow PASA_IMPORT_MYSQL {
     take:
     pasaconffilegeneral
     dbparams
@@ -164,7 +165,7 @@ workflow PASAPIPELINE_IMPORT_MYSQL {
 
 }
 
-workflow PASAPIPELINE_RUN_PASA {
+workflow PASA_RUN_PASA {
     take:
     relatedfasta
     genome
@@ -184,7 +185,7 @@ workflow PASAPIPELINE_RUN_PASA {
 
 }
 
-workflow PASAPIPELINE_GENERATE_TRAINING_SET {
+workflow PASA_GENERATE_TRAINING_SET {
     take:
     path(pasa_assemblies_fasta)
     path(pasa_assemblies_gff3)
