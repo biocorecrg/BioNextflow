@@ -62,53 +62,53 @@ process importMySQLPasa {
 
 	input:
 	path(pasaconffilegeneral)
+  path(dbparams)
+  path(pasaschema)
 
 	output:
-	path("done_mysql")
 	path("conftxt")
 
 	"""
-	mysql -u$params.dbuser -p$params.dbpass -h$dbhost -P$params.dbport -e "DROP DATABASE IF EXISTS $params.dbname; CREATE DATABASE $params.dbname;"
-	mysql -u$params.dbuser -p$params.dbpass $params.dbname -h$dbhost -P$params.dbport < $params.pasaschema > done_mysql
+  source ${dbparams}
+	mysql -u\${dbuser} -p\${dbpass} -h\${dbhost} -P\${dbport} -e "DROP DATABASE IF EXISTS \${dbname}; CREATE DATABASE \${dbname};"
+	mysql -u\${dbuser} -p\${dbpass} \${dbname} -h\${dbhost} -P\${dbport} < ${pasaschema} > done_mysql
 
  	# Simple modification. This would need more love
  	cp ${pasaconffilegeneral} conftxt
 	sed -i '/^MYSQLSERVER=/d' conftxt
-	echo "MYSQLSERVER=${dbhost}:${params.dbport}" >> conftxt
+	echo "MYSQLSERVER=\${dbhost}:\${dbport}" >> conftxt
 	"""
 
 }
 
 process runPASA {
 
-	label 'pasa'
+  tag { pasapipeline }
+  label (params.LABEL)
 
- publishDir outputdir, mode: 'copy'
+  container params.CONTAINER
+  if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
- input:
- file (relatedfasta) from file( params.relatedfasta )
- file (genome) from file( params.genome )
- file (relatedfasta_cidx) from seqclean_idx
- file (relatedfasta_clean) from seqclean_clean
- file (relatedfasta_cln) from seqclean_cln
- file (done_mysql) from done_mysql
- file (model_gtf_file) from model_gtf_file
+  input:
+  tuple val(id), path(relatedfasta)
+  path(genome)
+  path(seqclean_idx)
+  path(seqclean_clean)
+  path(seqclean_cln)
+  path(model_gtf_file)
+  path(pasaconffiledb)
+  path(conftxt)
+  val(pasamode)
 
-
- output:
- file "pasa*" into pasa_results
- file "*assemblies.fasta" into pasa_assemblies_fasta
- file "*assemblies.gff3" into pasa_assemblies_gff3
-
-
-	// TODO: Docker and Singularity options. Bad for cloud. It seems it can be changed with --PASACONF
-
-	containerOptions "--bind ${outputdir}/conftxt:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  output:
+  path("pasa*")
+  path("*assemblies.fasta")
+  path("*assemblies.gff3")
 
 	"""
- /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c $params.pasaconffiledb \
- -R -g ${genome} -t ${relatedfasta_clean} -T -u ${relatedfasta} \
- --trans_gtf ${model_gtf_file} --ALIGNERS $params.pasamode --TRANSDECODER --CPU ${task.cpus}
+ /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -PASACONF ${conftxt} -c ${pasaconffiledb} \
+ -R -g ${genome} -t ${seqclean_clean} -T -u ${relatedfasta} \
+ --trans_gtf ${model_gtf_file} --ALIGNERS ${pasamode} --TRANSDECODER --CPU ${task.cpus}
 	"""
 
 }
@@ -116,20 +116,19 @@ process runPASA {
 
 process generatePASAtrainingSet {
 
- label 'pasa'
+  tag { pasapipeline }
+  label (params.LABEL)
 
- publishDir outputdir+"/training", mode: 'copy'
+  container params.CONTAINER
+  if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
- input:
- file (pasa_assemblies_fasta) from pasa_assemblies_fasta
- file (pasa_assemblies_gff3) from pasa_assemblies_gff3
+  input:
+  path(pasa_assemblies_fasta)
+  path(pasa_assemblies_gff3)
 
- output:
- file "*.transdecoder.gff3" into pasa_transdecoder_training_gff3
- file "*.transdecoder.pep" into pasa_transdecoder_training_pep
-
- 	// TODO: Docker and Singularity options. Bad for cloud
-	containerOptions "--bind ${outputdir}/conftxt:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  output:
+  path("*.transdecoder.gff3")
+  path("*.transdecoder.pep")
 
 	"""
  /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
@@ -154,9 +153,44 @@ workflow PASAPIPELINE_SEQ_CLEAN {
 workflow PASAPIPELINE_IMPORT_MYSQL {
     take:
     pasaconffilegeneral
+    dbparams
+    pasaschema
 
     main:
-    out = importMySQLPasa(pasaconffilegeneral)
+    out = importMySQLPasa(pasaconffilegeneral, dparams, pasaschema)
+
+    emit:
+    out
+
+}
+
+workflow PASAPIPELINE_RUN_PASA {
+    take:
+    relatedfasta
+    genome
+    seqclean_idx
+    seqclean_clean
+    seqclean_cln
+    model_gtf_file
+    pasaconffiledb
+    conftxt
+    pasamode
+
+    main:
+    out = runPASA(relatedfasta, genome, seqclean_idx, seqclean_clean, seqclean_cln, model_gtf_file, pasaconffiledb, conftxt, pasamode)
+
+    emit:
+    out
+
+}
+
+workflow PASAPIPELINE_GENERATE_TRAINING_SET {
+    take:
+    path(pasa_assemblies_fasta)
+    path(pasa_assemblies_gff3)
+
+    main:
+    out = generatePASAtrainingSet(pasa_assemblies_fasta, pasa_assemblies_gff3)
 
     emit:
     out
