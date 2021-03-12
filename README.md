@@ -1,35 +1,10 @@
 # ![BioNextflow](https://github.com/CRG-CNAG/BioCoreMiscOpen/blob/master/logo/biocore-logo_small.png) BioNextflow
 
-Groovy classes to be easily embedded in nextflow worflows. 
-The idea is to make a repository of classes that groups methods for simplifying the portability of the code among different pipelines. 
+BioNextflow is a collection of sub-workflows that can be used in any Nextflow DLS2 pipeline. They are created with the idea in mind of having a single file with different sub-workflow per tool, or combination of tools for a particular task. 
 
-In brief, insead of using the same "hard-coded" command line in different pipelines you can call the class.method().
-You need to install the library in your nextflow pipeline for being automatically included in your nextflow script.
+Ideally we will have a single file per tool, in which some custom parameters will indicate the containers, the command line extra parameters, the label etc. 
 
+The fille will contain both processes and subworkflows that will be called from the main script. 
 
-### Code before
+The input should be always a tuple val(id), path(inputfile) so that the id can be used for generating the output name if possible.
 
-    """
-    if [ `echo ${reference_file} | grep ".gz"` ]; then 
-       zcat ${reference_file} > ${index}.fa			
-       bowtie-build --threads ${task.cpus} ${index}.fa ${index}
-    else 
-            ln -s ${reference_file} ${index}.fa 
-            bowtie-build --threads ${tasks.cpus} ${index}.fa ${index}
-    fi
-    """
-
-### Code after
-    def aligner = new NGSaligner(reference_file:genome_file, index:"genome_index", cpus:task.cpus)
-    aligner.doIndexing("bowtie")
-
-### Installation
-Edit the INSTALL.sh file to select the required version
-
-    sh INSTALL.sh 
-
-### Get started 
-
-To run the test execute the following command: 
-
-    nextflow run testFunctions.nf
