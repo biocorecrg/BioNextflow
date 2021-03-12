@@ -1,6 +1,6 @@
 # ![BioNextflow](https://github.com/CRG-CNAG/BioCoreMiscOpen/blob/master/logo/biocore-logo_small.png) BioNextflow
 
-BioNextflow is a collection of sub-workflows that can be used in any Nextflow DSL2 pipeline. They are created with the idea in mind of having a single file with different sub-workflow per tool, or combination of tools for a particular task. 
+BioNextflow is a collection of sub-workflows that can be used in any [Nextflow DSL2 pipeline](https://www.nextflow.io/docs/latest/dsl2.html). They are created with the idea in mind of having a single file with different sub-workflow per tool, or combination of tools for a particular task. 
 
 Ideally we will have a single file per tool, in which some custom parameters will indicate the containers, the command line extra parameters, the label etc. 
 
