@@ -8,3 +8,5 @@ The fille will contain both processes and subworkflows that will be called from 
 
 The input should be always a tuple val(id), path(inputfile) so that the id can be used for generating the output name if possible.
 
+Luca
+
