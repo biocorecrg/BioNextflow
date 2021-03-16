@@ -2,7 +2,7 @@
 *  MoAIMS 
 */
 
-include { BEDTOOLS_SORT } from "../misc/bedtools" addParams(EXTRAPARS: '')
+//include { BEDTOOLS_SORT} from "../misc/bedtools" addParams(EXTRAPARS: '')
  
 params.LABEL = ""
 params.EXTRAPARS = ""
@@ -64,8 +64,8 @@ workflow MOAIMS_CALL {
     annotation
     
     main:
-		peakCall(comparisons, annotation)
-		out = BEDTOOLS_SORT(peakCall.out.bedPeaks)
+		out = peakCall(comparisons, annotation)
+		//out = BEDTOOLS_SORT(peakCall.out.bedPeaks)
     emit:
     	out
 }

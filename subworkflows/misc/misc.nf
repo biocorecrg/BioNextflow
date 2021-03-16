@@ -10,6 +10,44 @@ params.CONTAINER = "biocorecrg/centos-perlbrew-pyenv"
 
 include { unzipCmd } from '../global_functions.nf'
 
+process printFileName {
+   label (params.LABEL)
+    
+    tag { id }
+    container params.CONTAINER
+
+    input:
+    tuple val(id), path(file)
+	
+    output:
+    stdout emit: out
+
+    script:
+    """
+        echo ${file}
+    """
+}
+
+process renameFilename {
+   label (params.LABEL)
+    
+    tag { id }
+    container params.CONTAINER
+
+    input:
+    tuple val(id), path(file), newname
+	
+    output:
+    tuple val(id), path(newname)
+
+    script:
+    """
+        ln -s ${file} ${newname}
+    """
+}
+
+
+
 // Take first 100 bases
 process calcIlluminaAvgReadSize {
     label (params.LABEL)
@@ -46,3 +84,24 @@ workflow CALC_AVG_READSIZE {
     	out
 }
  
+workflow PRINT_FILE_NAME {
+    take: 
+    input
+    
+    main: 
+        out = printFileName(input)
+       	
+   emit:
+    	out
+}
+
+workflow RENAME_FILE_NAME {
+    take: 
+    input
+    
+    main: 
+        out = renameFilename(input)
+       	
+   emit:
+    	out
+}
