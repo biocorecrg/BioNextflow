@@ -1,7 +1,7 @@
 /*
 * STAR subworkflows 
 * The accessible subworkflows are:
-* GET_VERSION that emits the version of bwa and samtools as stdout
+* GET_VERSION that emits the version of star as stdout
 * STAR_INDEX that takes:
 *	a channel with an optionally gzipped fasta file
 *   it emits a list of files as index
@@ -18,7 +18,7 @@
 *
 * The parameters are: 
 *	LABEL that allows connecting labels specified in nextflow.config with the subworkflows
-*	EXTRAPARS only for mapping step for adding custom command line parameters for bwa
+*	EXTRAPARS only for mapping step for adding custom command line parameters for star
 *	OUTPUT for storing the final sub-workflow output 
 *	CONTAINER that can be eventually overridden for feeding a custom container from the main.nf file
 */
