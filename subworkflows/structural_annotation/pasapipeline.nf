@@ -40,9 +40,9 @@ process seqClean {
   path(filterfasta)
 
   output:
-  tuple val(id), path("${id}.cln")
-  tuple val(id), path("${id}.cidx")
-  tuple val(id), path("${id}.clean")
+  tuple val(id), path("${id}.cln"), emit: cln
+  tuple val(id), path("${id}.cidx"), emit: cidx
+  tuple val(id), path("${id}.clean"), emit: clean
 
   """
   export USER=\$(id -u -n)
@@ -143,10 +143,12 @@ workflow PASA_SEQ_CLEAN {
     filterfasta
 
     main:
-    out = seqClean(fasta, filterfasta)
+    seqClean(fasta, filterfasta)
 
     emit:
-    out
+    cln = seqClean.out.cln
+    cidx =  seqClean.out.cidx
+    clean =  seqClean.out.clean
 
 }
 
