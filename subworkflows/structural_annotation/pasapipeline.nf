@@ -186,11 +186,12 @@ workflow PASA_RUN_PASA {
 
 workflow PASA_GENERATE_TRAINING_SET {
     take:
-    path(pasa_assemblies_fasta)
-    path(pasa_assemblies_gff3)
+    pasa_assemblies_fasta
+    pasa_assemblies_gff3
+    conftxt
 
     main:
-    out = generatePASAtrainingSet(pasa_assemblies_fasta, pasa_assemblies_gff3)
+    out = generatePASAtrainingSet(pasa_assemblies_fasta, pasa_assemblies_gff3, conftxt)
 
     emit:
     out
