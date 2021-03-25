@@ -26,9 +26,9 @@ process getVersion {
     """
 }
 
-process runScallop {
+process runStringtie {
 
-  tag { scallop }
+  tag { stringtie }
   label (params.LABEL)
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }

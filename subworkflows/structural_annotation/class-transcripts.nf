@@ -26,9 +26,9 @@ process getVersion {
     """
 }
 
-process runClass {
+process runClassTranscripts {
 
-  tag { class }
+  tag { class_transcripts }
   label (params.LABEL)
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
@@ -45,12 +45,12 @@ process runClass {
 
 }
 
-workflow CLASS {
+workflow CLASS_TRANSCRIPTS {
     take:
     bam_alignment
 
     main:
-    out = runClass(bam_alignment)
+    out = runClassTranscripts(bam_alignment)
 
     emit:
     out
