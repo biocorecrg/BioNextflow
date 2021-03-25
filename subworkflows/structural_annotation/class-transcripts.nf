@@ -28,7 +28,7 @@ process getVersion {
 
 process runClassTranscripts {
 
-  tag { class_transcripts }
+  tag { id }
   label (params.LABEL)
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }

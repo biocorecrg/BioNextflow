@@ -29,7 +29,7 @@ process getVersion {
 
 process seqClean {
 
-  tag { pasapipeline }
+  tag { id }
   label (params.LABEL)
 
   container params.CONTAINER
@@ -54,7 +54,6 @@ process seqClean {
 // Consider including droping database via parameter
 process importMySQLPasa {
 
-  tag { pasapipeline }
   label (params.LABEL)
 
   container params.CONTAINER
@@ -83,7 +82,7 @@ process importMySQLPasa {
 
 process runPASA {
 
-  tag { pasapipeline }
+  tag { id }
   label (params.LABEL)
 
   container params.CONTAINER
@@ -116,7 +115,7 @@ process runPASA {
 
 process generatePASAtrainingSet {
 
-  tag { pasapipeline }
+  tag { pasa_assemblies_fasta }
   label (params.LABEL)
 
   container params.CONTAINER
@@ -124,7 +123,7 @@ process generatePASAtrainingSet {
 
   input:
   path(pasa_assemblies_fasta)
-  path(pasa_assemblies_gff3
+  path(pasa_assemblies_gff3)
   path(conftxt)
 
   output:
