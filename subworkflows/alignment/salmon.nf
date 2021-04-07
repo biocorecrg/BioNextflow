@@ -5,6 +5,8 @@
 
 params.LABEL = ""
 params.CONTAINER = "quay.io/biocontainers/salmon:1.2.1--hf69c8f4_0"
+params.EXTRAPARS = ""
+
 
 process index {
     label (params.LABEL)
