@@ -95,7 +95,7 @@ process multiInter {
 
 }
 
-workflow BEDTOOLS_MULTIINTER {
+workflow MULTIINTER {
     take: 
     input
     
@@ -105,7 +105,7 @@ workflow BEDTOOLS_MULTIINTER {
     	out
 }
 
-workflow BEDTOOLS_SORT {
+workflow SORT {
     take: 
     input
     
@@ -115,7 +115,7 @@ workflow BEDTOOLS_SORT {
     	out
 }
 
-workflow BEDTOOLS_MERGE {
+workflow MERGE {
     take: 
     input
     
@@ -125,7 +125,7 @@ workflow BEDTOOLS_MERGE {
     	out
 }
 
-workflow BEDTOOLS_MERGE_MULTI {
+workflow MERGE_MULTI {
     take: 
     input
     
