@@ -84,7 +84,7 @@ workflow INDEX {
 	ref_file = file(reference)
 	if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
 	def refname = ref_file.simpleName
-        out = index(refname, reference)
+        out = index(reference, refname)
     emit:
     	out
 }
@@ -97,8 +97,8 @@ workflow MAP {
     main:
     def sep_fastq = separateSEandPE(fastq)
         
-    outpe = mapSE(index, sep_fastq.se)
-    outse = mapPE(index, sep_fastq.pe)
+    outpe = mapSE(sep_fastq.se, index)
+    outse = mapPE(sep_fastq.pe, index)
 
 
     emit:
