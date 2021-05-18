@@ -2,14 +2,14 @@
 * bwa subworkflows (samtools embedded for converting the output) 
 * The accessible subworkflows are:
 * GET_VERSION that emits the version of bwa and samtools as stdout
-* BWA_INDEX that takes:
+* INDEX that takes:
 *	a channel with an optionally gzipped fasta file
 *   it emits a list of files as index
-* BWA_MAP that takes:
+* ALIGN that takes:
 *	a channel list with index files as produced by BWA_INDEX
 *	a channel containing a tuple with id, and one or two (gzipped) fastq files 
 *	it emits a channel containing a tuple of id, bam file
-* BWA_ALL (BWA_INDEX + BWA_MAP) that takes:
+* ALL (INDEX + MAP) that takes:
 *	a channel with an optionally gzipped fasta file
 *	a channel containing a tuple with id, and one or two (gzipped) fastq files 
 *   it emits a channel containing a tuple of id, bam file
@@ -77,7 +77,7 @@ process map {
     """
 }
 
-workflow BWA_MAP {
+workflow MAP {
     take: 
     input
     indexes
@@ -88,7 +88,7 @@ workflow BWA_MAP {
     	out
 }
 
-workflow BWA_INDEX {
+workflow INDEX {
     take: 
     reference
     
@@ -101,7 +101,7 @@ workflow BWA_INDEX {
     	out
 }
 
-workflow BWA_ALL {
+workflow ALL {
     take: 
     reference
     input
