@@ -1,23 +1,47 @@
 # ![BioNextflow](https://github.com/CRG-CNAG/BioCoreMiscOpen/blob/master/logo/biocore-logo_small.png) BioNextflow
 
-BioNextflow is a collection of sub-workflows that can be used in any [Nextflow DSL2 pipeline](https://www.nextflow.io/docs/latest/dsl2.html). They are created with the idea in mind of having a single file with different sub-workflow per tool, or combination of tools for a particular task. 
+BioNextflow is a collection of modules and sub-workflows that can be used in any [Nextflow DSL2 pipeline](https://www.nextflow.io/docs/latest/dsl2.html). They are created with the idea in mind of having a single file per tool, containing different sub-workflows and modules.
 
-Ideally we will have a single file per tool, in which some custom parameters will indicate the containers, the command line extra parameters, the label etc. 
+Ideally in each file we must define some custom parameters that indicate:
+- the container 
+- the labels
+- extra parameters for the command line
 
-The file will contain both processes and subworkflows that will be called from the main script. 
+The file will contain both processes and subworkflows that can be called from the main script. 
 
-The input should be always:
+The input should be always a tuple with the id and a list such as:
 
-```tuple [val(id), [path(inputfile) ]``` 
+```
+tuple [val(id), [ val (something) ]
+``` 
 
-or
+The id must be used for generating the output name if possible like:
 
-```tuple [val(id), [path(readA), path(readB) ]```
+```
+${id}.out
+```
 
-and ideally there should be one or two separate modules for handling single reads and paired ends, while the workflow should be smart enough to choose the modules for SE or PE.
+Each final subworkflow should be able to handle both single end and paired end in a transparent way. This can be achieved by using as input this definition of single end:
 
-The id must be used for generating the output name if possible.
+```
+tuple [val(id), [path(singleEND) ]
+``` 
 
-The input files should be always zipped. If unzipping is required the unzipped files should be removed after the end of the command execution
+and this for paired ends:
+
+```
+tuple [val(id), [path(readA), path(readB) ]
+```
+
+Ideally there should be one or two separate modules for handling single reads and paired ends, while the final workflow should be smart enough to choose which module has to be used.
+
+The input files should be always zipped. If unzipping is required the unzipped files should be removed after the end of the command execution.
+
+```
+zcat myfile.txt.gz > myfile.txt
+do something myfile.txt > myfile.out
+rm myfile.txt
+```
+
 
 
