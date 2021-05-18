@@ -11,6 +11,18 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 
+process getVersion {
+    container params.CONTAINER
+
+    output:
+    stdout emit: out
+
+    shell:
+    """
+    echo trimmomatic v0.32
+    """
+}
+
 process filterPE {
     publishDir(params.OUTPUT, mode: 'copy')
     
