@@ -63,7 +63,7 @@ process mapPE {
     container params.CONTAINER
 
     input:
-    tuple val(pair_id), path(readsA), path(readsB)
+    tuple val(pair_id), path(reads)
     path(index)
 
     output:
@@ -71,7 +71,7 @@ process mapPE {
     
     script:
     """
-    salmon quant ${params.EXTRAPARS} --validateMappings --seqBias -l A --gcBias -p ${task.cpus} -i ${index} -1 ${readsA} -2 ${readsB} -o ${pair_id}
+    salmon quant ${params.EXTRAPARS} --validateMappings --seqBias -l A --gcBias -p ${task.cpus} -i ${index} -1 ${reads[0]} -2 ${reads[1]} -o ${pair_id}
     """
 }
 
