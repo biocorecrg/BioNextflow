@@ -90,7 +90,6 @@ workflow INDEX {
 }
 
 workflow MAP {
-
     take: 
     index
     fastq
@@ -108,16 +107,13 @@ workflow MAP {
 }
 
 workflow ALL {
-
     take: 
     reference
     fastq
     
-    main:
-    def sep_fastq = separateSEandPE(fastq)
-        
+    main:        
     index = INDEX(reference)
-    out = MAP(index, sep_fastq)
+    out = MAP(index, fastq)
 
 
     emit:
