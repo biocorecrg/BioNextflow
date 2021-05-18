@@ -2,14 +2,14 @@
 * STAR subworkflows 
 * The accessible subworkflows are:
 * GET_VERSION that emits the version of star as stdout
-* STAR_INDEX that takes:
+* INDEX that takes:
 *	a channel with an optionally gzipped fasta file
 *   it emits a list of files as index
-* STAR_MAP that takes:
+* MAP that takes:
 *	a channel list with index files as produced by STAR_INDEX
 *	a channel containing one or two (gzipped) fastq files 
 *	it emits a channel containing a tuple of id, bam file
-* STAR_ALL (STAR_INDEX + STAR_MAP) that takes:
+* ALL (INDEX + MAP) that takes:
 *   a channel containing one or two (gzipped) fastq files
 *	a channel with an optionally gzipped fasta file
 *	a channel with an optionally gzipped gtf file (or "" if not available)
@@ -159,7 +159,7 @@ process map {
    """
 }
 
-workflow STAR_MAP {
+workflow MAP {
     take: 
     input
     indexes
@@ -174,7 +174,7 @@ workflow STAR_MAP {
 	
 }
 
-workflow STAR_INDEX {
+workflow INDEX {
     take: 
 	reference
     annotation
@@ -191,7 +191,7 @@ workflow STAR_INDEX {
     	out
 }
 
-workflow STAR_INDEX_NOANNO {
+workflow INDEX_NOANNO {
     take: 
 	reference
     
@@ -204,7 +204,7 @@ workflow STAR_INDEX_NOANNO {
     	out
 }
 
-workflow STAR_ALL {
+workflow ALL {
 
     take: 
     input
