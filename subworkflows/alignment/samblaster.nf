@@ -3,11 +3,11 @@
 * It requires the subworkflow bwa index 
 * The accessible subworkflows are:
 * GET_VERSION that emits the version of bwa, samtools and samblaster as stdout
-* SAMBLASTER_MAP that takes:
+* MAP that takes:
 *	a channel list with index files as produced by BWA_INDEX
 *	a channel containing a tuple with id and one or two (gzipped) fastq files
 *	it emits a channel containing a tuple of id, bam file
-* SAMBLASTER_ALL (BWA_INDEX + SAMBLASTER_MAP) that takes:
+* ALL (INDEX + MAP) that takes:
 *	a channel with an optionally gzipped fasta file
 *   a channel containing one or two (gzipped) fastq files
 *   it emits a channel containing a tuple of id, bam file
@@ -19,7 +19,7 @@
 */
 
 
-include { INDEX as BWA_INDEX } from "./bwa"
+include { INDEX } from "./bwa"
 
 params.LABEL = ""
 params.EXTRAPARS = ""
@@ -89,8 +89,8 @@ workflow ALL {
     input
     
     main:
-		index = BWA_INDEX(reference)
-		out = SAMBLASTER_MAP(input, index)
+		index = INDEX(reference)
+		out = MAP(input, index)
     emit:
     	out
 }
