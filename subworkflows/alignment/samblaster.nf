@@ -19,7 +19,7 @@
 */
 
 
-include { BWA_INDEX as BWA_INDEX } from "./bwa"
+include { INDEX as BWA_INDEX } from "./bwa"
 
 params.LABEL = ""
 params.EXTRAPARS = ""
@@ -71,7 +71,7 @@ process map {
 	}
 }
 
-workflow SAMBLASTER_MAP {
+workflow MAP {
     take: 
     input
     indexes
@@ -83,7 +83,7 @@ workflow SAMBLASTER_MAP {
 }
 
 
-workflow SAMBLASTER_ALL {
+workflow ALL {
     take: 
     reference
     input
