@@ -7,6 +7,17 @@ def unzipNamedPipe(filename) {
     return cmd
 }
 
+def separateSEandPE(fastq) {
+    def result = fastq.branch {
+        pe: it[1][1]
+        se: !it[1][1]
+    }
+
+    return (result)
+}
+
+
+
 // unzip command 
 def unzipCmd(filename) {
     def ext = filename.getExtension()
