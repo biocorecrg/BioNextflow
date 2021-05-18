@@ -37,7 +37,7 @@ Channel
  .set { fastq_files }
 
 workflow {	
-	include { ALL as SALMON_ALL } from "${subwdir}/alignment/salmon" addParams(OUTPUT: outputBWA)
+	include { ALL as SALMON_ALL } from "${subwdir}/alignment/salmon" addParams(OUTPUT: outputBWA, LABEL: 'big_mem_cpus')
         //include { GET_VERSION as FQ_VER; FASTQCP } from "${subwdir}/qc/fastqc" addParams(OUTPUT: outputQC) 
 	//include { GET_VERSION as BWA_VER; BWA_ALL } from "${subwdir}/alignment/bwa" addParams(OUTPUT: outputBWA, LABEL: 'big_mem_cpus') 
 	//include { GET_VERSION as SAM_VER; SAMBLASTER_ALL } from "${subwdir}/alignment/samblaster" addParams(OUTPUT: outputSAM, LABEL: 'big_mem_cpus') 
