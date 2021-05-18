@@ -43,5 +43,6 @@ do something myfile.txt > myfile.out
 rm myfile.txt
 ```
 
+Modules and subworkflows can be called from other subworkflows. General functions are placed in **global_functions.nf** file and can be called from modules / subworkflows.
 
 
