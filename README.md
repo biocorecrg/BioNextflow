@@ -45,4 +45,20 @@ rm myfile.txt
 
 Modules and subworkflows can be called from other subworkflows. General functions are placed in **global_functions.nf** file and can be called from modules / subworkflows.
 
+# Installation
+The modules can be downloaded and used as they are or can be embedded as submodules.
+
+## Submodules
+To embed the submodules you can do:
+
+```bash
+git submodule add https://github.com/biocorecrg/BioNextflow
+...
+
+Cloning into 'BioNextflow'...
+remote: Enumerating objects: 636, done.
+remote: Counting objects: 100% (306/306), done.
+...
+
+```
 
