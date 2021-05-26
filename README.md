@@ -75,7 +75,11 @@ git push
 You can upgrade the submodules using this command
 
 ```bash
-git submodule foreach git pull origin master
+git submodule update --remote --merge
 
+git add BioNextflow
+git commit -m "upgrading bioNextflow"
+git push
 ```
+
 
