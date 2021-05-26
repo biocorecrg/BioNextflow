@@ -43,6 +43,7 @@ process mapSE {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy'}
 
     input:
     tuple val(pair_id), path(reads)
@@ -61,6 +62,7 @@ process mapPE {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy'}
 
     input:
     tuple val(pair_id), path(reads)

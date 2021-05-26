@@ -64,7 +64,7 @@ process markDuplicates {
     """
 }
 
-workflow PICARD_SORT_COORD {
+workflow SORT_COORD {
     take: 
     input
     
@@ -75,7 +75,7 @@ workflow PICARD_SORT_COORD {
 }
 
 
-workflow PICARD_REM_DUP {
+workflow REM_DUP {
     take: 
     input
     
@@ -85,7 +85,7 @@ workflow PICARD_REM_DUP {
     	out
 }
 
-workflow PICARD_MARK_DUP {
+workflow MARK_DUP {
     take: 
     input
     

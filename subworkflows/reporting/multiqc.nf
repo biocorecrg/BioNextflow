@@ -5,7 +5,8 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = "multiqc_out"
-params.CONTAINER = "quay.io/biocontainers/multiqc:1.9--pyh9f0ad1d_0"
+params.CONTAINER = "quay.io/biocontainers/multiqc:1.10.1--pyhdfd78af_1"
+
 
 include { unzipCmd } from '../global_functions.nf'
 
@@ -40,7 +41,7 @@ process makeReport {
 }
 
 
-workflow MULTIQC_REPORT {
+workflow REPORT {
     take: 
     input
     

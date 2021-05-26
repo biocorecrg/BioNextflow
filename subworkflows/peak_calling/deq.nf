@@ -69,7 +69,7 @@ process de {
 
 
 
-workflow DEQ_DE {
+workflow DE {
     take: 
     data_de
     annotation

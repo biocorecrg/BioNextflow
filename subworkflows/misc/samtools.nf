@@ -58,7 +58,7 @@ process viewBam {
 }
 
 
-workflow SAMTOOLS_SORT {
+workflow SORT {
     take: 
     reads
     
@@ -68,7 +68,7 @@ workflow SAMTOOLS_SORT {
     	out
 }
 
-workflow SAMTOOLS_BVIEW {
+workflow BVIEW {
     take: 
     reads
     

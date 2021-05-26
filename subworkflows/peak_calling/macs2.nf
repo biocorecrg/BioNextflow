@@ -34,19 +34,21 @@ process peakCall {
     val(gsize)
 
     output:
-    tuple val(comp_id), path("${comp_id}_peaks.narrowPeak"), emit: narrowPeaks
+    tuple val(comp_id), path("${comp_id}_peaks.narrowPeak"), optional: true, emit: narrowPeaks
     tuple val(comp_id), path("${comp_id}_peaks.xls"), emit: xlsPeaks
-    tuple val(comp_id), path("${comp_id}_summits.bed"), emit: bedSummits
+    tuple val(comp_id), path("${comp_id}_summits.bed"), optional: true,  emit: bedSummits
+    tuple val(comp_id), path("${comp_id}_peaks.gappedPeak"), optional: true, emit: gappedPeaks
+    tuple val(comp_id), path("${comp_id}_peaks.broadPeak"), optional: true, emit: broadPeaks
     
 	script:
 
     """
-    macs2 callpeak ${params.EXTRAPARS} -t ${sample} -c ${input} -g ${gsize} -n ${comp_id} --fix-bimodal --call-summits
+    macs2 callpeak ${params.EXTRAPARS} -t ${sample} -c ${input} -g ${gsize} -n ${comp_id} --fix-bimodal
     """
 }
 
 
-workflow MACS2_CALL {
+workflow CALL {
     take: 
     comparisons
     gsize
@@ -55,8 +57,10 @@ workflow MACS2_CALL {
 		peakCall(comparisons, gsize)
     emit:
     	narrowPeaks = peakCall.out.narrowPeaks
+    	broadPeaks = peakCall.out.broadPeaks
     	xlsPeaks = peakCall.out.xlsPeaks
     	bedSummits = peakCall.out.bedSummits
+    	gappedPeaks = peakCall.out.gappedPeaks
 }
 
 

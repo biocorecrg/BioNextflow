@@ -43,7 +43,7 @@ process peakCall {
     """
 }
 
-workflow EPIC2_CALL {
+workflow CALL {
     take: 
     comparisons
     gsize

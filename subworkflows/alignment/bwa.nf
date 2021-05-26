@@ -107,8 +107,8 @@ workflow ALL {
     input
     
     main:
-		index = BWA_INDEX(reference)
-		out = BWA_MAP(input, index)
+		index = INDEX(reference)
+		out = MAP(input, index)
     emit:
     	out
 }

@@ -49,7 +49,7 @@ process getEffectiveGenomeSize {
     """
 }
 
-workflow EPIC_EFFECTIVE_GENOME_SIZE {
+workflow GET_EFFECTIVE_GENOME_SIZE {
     take: 
     reads
     genome

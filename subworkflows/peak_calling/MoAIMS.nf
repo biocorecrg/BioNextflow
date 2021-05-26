@@ -58,7 +58,7 @@ process peakCall {
 
 
 
-workflow MOAIMS_CALL {
+workflow CALL {
     take: 
     comparisons
     annotation

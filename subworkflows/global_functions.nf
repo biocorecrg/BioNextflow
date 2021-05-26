@@ -16,9 +16,19 @@ def separateSEandPE(fastq) {
     return (result)
 }
 
+/*
+* unzip command: how to use it
+* script:
+*  def unzip      = unzipCmd(file)
+*  def file_name  = unzip[0]
+*  def cmd_unzip  = unzip[1]
+*  def cmd_clean  = unzip[2]
+*  """
+*  ${cmd_unzip}
+*  do something with ${file_name}
+*  ${cmd_clean}
+*/
 
-
-// unzip command 
 def unzipCmd(filename) {
     def ext = filename.getExtension()
     def fname = filename

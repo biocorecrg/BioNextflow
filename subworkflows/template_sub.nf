@@ -1,15 +1,15 @@
 /*
 * STAR subworkflows 
 * The accessible subworkflows are:
-* GET_VERSION that emits the version of star as stdout
-* INDEX that takes:
+* GET_VERSION that emits the version of bwa and samtools as stdout
+* STAR_INDEX that takes:
 *	a channel with an optionally gzipped fasta file
 *   it emits a list of files as index
-* MAP that takes:
+* STAR_MAP that takes:
 *	a channel list with index files as produced by STAR_INDEX
 *	a channel containing one or two (gzipped) fastq files 
 *	it emits a channel containing a tuple of id, bam file
-* ALL (INDEX + MAP) that takes:
+* STAR_ALL (STAR_INDEX + STAR_MAP) that takes:
 *   a channel containing one or two (gzipped) fastq files
 *	a channel with an optionally gzipped fasta file
 *	a channel with an optionally gzipped gtf file (or "" if not available)
@@ -18,7 +18,7 @@
 *
 * The parameters are: 
 *	LABEL that allows connecting labels specified in nextflow.config with the subworkflows
-*	EXTRAPARS only for mapping step for adding custom command line parameters for star
+*	EXTRAPARS only for mapping step for adding custom command line parameters for bwa
 *	OUTPUT for storing the final sub-workflow output 
 *	CONTAINER that can be eventually overridden for feeding a custom container from the main.nf file
 */
@@ -159,7 +159,7 @@ process map {
    """
 }
 
-workflow MAP {
+workflow STAR_MAP {
     take: 
     input
     indexes
@@ -174,7 +174,7 @@ workflow MAP {
 	
 }
 
-workflow INDEX {
+workflow STAR_INDEX {
     take: 
 	reference
     annotation
@@ -191,7 +191,7 @@ workflow INDEX {
     	out
 }
 
-workflow INDEX_NOANNO {
+workflow STAR_INDEX_NOANNO {
     take: 
 	reference
     
@@ -204,7 +204,7 @@ workflow INDEX_NOANNO {
     	out
 }
 
-workflow ALL {
+workflow STAR_ALL {
 
     take: 
     input
@@ -219,16 +219,16 @@ workflow ALL {
 			overhang_val = overhang
 		}
 		if (annotation != "") {
-			index = INDEX(reference, annotation, overhang_val)
+			index = STAR_INDEX(reference, annotation, overhang_val)
 		} else {
-			index = INDEX_NOANNO(reference)
+			index = STAR_INDEX_NOANNO(reference)
 		}
-		MAP(input, index)
+		STAR_MAP(input, index)
 	emit:
-		bams = MAP.out.bams
-		logs = MAP.out.logs
-		quants = MAP.out.quants
-		junctions = MAP.out.junctions
+		bams = STAR_MAP.out.bams
+		logs = STAR_MAP.out.logs
+		quants = STAR_MAP.out.quants
+		junctions = STAR_MAP.out.junctions
 }
 
 workflow GET_VERSION {
