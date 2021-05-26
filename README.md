@@ -69,3 +69,13 @@ git add .gitmodule
 git commit -m "adding modules"
 git push
 ```
+
+## Upgrading the submodules
+
+You can upgrade the submodules using this command
+
+```bash
+git submodule foreach git pull origin master
+
+```
+
