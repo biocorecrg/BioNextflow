@@ -1,0 +1,37 @@
+FROM biocorecrg/centos-perlbrew-pyenv-java
+
+# File Author / Maintainer
+MAINTAINER Toni Hermoso Pulido <toni.hermoso@crg.eu>
+MAINTAINER Luca Cozzuto <lucacozzuto@gmail.com> 
+
+ARG R_VERSION=3.6.0
+
+#upgrading pip
+RUN pip install --upgrade pip
+
+# Install R and R packages
+RUN yum install epel-release libxml2-devel libcurl-devel -y
+RUN yum install R-${R_VERSION} -y
+RUN mkdir -p /usr/share/doc/R-${R_VERSION}/html
+RUN Rscript -e "install.packages('BiocManager', , repos='http://cran.us.r-project.org')"
+RUN Rscript -e "BiocManager::install(c('GenomicRanges', 'SummarizedExperiment', 'genefilter', 'geneplotter'))"
+RUN yum install -y libjpeg-turbo-devel
+
+RUN Rscript -e "BiocManager::install(c('DESeq2', 'tximport', 'pheatmap'), dependencies=TRUE)"
+RUN Rscript -e "BiocManager::install('sva')"
+RUN Rscript -e "install.packages(c('stringr', 'ggplot2', 'devtools'), repos='http://cran.us.r-project.org')"
+
+RUN Rscript -e "install.packages('littler', update = TRUE, ask = FALSE, repos='http://cran.us.r-project.org')"
+
+RUN Rscript -e "BiocManager::install('edgeR', ask = FALSE)"
+RUN Rscript -e "BiocManager::install('GenomicFeatures', ask = FALSE)"
+RUN Rscript -e "BiocManager::install('Rsamtool', ask = FALSE)"
+
+RUN Rscript -e "library(devtools);INSTALL_opts=c('--no-help', '--no-html');devtools::install_github('ZW-xjtlu/exomePeak')"
+
+RUN Rscript -e "install.packages('https://cran.r-project.org/src/contrib/Archive/QNB/QNB_1.1.11.tar.gz', repos = NULL, type='source')"
+
+RUN Rscript -e "BiocManager::install('Rsubread')"
+
+RUN Rscript -e "library(devtools);INSTALL_opts=c('--no-docs','--no-help','--no-html');devtools::install_github('al-mcintyre/DEQ')"
+

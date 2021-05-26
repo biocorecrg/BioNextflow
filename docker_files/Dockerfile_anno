@@ -1,0 +1,23 @@
+FROM biocorecrg/centos-perlbrew-pyenv
+
+# File Author / Maintainer
+MAINTAINER Luca Cozzuto <lucacozzuto@gmail.com> 
+
+#upgrade pip
+RUN pip install --upgrade pip
+
+# Install HOMER
+RUN yum install -y which wget
+RUN mkdir homer; cd homer; wget http://homer.ucsd.edu/homer/configureHomer.pl; perl configureHomer.pl -install
+ENV PATH=/project/homer/bin/:${PATH}
+
+# adding a perl script for parsing the homer annotation to make a report
+COPY anno/addGeneNameToHomer.pl /usr/local/bin/
+COPY anno/makePeakAnnoReport.pl /usr/local/bin/
+RUN cpanm Bio::Tools::GFF module
+
+# Clean cache
+RUN yum clean all 
+
+#chmod
+RUN chmod +x /usr/local/bin/*
