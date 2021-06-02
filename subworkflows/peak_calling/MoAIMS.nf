@@ -50,7 +50,7 @@ process peakCall {
 	echo "${filecontent}" > sample_info_file
 	echo -e "${comp_id}\t\$PWD/${sample}\t\$PWD/${input}" >> sample_info_file 
 	echo 'library(moaims)' > R.cmd;
-	echo 'moaims(sample_info_file = "'\$PWD/sample_info_file'", gtf_file ="'\$PWD/${anno_name}'", ${params.EXTRAPARS}, is_paired = F, proj_name="'${comp_id}'")' >> R.cmd   
+	echo 'moaims(sample_info_file = "'\$PWD/sample_info_file'", gtf_file ="'\$PWD/${anno_name}'", ${params.EXTRAPARS}, proj_name="'${comp_id}'")' >> R.cmd   
 	Rscript R.cmd
 	${cmd_clean}
     """
