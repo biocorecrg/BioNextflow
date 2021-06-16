@@ -69,3 +69,17 @@ git add .gitmodule
 git commit -m "adding modules"
 git push
 ```
+
+## Upgrading the submodules
+
+You can upgrade the submodules using this command
+
+```bash
+git submodule update --remote --merge
+
+git add BioNextflow
+git commit -m "upgrading bioNextflow"
+git push
+```
+
+
