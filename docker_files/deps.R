@@ -24,7 +24,7 @@ BiocManager::install("GenomicAlignments", update = TRUE, ask = FALSE)
 BiocManager::install("GenomicRanges", update = TRUE, ask = FALSE)
   
 library(devtools)
-install_github("rreybeyb/MoAIMS/codes")
+install_github("ADelgadoT/MoAIMS/codes")
 
 install.packages("eulerr")
 install.packages("data.table")

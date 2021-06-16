@@ -8,7 +8,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = "moaims_out"
-params.CONTAINER = "biocorecrg/moaims:1.0"
+params.CONTAINER = "biocorecrg/moaims:1.1"
 
 include { unzipCmd } from '../global_functions.nf'
 
