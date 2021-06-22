@@ -35,7 +35,7 @@ process renameFilename {
     container params.CONTAINER
 
     input:
-    tuple val(id), path(file), newname
+    tuple val(id), path(file), val(newname)
 	
     output:
     tuple val(id), path(newname)

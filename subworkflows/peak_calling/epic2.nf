@@ -31,7 +31,7 @@ process peakCall {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple val(comp_id), path(sample), path(input)
+    tuple val(comp_id), path(sample), path(input), path(index_sample), path(index_input)
     val(gfrac)
 
     output:

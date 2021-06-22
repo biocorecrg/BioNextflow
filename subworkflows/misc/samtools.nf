@@ -39,6 +39,24 @@ process sortAln {
     """
 }
 
+process indexBam {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("*.bai") 
+    
+	script:
+    """    
+    samtools index ${params.EXTRAPARS} ${reads}
+    """
+}
+
 process viewBam {
     label (params.LABEL)
     tag { pair_id }
@@ -57,6 +75,15 @@ process viewBam {
     """
 }
 
+workflow INDEX {
+    take: 
+    reads
+    
+    main:
+		out = indexBam(reads)
+    emit:
+    	out
+}
 
 workflow SORT {
     take: 
