@@ -5,7 +5,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 
-params.OUTPUT = "picard_out"
+params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/picard:2.23.2--0"
 
 process getVersion {
@@ -60,7 +60,7 @@ process markDuplicates {
     	remove_cmd = "REMOVE_SEQUENCING_DUPLICATES=TRUE"
     }     
     """    
-	picard MarkDuplicates ${params.EXTRAPARS} ${remove_cmd} I=${reads} O=${pair_id}_dedup.bam M=${pair_id}.dupmet.txt 
+	picard MarkDuplicates ${params.EXTRAPARS} TMP_DIR=`pwd`/tmp ${remove_cmd} I=${reads} O=${pair_id}_dedup.bam M=${pair_id}.dupmet.txt 
     """
 }
 

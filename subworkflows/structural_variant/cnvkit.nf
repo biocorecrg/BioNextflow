@@ -3,6 +3,7 @@
 */
 
 params.LABEL = ""
+params.EXTRAPARS_IND = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = "cnvkit_out"
@@ -21,6 +22,34 @@ process getVersion {
     """
 }
 
+process estimateBinSize {
+    tag { "${genomefile}" }
+    
+    label (params.LABEL)
+    container params.CONTAINER
+
+    input:
+    path(genomefile)
+    path(bamfiles)
+    path(indexes)
+
+    output:
+    stdout
+ 
+ 	script:
+ 	def unzip_data = unzipCmd(genomefile)
+ 	def cmd = unzip_data[1]
+ 	def fname = unzip_data[0]
+    """
+    ${cmd}
+	cnvkit.py access ${fname} -s 10000 -o access-10kb.bed
+	cnvkit.py autobin *.bam -m wgs -b 50000 -g access-10kb.bed > stats.txt
+	cat stats.txt | tail -n 1|cut -f 3 
+    """    
+}
+
+//
+
 process doIndexWGS_UCSC_NONORM {
     tag { genomefile }
     label (params.LABEL)
@@ -29,6 +58,7 @@ process doIndexWGS_UCSC_NONORM {
     input:
     path(genomefile)
     path(annotation)
+    val(breaksize)
 
     output:
     path("reference") 
@@ -39,7 +69,7 @@ process doIndexWGS_UCSC_NONORM {
  	def fname = unzip_data[0]
     """	
     ${cmd}
-    cnvkit.py batch --annotate ${annotation} --target-avg-size 100000 -m wgs -n -f ${fname} -d reference
+    cnvkit.py batch ${params.EXTRAPARS_IND} --target-avg-size ${breaksize} --annotate ${annotation} -m wgs -n -f ${fname} -d reference
     grep "chr" reference/reference.cnn > reference/reference2.cnn
     mv reference/reference.cnn reference/reference.cnn.ori
     mv reference/reference2.cnn reference/reference.cnn
@@ -55,6 +85,8 @@ process doIndexWGS_UCSC {
     path(genomefile)
     path(annotation)
     path(norm_samples)
+    val(breaksize)
+  
 
     output:
     path("reference") 
@@ -66,7 +98,7 @@ process doIndexWGS_UCSC {
  	def normals = norm_samples.join(' ')
     """	
     ${cmd}
-    cnvkit.py batch --annotate ${annotation} --drop-low-coverage --segment-method hmm --target-avg-size 100000 -m wgs -n ${normals} -f ${fname} -d reference
+    cnvkit.py batch ${params.EXTRAPARS_IND} --target-avg-size ${breaksize} --annotate ${annotation} --segment-method hmm -m wgs -n ${normals} -f ${fname} -d reference
     grep "chr" reference/reference.cnn > reference/reference2.cnn
     mv reference/reference.cnn reference/reference.cnn.ori
     mv reference/reference2.cnn reference/reference.cnn
@@ -85,11 +117,11 @@ process doCNV {
     tuple val(pair_id), path(reads)
 
     output:
-    tuple pair_id, path("${pair_id}_out/${pair_id}.cns"), path("${pair_id}_out/${pair_id}.cnr") 
+    tuple val(pair_id), path("${pair_id}_out/${pair_id}.cns"), path("${pair_id}_out/${pair_id}.cnr") 
  
  	script:
     """	
-    cnvkit.py batch --drop-low-coverage --segment-method flasso -m wgs -d ${pair_id}_out -r ${reference}/reference.cnn ${reads}
+    cnvkit.py batch ${params.EXTRAPARS} --segment-method hmm -m wgs -d ${pair_id}_out -r ${reference}/reference.cnn ${reads}
     mv ${pair_id}_out/`basename ${reads} .bam`.cns ${pair_id}_out/${pair_id}.cns 
     mv ${pair_id}_out/`basename ${reads} .bam`.cnr ${pair_id}_out/${pair_id}.cnr 
     """    
@@ -106,11 +138,11 @@ process plotDiagram {
 
 
     output:
-    tuple pair_id, path("${pair_id}.diag.pdf") 
+    tuple val(pair_id), path("${pair_id}.diag.pdf") 
  
  	script:
     """	
-	cnvkit.py diagram -s ${cnsfile} ${cnrfile} -o ${pair_id}.diag.pdf
+	cnvkit.py diagram  -s ${cnsfile} ${cnrfile} -o ${pair_id}.diag.pdf
     """    
 }
 
@@ -125,49 +157,72 @@ process plotScatter {
 
 
     output:
-    tuple pair_id, path("${pair_id}.scatter.pdf") 
+    tuple val(pair_id), path("${pair_id}.scatter.pdf") 
  
  	script:
     """	
-	cnvkit.py scatter -s ${cnsfile} ${cnrfile} -o ${pair_id}.scatter.pdf
+	cnvkit.py scatter  -s ${cnsfile} ${cnrfile} -o ${pair_id}.scatter.pdf
+    """    
+}
+
+process calcBreaks {
+    tag { pair_id }
+    label (params.LABEL)
+    container params.CONTAINER
+    publishDir(params.OUTPUT, mode:'copy')
+
+    input:
+    tuple val(pair_id), path(cnsfile), path(cnrfile)
+
+
+    output:
+    tuple val(pair_id), path("${pair_id}.breaks.txt") 
+ 
+ 	script:
+    """	
+    cnvkit.py breaks ${cnrfile} ${cnsfile} > ${pair_id}.breaks.txt
     """    
 }
 
 
 
-workflow CNVKIT_WGS_NORM_ALL {
+workflow WGS_NORM_ALL {
     take: 
     reference
     annotation
-    normals_aln
+    normals_files
     sorted_aln
+    bamfiles
+    indexes_files
+    
     
     main:
-    	normals_aln.map{
-    		it[1]
-    	}.collect().set{
-    		normals_files
-    	}
-    	
-		ref = doIndexWGS_UCSC(reference, annotation, normals_files)
+    	binsize_ch = estimateBinSize(reference, bamfiles, indexes_files)
+    	binsize_ch.map{it.trim().toInteger()}.set{binsize}
+		ref = doIndexWGS_UCSC(reference, annotation, normals_files, binsize)
 		out = doCNV(ref, sorted_aln)
 		plotDiagram(out)
 		plotScatter(out)
+		calcBreaks(out)
     emit:
     	out
 }
 
-workflow CNVKIT_WGS_NONORM_ALL {
+workflow WGS_NONORM_ALL {
     take: 
     reference
 	annotation
     sorted_aln
+    bamfiles
+    indexes
     
     main:
-		ref = doIndexWGS_UCSC_NONORM(reference, annotation)
+     	breaksize = estimateBinSize(reference, bamfiles, indexes)
+		ref = doIndexWGS_UCSC_NONORM(reference, annotation, breaksize)
 		out = doCNV(ref, sorted_aln)
 		plotDiagram(out)
 		plotScatter(out)
+		calcBreaks(out)
     emit:
     	out
 }

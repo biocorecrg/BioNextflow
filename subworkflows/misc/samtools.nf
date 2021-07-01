@@ -35,7 +35,7 @@ process sortAln {
     
 	script:
     """    
-    samtools sort -t ${task.cpus} ${params.EXTRAPARS} -o ${pair_id}_s.bam  ${reads}
+    samtools sort -@ ${task.cpus} ${params.EXTRAPARS} -o ${pair_id}_s.bam  ${reads}
     """
 }
 
@@ -71,7 +71,25 @@ process viewBam {
     
 	script:
     """    
-	samtools view ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
+	samtools view -@ ${task.cpus} ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
+    """
+}
+
+process statBam {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}.stat") 
+    
+	script:
+    """    
+	samtools flagstat -@ ${params.EXTRAPARS} ${reads} > ${pair_id}.stat
     """
 }
 
@@ -81,6 +99,16 @@ workflow INDEX {
     
     main:
 		out = indexBam(reads)
+    emit:
+    	out
+}
+
+workflow STAT {
+    take: 
+    reads
+    
+    main:
+		out = statBam(reads)
     emit:
     	out
 }

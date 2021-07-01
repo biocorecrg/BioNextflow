@@ -82,7 +82,7 @@ process lumpy_express_single {
     """    
 }
 
-workflow LUMPY_ALL_SINGLE {
+workflow ALL_SINGLE {
     take: 
     input
     
