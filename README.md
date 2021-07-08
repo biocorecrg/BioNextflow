@@ -65,7 +65,7 @@ remote: Counting objects: 100% (306/306), done.
 then you can add the .gitmodule file that is generated:
 
 ```bash
-git add .gitmodule
+git add .gitmodules
 git commit -m "adding modules"
 git push
 ```
