@@ -3,12 +3,14 @@
 * INPUT IS a channel with [ val(ID), [READL1, READL2, ...], optional [READR1, READR2, ...] ]
 */
 
+params.LABEL = ""
+params.CONTAINER = "quay.io/biocontainers/salmon:1.5.1--h84f40af_0"
+params.EXTRAPARS = ""
+params.EXTRAPARSINDEX = ""
+params.OUTPUT = ""
 
 include { separateSEandPE } from '../global_functions.nf'
-
-params.LABEL = ""
-params.CONTAINER = "quay.io/biocontainers/salmon:1.2.1--hf69c8f4_0"
-params.EXTRAPARS = ""
+include { unzipCmd } from '../global_functions.nf'
 
 process getVersion {
     container params.CONTAINER
@@ -24,26 +26,42 @@ process getVersion {
 
 process index {
     label (params.LABEL)
-    tag { reference }
+    tag { "${reference}" }
     container params.CONTAINER
 
     input:
     path(reference)
+    path(genome)
     val(indexname)
 
     output:
-    path(indexname)
-    
+    path("${indexname}")
+
+	script:    
     """
-    salmon index ${params.EXTRAPARS} -p ${task.cpus} -t ${reference} -i ${indexname}
+	if [ `echo ${reference} | grep ".gz"` ]; then 
+   		cp ${reference} ${indexname}.fa.gz   
+	else
+		gzip -c {reference} > ${indexname}.fa.gz  
+    fi
+	if [ `echo ${genome} | grep ".gz"` ]; then 
+   		cat ${genome} >> ${indexname}.fa.gz   
+   		grep "^>" <(gunzip -c ${genome}) | cut -d " " -f 1 > decoys.txt
+	else
+   		grep "^>" ${genome} | cut -d " " -f 1 > decoys.txt
+		gzip -c {genome} >> ${indexname}.fa.gz  
+    fi   
+    sed -i.bak -e 's/>//g' decoys.txt    
+    salmon index ${params.EXTRAPARSINDEX} -p ${task.cpus} -d decoys.txt -t ${indexname}.fa.gz -i ${indexname}
+    rm ${indexname}.fa.gz
     """
 }
 
 process mapSE {
     label (params.LABEL)
-    tag { pair_id }
+    tag { "${pair_id}" }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy'}
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
 
     input:
     tuple val(pair_id), path(reads)
@@ -60,9 +78,9 @@ process mapSE {
 
 process mapPE {
     label (params.LABEL)
-    tag { pair_id }
+    tag { "${pair_id}" }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy'}
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
 
     input:
     tuple val(pair_id), path(reads)
@@ -81,12 +99,13 @@ process mapPE {
 workflow INDEX {
     take: 
     reference
+    genome
     
     main:
 	ref_file = file(reference)
 	if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
 	def refname = ref_file.simpleName
-        out = index(reference, refname)
+        out = index(reference, genome, refname)
     emit:
     	out
 }
@@ -111,15 +130,16 @@ workflow MAP {
 workflow ALL {
     take: 
     reference
+    genome
     fastq
     
     main:        
-    index = INDEX(reference)
+    index = INDEX(reference, genome)
     out = MAP(index, fastq)
 
 
     emit:
-        out     
+        index     
 
 }
 
