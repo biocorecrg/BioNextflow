@@ -83,7 +83,7 @@ process mapPE {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
 
     input:
-    tuple val(pair_id), path(reads)
+    tuple val(pair_id), path(readsA), path(readsB)
     path(index)
 
     output:
@@ -91,7 +91,7 @@ process mapPE {
     
     script:
     """
-    salmon quant ${params.EXTRAPARS} --validateMappings --seqBias -l A --gcBias -p ${task.cpus} -i ${index} -1 ${reads[0]} -2 ${reads[1]} -o ${pair_id}
+    salmon quant ${params.EXTRAPARS} --validateMappings --seqBias -l A --gcBias -p ${task.cpus} -i ${index} -1 ${readsA} -2 ${readsB} -o ${pair_id}
     """
 }
 
@@ -117,7 +117,6 @@ workflow MAP {
     
     main:
     def sep_fastq = separateSEandPE(fastq)
-        
     outpe = mapSE(sep_fastq.se, index)
     outse = mapPE(sep_fastq.pe, index)
 
@@ -139,7 +138,7 @@ workflow ALL {
 
 
     emit:
-        index     
+        out     
 
 }
 
