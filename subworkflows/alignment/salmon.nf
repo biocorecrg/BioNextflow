@@ -134,11 +134,12 @@ workflow ALL {
     
     main:        
     index = INDEX(reference, genome)
-    out = MAP(index, fastq)
+    outm = MAP(index, fastq)
 
 
     emit:
-        out     
+    	index
+    	outm
 
 }
 
