@@ -88,8 +88,6 @@ tcounts<-assay(se)
 write.table(gcounts, "gene_counts.txt", col.names = TRUE, sep="\t")
 write.table(tcounts, "transcript_counts.txt", col.names = TRUE, sep="\t")
 """
-	rFile = file("${workDir}/import.R")
-	rFile.append(Rscript)
 
     """
 	cat > import.R << 'EOF'
