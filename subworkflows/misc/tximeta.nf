@@ -33,6 +33,7 @@ process processSalmon {
     path(annotation)
     val(anno_type)
     val(org_name)
+    val(genome_name)
     val(release)
 
     output:
@@ -43,6 +44,7 @@ process processSalmon {
 	script:
 def Rscript = """
 # R --slave --args index fasta gtf gtf_t organism genome release < import.R
+# example indexDir dros.fasta dros.gtf Ensembl "Drosophila melanogaster" BDGP6.22 98
 
 args<-commandArgs(TRUE)
 index_i<-args[1]
@@ -94,7 +96,7 @@ write.table(tcounts, "transcript_counts.txt", col.names = TRUE, sep="\t")
 ${Rscript}
 EOF
 	
-	R --slave --args \$PWD/${index} \$PWD/${transcriptome} \$PWD/${annotation} ${anno_type} ${org_name} ${release} < import.R
+	R --slave --args \$PWD/${index} \$PWD/${transcriptome} \$PWD/${annotation} ${anno_type} ${org_name} ${genome_name} ${release} < import.R
     """
 }
 
@@ -106,10 +108,11 @@ workflow PROCESS_SALMON {
     annotation
     anno_type
     org_name
+    genome_name
     release
-    
+
     main:
-		processSalmon(input, index, transcriptome, annotation, anno_type, org_name, release)
+		processSalmon(input, index, transcriptome, annotation, anno_type, org_name, genome_name, release)
     emit:
     	gcounts = processSalmon.out.gcounts
     	tcounts = processSalmon.out.tcounts
