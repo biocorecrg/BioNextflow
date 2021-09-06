@@ -7,6 +7,15 @@ def unzipNamedPipe(filename) {
     return cmd
 }
 
+def zcatOrCat(filename) { 
+    def fname = filename.toString()
+    def cmd = "cat ${filename}"
+    if (fname[-3..-1] == ".gz") {
+    	cmd = "zcat ${filename}"
+    }
+    return cmd
+}
+
 def separateSEandPE(fastq) {
     def result = fastq.branch {
         pe: it[1][1]

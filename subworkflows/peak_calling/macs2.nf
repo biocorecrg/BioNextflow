@@ -5,7 +5,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 
-params.OUTPUT = "moaims_out"
+params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/macs2:2.2.7.1--py37h516909a_0"
 
 include { unzipCmd } from '../global_functions.nf'

@@ -4,55 +4,39 @@
 */
 
 params.LABEL = ""
-params.EXTRAPARS
+params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "biocorecrg/mopdem:0.2"
 params.GPU = ""
-
-def gpu_cmd = ""
-//def library_export = ""
-
-//if (params.GPU == "ON") {
-//	library_export = 'export LD_LIBRARY_PATH="/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs"'
-//}
-
+//params.CONTAINER = 'lpryszcz/deeplexicon:1.2.0'
+params.CONTAINER = (params.GPU == "ON" ? 'lpryszcz/deeplexicon:1.2.0-gpu': 'lpryszcz/deeplexicon:1.2.0')
 
 process demultiplex {
     tag { idfile }
     label (params.LABEL)
-    //if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: 'move', saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
 
     container params.CONTAINER
              
     input:
     tuple val(idfile), path(fast5)
-    path(deeplexicon_folder) 
 
     output:
-		tuple val(idfile), path("${idfile}_demux.tsv"), emit: demux_files
+	tuple val(idfile), path("${idfile}_demux.tsv"), emit: demux_files
  
     script:  
-    """
-		ln -s ${deeplexicon_folder}/* .
-        deeplexicon.py -p ./ ${params.EXTRAPARS} -f multi -b 4000 -v > ${idfile}_demux.tsv
+    """	
+    	deeplexicon_sub.py dmux ${params.EXTRAPARS} -p ./ > ${idfile}_demux.tsv
     """
 }
 
-	
-
-
-
-
- workflow DEEPLEXICON_DEMULTI {
+ workflow DEMULTIPLEX {
     take: 
     input_fast5
-    deep_folder
     
     main:
-    	demultiplex(input_fast5, deep_folder)
+    	demultiplex(input_fast5)
 
 	emit:
-    	demux_files = demultiplex.out.demux_files
+    	demultiplex.out.demux_files
   
 }
 

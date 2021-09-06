@@ -1,40 +1,44 @@
 /*
-*  QC module
-*  This workflow allows to make QC on input data
+*  nanoCount module
+*  This workflow allows to make count on input data
 *  It needs input fastq
 */
 
 params.LABEL = ""
-params.CONTAINER = "quay.io/biocontainers/fastqc:0.11.9--0"
+params.CONTAINER = "biocorecrg/mopprepr:0.7"
 params.OUTPUT = ""
+params.EXTRAPARS = ""
 
-process fastQC {
-    tag { fastq }
+process nanoCount {
+    tag { id }
     label (params.LABEL)
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
-
+   
     input:
-    path(fastq)
+    tuple val(id), path(bamfile)
 
     output:
-    path("*_fastqc.*") 
+    tuple val(id), path("${id}.count")
+    
+	script:    
+	"""
+		NanoCount -i ${bamfile} ${params.EXTRAPARS} -o ${id}.count
+	"""
 
-    script:
-	"""
-	fastqc -t ${task.cpus} ${fastq} 
-	"""
 }
 
-workflow FASTQC {
+
+
+workflow COUNT {
     take: 
     fastq
     
     main:
-    out = fastQC(fastq)
+    out = nanoCount(fastq)
     
     emit:
-    out
+	out
 
 }
 
@@ -46,25 +50,10 @@ process getVersion {
     
     shell:
     """
-    fastqc --version
+    NanoCount --version
     """
 }
 
-
-workflow FASTQCP {
-    take: 
-    fastqp
-    
-    main:
-    fastqp.map{
-		[it[1]]
-	}.flatten().set{fastq}	
-    out = fastQC(fastq)
-    
-    emit:
-    out
-
-}
 
 workflow GET_VERSION {
     main:

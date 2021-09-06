@@ -7,7 +7,8 @@ params.LABEL = ""
 params.EXTRAPARS_BC = ""
 params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
-params.CONTAINER = "biocorecrg/mopbasecall:0.1"
+params.OUTPUTMODE = "copy"
+params.CONTAINER = "biocorecrg/mopbasecall:0.2"
 params.GPU = ""
 
 def gpu_cmd = ""
@@ -16,28 +17,6 @@ def library_export = ""
 if (params.GPU == "ON") {
 	gpu_cmd = '-x "cuda:0"'
 	library_export = 'export LD_LIBRARY_PATH="/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs"'
-}
-
-def makeMulti5Cmd(multival, idfile) {
-    def multi_cmd = ""
-	if (multival == 0) {
-       multi_cmd = "mkdir single_basecallings temp_multi; \
-       mv *_out/workspace/*.fast5 single_basecallings; \
-       single_to_multi_fast5 -i single_basecallings -s temp_multi -t ${task.cpus}; \
-       mv temp_multi/batch_0.fast5 ./${idfile}_out/workspace/batch_${idfile}.fast5; \
-       rm -fr temp_multi single_basecallings"
-    }
-    return (multi_cmd)
-}
-
-def RNAconvCmd(seq_type) {
-    def rnaconv_cmd = ""
-	if (seq_type == "RNA") {
-	// This command fails for very large sequence.
-	// It has to change
-		rnaconv_cmd = "| awk '{if (NR%4==2) gsub(\"U\",\"T\"); print}' "
-    }
-    return (rnaconv_cmd)
 }
 
 process getVersion {
@@ -73,13 +52,12 @@ process getWorkflow {
 process baseCall {
     tag { idfile }
     label (params.LABEL)
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: 'move', saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
 
     container params.CONTAINER
              
     input:
     tuple val(idfile), path(fast5)
-    val(seq_type) 
     val(flowcell) 
     val(kit) 
     
@@ -89,19 +67,18 @@ process baseCall {
     tuple val(idfile), path("${idfile}_out/sequencing_summary.txt"), emit: basecalling_stats
 
     script:
-    def RNA_conv_cmd = RNAconvCmd(seq_type)
     def infolder = "./"
 
     """
         ${library_export}
         guppy_basecaller ${gpu_cmd} \
         --flowcell ${flowcell} --kit ${kit} \
-        --fast5_out ${params.EXTRAPARS_BC} --input ${infolder} \
+        --fast5_out ${params.EXTRAPARS_BC} -i ${infolder} \
         --save_path ./${idfile}_out \
         --gpu_runners_per_device 1 \
         --cpu_threads_per_caller 1 \
 	    --num_callers  ${task.cpus}
-        cat ${idfile}_out/*.fastq ${RNA_conv_cmd} >> ${idfile}.fastq
+        cat ${idfile}_out/*.fastq >> ${idfile}.fastq
         rm ${idfile}_out/*.fastq
         gzip ${idfile}.fastq
     """
@@ -110,13 +87,12 @@ process baseCall {
 process baseCallAndDemultiPlex {
     tag { idfile }
     label (params.LABEL)
-    //if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: 'copy', saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
     
     container params.CONTAINER
              
     input:
     tuple val(idfile), path(fast5)
-    val(seq_type) 
     val(flowcell) 
     val(kit) 
     
@@ -126,7 +102,6 @@ process baseCallAndDemultiPlex {
     tuple val(idfile), path("${idfile}_out/sequencing_summary.txt"), emit: basecalling_stats
 
     script:
-    def RNA_conv_cmd = RNAconvCmd(seq_type)
     def infolder = "./"
 
     """
@@ -144,24 +119,23 @@ process baseCallAndDemultiPlex {
 		--num_callers ${task.cpus}
 		cd ${idfile}_out; 
 		if [ -d barcode01 ]; then
-			for d in barcode*; do echo \$d; cat \$d/*.fastq ${RNA_conv_cmd} > ../${idfile}.\$d.fastq; done;
+			for d in barcode*; do echo \$d; cat \$d/*.fastq > ../${idfile}.\$d.fastq; done;
 		fi
-		cat unclassified/*.fastq ${RNA_conv_cmd} > ../${idfile}.unclassified.fastq; cd ../
+		cat unclassified/*.fastq > ../${idfile}.unclassified.fastq; cd ../
 		for i in *.fastq; do gzip \$i; done	
         rm *_out/*/*.fastq
      """
 }
 
 
- workflow GUPPY_BASECALL {
+ workflow BASECALL {
     take: 
     input_fast5
-    seq_type
     flowcell
     kit
     
     main:
-    	baseCall(input_fast5, seq_type, flowcell, kit)
+    	baseCall(input_fast5, flowcell, kit)
 
 	emit:
     	basecalled_fast5 = baseCall.out.basecalled_fast5
@@ -170,15 +144,14 @@ process baseCallAndDemultiPlex {
  
 }
 
- workflow GUPPY_BASECALL_DEMULTI {
+ workflow BASECALL_DEMULTI {
     take: 
     input_fast5
-    seq_type
     flowcell
     kit
     
     main:
-    	baseCallAndDemultiPlex(input_fast5, seq_type, flowcell, kit)
+    	baseCallAndDemultiPlex(input_fast5, flowcell, kit)
 
 	emit:
     	basecalled_fast5 = baseCallAndDemultiPlex.out.basecalled_fast5
@@ -194,8 +167,12 @@ workflow GET_VERSION {
 } 
 
 workflow GET_WORKFLOWS {
+    take: 
+    flowcell
+    kit
+
     main:
-		getWorkflow()
+		getWorkflow(flowcell, kit)
     emit:
     	getWorkflow.out
 } 

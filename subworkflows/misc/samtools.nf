@@ -5,8 +5,10 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 
-params.OUTPUT = "samtools_out"
+params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8:aeac8200e5c50c5acf4dd14792fd8453255af835-0"
+params.OUTPUTMODE = "copy"
+
 
 process getVersion {
     container params.CONTAINER
@@ -25,7 +27,7 @@ process sortAln {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
 
     input:
     tuple val(pair_id), path(reads)
@@ -43,7 +45,7 @@ process indexBam {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
 
     input:
     tuple val(pair_id), path(reads)
@@ -57,11 +59,29 @@ process indexBam {
     """
 }
 
+process catAln {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("*_cat.bam") 
+    
+	script:
+    """    
+    samtools cat ${params.EXTRAPARS} -o ${pair_id}_cat.bam ${reads}
+    """
+}
+
 process viewBam {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
 
     input:
     tuple val(pair_id), path(reads)
@@ -79,7 +99,7 @@ process statBam {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
 
     input:
     tuple val(pair_id), path(reads)
@@ -122,6 +142,17 @@ workflow SORT {
     emit:
     	out
 }
+
+workflow CAT {
+    take: 
+    reads
+    
+    main:
+		out = catAln(reads)
+    emit:
+    	out
+}
+
 
 workflow BVIEW {
     take: 

@@ -4,7 +4,7 @@
 
 params.LABEL = ""
 params.EXTRAPARS = ""
-params.OUTPUT = "multiqc_out"
+params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/multiqc:1.10.1--pyhdfd78af_1"
 
 
@@ -36,7 +36,7 @@ process makeReport {
 	
     script:
     """
-		multiqc .
+		multiqc ${params.EXTRAPARS} .
     """
 }
 

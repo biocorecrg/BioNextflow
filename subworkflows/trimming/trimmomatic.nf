@@ -24,8 +24,8 @@ process getVersion {
 }
 
 process filterPE {
-    publishDir(params.OUTPUT, mode: 'copy')
-    
+    if (params.OUTPUT != "") {publishDir(params.OUTPUT, mode: 'copy') }
+   
     tag {pair_id }
     container params.CONTAINER
     label (params.LABEL)
@@ -52,7 +52,7 @@ process filterPE {
 }
 
 process filterSE {
-    publishDir(params.OUTPUT, mode: 'copy', )
+    if (params.OUTPUT != "") {publishDir(params.OUTPUT, mode: 'copy') }
     
     tag {pair_id }
     container params.CONTAINER
