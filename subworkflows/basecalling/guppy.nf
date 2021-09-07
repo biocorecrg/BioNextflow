@@ -8,6 +8,7 @@ params.EXTRAPARS_BC = ""
 params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
+params.MOP = ""
 params.CONTAINER = "biocorecrg/mopbasecall:0.2"
 params.GPU = ""
 
@@ -52,7 +53,8 @@ process getWorkflow {
 process baseCall {
     tag { idfile }
     label (params.LABEL)
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
+	if (params.MOP == "YES")  { if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile.split('---')[0]}/${file.split('\\/')[-1]}" } ) } }
+	else if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
 
     container params.CONTAINER
              
@@ -87,7 +89,8 @@ process baseCall {
 process baseCallAndDemultiPlex {
     tag { idfile }
     label (params.LABEL)
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
+	if (params.MOP == "YES")  { if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile.split('---')[0]}/${file.split('\\/')[-1]}" } ) } }
+	else if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
     
     container params.CONTAINER
              
