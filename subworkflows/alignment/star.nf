@@ -131,7 +131,7 @@ process indexNoAnno {
 
 process map {
     label (params.LABEL)
-    tag { pair_id }
+    tag "${pair_id}"
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.bam') }
 
