@@ -65,43 +65,38 @@ process eventalign {
     """ 
     mkdir ${idsample}/
     cd ${idsample}/; ln -s ../*.fast5 .; cd ../
-    nanopolish eventalign -t ${task.cpus} --reads ${fastq} --bam ${bam} --genome ${reference} --samples --print-read-names --scale-events --samples | pigz -p ${task.cpus} > ${idsample}_${fast5_file}_event_align.tsv.gz
+    nanopolish eventalign -t ${task.cpus} --reads ${fastq} --bam ${bam} --genome ${reference} --samples --print-read-names --scale-events --samples 2>/dev/null | pigz -p ${task.cpus} > ${idsample}_${fast5_file}_event_align.tsv.gz
     """
 }
 
 /*
 * FROM HERE
+*/
 
+process concatenate_events {
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.csv.gz') }
 
-process concat_events {
-//	publishDir outputNanopolish, pattern: "*_combined.eventalign.tsv.gz",  mode: 'copy'
-//    publishDir outputNanopolish, pattern: "*_processed_perpos_median.tsv.gz", mode: 'copy'
     container params.CONTAINER
     label (params.LABEL)
     tag "${idsample}" 
 	
     input:
-    set idsample, file("event_align_*") 
-    //from np_eventalign_folders.groupTuple() 
+    tuple val(idsample), path("event_align_*") 
     
     output:
-    tuple val(idsample), path("${idsample}_event_collapsed_align.tsv") 
-    //into np_event_collapsed 
-    path("${idsample}_combined.eventalign.tsv.gz") 
-    path("${idsample}_processed_perpos_median.tsv.gz")
+    tuple val(idsample), path("${idsample}_event_collapsed"), emit: cat_events
+    tuple val(idsample), path("${idsample}_processed_perpos_median.tsv.gz"), emit: cat_medians
 
 
     script:
     """
-	zcat event_align* | awk '!(/^contig/ && NR>1)' | tee   >(pigz -p ${task.cpus} -9 - > ${idsample}_combined.eventalign.tsv.gz) | NanopolishComp Eventalign_collapse -t ${task.cpus} -o ${idsample}_event_collapsed_align.tsv
-
+	zcat event_align* | awk '!(/^contig/ && NR>1)' | tee   >(pigz -p ${task.cpus} -9 - > ${idsample}_combined.eventalign.tsv.gz) | NanopolishComp Eventalign_collapse -t ${task.cpus} -o ${idsample}_event_collapsed
 	mean_per_pos.py -i ${idsample}_combined.eventalign.tsv.gz -o ${idsample} -s 500000
 	pigz -p ${task.cpus} -9 ${idsample}_processed_perpos_median.tsv
-         
     """
 }
 
-*/
+
 
 
 /*
@@ -122,12 +117,11 @@ workflow EVENTALIGN {
     	fast5_folders.map {
     		[it[0], file("${it[1]}/*.fast5")]
     	}.transpose().set{fast5_files}
-    	datafiles = bams.join(bais).join(summaries).join(fastqs).join(indexes)
-	   	//fast5_files.combine(datafiles, by: 0).view()
-	   	out = eventalign(fast5_files.combine(datafiles, by: 0), reference)
-
+    	datafiles = bams.join(bais).join(fastqs).join(summaries).join(indexes)
+	   	aligned_events = eventalign(fast5_files.combine(datafiles, by: 0), reference)
+		concat_events = concatenate_events(aligned_events.groupTuple()).cat_events
 	emit:
-		out
+		concat_events
  }
 
 
