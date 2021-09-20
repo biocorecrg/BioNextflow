@@ -19,7 +19,7 @@ process getVersion {
     
     shell:
     """
-		nanopolish --version | grep version      
+		 echo nanocompore `nanocompore -v`      
     """
 }
 

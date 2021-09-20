@@ -71,7 +71,7 @@ process getModificationsWithModelSampleCompare {
 	mv ${fast5_dirA} ${indexA} ${idA}
 	mv ${fast5_dirB} ${indexB} ${idB}
 	
-    tombo detect_modifications model_sample_compare --fast5-basedirs ${idA}/* \
+    tombo detect_modifications model_sample_compare ${params.EXTRAPARS} --fast5-basedirs ${idA}/* \
        --control-fast5-basedirs ${idB}/* \
        --processes ${task.cpus} ${params.EXTRAPARS} \
        --statistics-file-basename ${idA}_vs_${idB}_model_sample_compare
@@ -107,7 +107,7 @@ process getModificationsWithLevelSampleCompare {
 	mv ${fast5_dirA} ${indexA} ${idA}
 	mv ${fast5_dirB} ${indexB} ${idB}
 	
-    tombo detect_modifications level_sample_compare --fast5-basedirs ${idA}/* \
+    tombo detect_modifications level_sample_compare ${params.EXTRAPARS} --fast5-basedirs ${idA}/* \
        --alternate-fast5-basedirs ${idB}/* \
        --processes ${task.cpus} ${params.EXTRAPARS} \
        --statistics-file-basename ${idA}_vs_${idB}_level_sample_compare

@@ -80,7 +80,7 @@ process getVersion {
     
     shell:
     """
-    htseq-count --version
+    echo "htseq "`htseq-count --version`
     """
 }
 

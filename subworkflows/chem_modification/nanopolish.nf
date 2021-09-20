@@ -70,11 +70,11 @@ process eventalign {
 }
 
 /*
-* FROM HERE
+* CONCAT_EVENTS
 */
 
 process concatenate_events {
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.csv.gz') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE , pattern: '*.csv.gz') }
 
     container params.CONTAINER
     label (params.LABEL)
@@ -97,7 +97,73 @@ process concatenate_events {
 }
 
 
+/*
+* Estimate polyA tail size with nanopolish
+*/
+process polyAtail {
+    container params.CONTAINER
+    label (params.LABEL)
+    tag "${sampleID}--${fast5}" 
+  
+	input:
+	tuple val(sampleID), path(fast5), path(alignment), path(alnindex), path(fastq)
+	path(reference)
 
+	output:
+	tuple val(sampleID), path("*.polya.estimation.tsv")
+
+	script:
+	def fast5_index=fast5.getSimpleName()
+	"""
+	#index reads
+	nanopolish index -d ./ ${fastq}
+	# polya length estimation
+	nanopolish polya -r ${fastq} ${params.EXTRAPARS} -g ${reference} -t ${task.cpus} -b ${alignment} > ${sampleID}-${fast5_index}.polya.estimation.tsv
+	"""
+} 
+
+process collect_polyA_results {
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT,pattern: "*.polya.estimation.tsv", mode:params.OUTPUTMODE ) }
+	tag { sampleID }  
+	
+	input:
+	tuple val(sampleID), path("nanopol_*")
+	
+	output:
+    tuple val(sampleID), path("${sampleID}.nanopol.len"), emit: filtered_est
+    path("*.polya.estimation.tsv"), emit: polya_est
+
+	script:
+	"""
+	cat nanopol_* | awk '!(NR>1 && /leader_start/)' | grep -v "READ_FAILED_LOAD"  >> ${sampleID}.polya.estimation.tsv	
+	awk -F"\t" '{if (\$10=="PASS") print \$1"\t"\$9}' ${sampleID}.polya.estimation.tsv > ${sampleID}.nanopol.len
+	"""
+
+}
+
+
+
+
+/*
+*/
+
+workflow POLYA_LEN {
+
+    take: 
+    fast5_files
+    bams
+    bais
+    fastqs
+    reference
+   
+    main:
+    	datafiles = bams.join(bais).join(fastqs)
+	   	polyAs = polyAtail(fast5_files.combine(datafiles, by: 0), reference)
+		collect_polyA_results(polyAs.groupTuple())
+	emit:
+		filtered_est = collect_polyA_results.out.filtered_est
+		polya_est = collect_polyA_results.out.polya_est
+ }
 
 /*
 */

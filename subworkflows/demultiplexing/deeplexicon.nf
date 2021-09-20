@@ -7,8 +7,19 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.GPU = ""
-//params.CONTAINER = 'lpryszcz/deeplexicon:1.2.0'
 params.CONTAINER = (params.GPU == "ON" ? 'lpryszcz/deeplexicon:1.2.0-gpu': 'lpryszcz/deeplexicon:1.2.0')
+
+process getVersion {
+    container params.CONTAINER
+
+    output:
+	stdout emit: out    
+    
+    shell:
+    """
+    deeplexicon_sub.py --version | grep Deep
+    """
+}
 
 process demultiplex {
     tag { idfile }
@@ -40,4 +51,9 @@ process demultiplex {
   
 }
 
- 
+workflow GET_VERSION {
+    main:
+		getVersion()
+    emit:
+    	getVersion.out
+}   
