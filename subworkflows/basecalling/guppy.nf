@@ -22,6 +22,7 @@ if (params.GPU == "ON") {
 
 process getVersion {
     container params.CONTAINER
+    label (params.LABEL)
 
     output:
 	stdout emit: out    

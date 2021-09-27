@@ -11,6 +11,7 @@ params.CONTAINER = (params.GPU == "ON" ? 'lpryszcz/deeplexicon:1.2.0-gpu': 'lpry
 
 process getVersion {
     container params.CONTAINER
+    label (params.LABEL)
 
     output:
 	stdout emit: out    
