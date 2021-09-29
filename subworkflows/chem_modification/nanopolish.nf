@@ -74,7 +74,7 @@ process eventalign {
 */
 
 process concatenate_events {
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE , pattern: '*.csv.gz') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE , pattern: '*.gz') }
 
     container params.CONTAINER
     label (params.LABEL)

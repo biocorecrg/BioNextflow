@@ -50,7 +50,7 @@ process sampleCompare {
     --label2 ${folder_name_B} \
     --fasta ${reference} \
     --outpath ./${folder_name_A}-${folder_name_B}_nanocompore/ \
-    ${params.EXTRAPARS} --pvalue_thr 1 --logit --comparison_methods GMM,KS,MW,TT --overwrite 
+    ${params.EXTRAPARS} --pvalue_thr 1 --outprefix ${folder_name_A}_vs_${folder_name_B} --logit --comparison_methods GMM,KS,MW,TT --overwrite 
 	"""
 
 
