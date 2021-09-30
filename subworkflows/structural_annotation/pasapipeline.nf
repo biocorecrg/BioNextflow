@@ -65,7 +65,7 @@ process importMySQLPasa {
   path(pasaschema)
 
 	output:
-	path("conftxt")
+	path("conftxt.new")
 
 	"""
   source ${dbparams}
@@ -73,9 +73,9 @@ process importMySQLPasa {
 	mysql -u\${dbuser} -p\${dbpass} \${dbname} -h\${dbhost} -P\${dbport} < ${pasaschema} > done_mysql
 
  	# Simple modification. This would need more love
- 	cp ${pasaconffilegeneral} conftxt
-	sed -i '/^MYSQLSERVER=/d' conftxt
-	echo "MYSQLSERVER=\${dbhost}:\${dbport}" >> conftxt
+ 	cp ${pasaconffilegeneral} conftxt.new
+	sed -i '/^MYSQLSERVER=/d' conftxt.new
+	echo "MYSQLSERVER=\${dbhost}:\${dbport}" >> conftxt.new
 	"""
 
 }
