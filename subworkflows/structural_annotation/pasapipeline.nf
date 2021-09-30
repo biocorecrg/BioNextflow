@@ -159,7 +159,7 @@ workflow PASA_IMPORT_MYSQL {
     pasaschema
 
     main:
-    out = importMySQLPasa(pasaconffilegeneral, dparams, pasaschema)
+    out = importMySQLPasa(pasaconffilegeneral, dbparams, pasaschema)
 
     emit:
     out
