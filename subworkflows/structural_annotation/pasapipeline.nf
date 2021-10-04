@@ -100,9 +100,9 @@ process runPASA {
   val(pasamode)
 
   output:
-  path("pasa*")
-  path("*assemblies.fasta")
-  path("*assemblies.gff3")
+  path("pasa*"), emit: pasa_files
+  path("*assemblies.fasta"), emit: pasa_fasta
+  path("*assemblies.gff3"), emit: pasa_gff3
 
 	"""
  /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -PASACONF ${conftxt} -c ${pasaconffiledb} \
@@ -127,12 +127,12 @@ process generatePASAtrainingSet {
   path(conftxt)
 
   output:
-  path("*.transdecoder.gff3")
-  path("*.transdecoder.pep")
+  path("*.transdecoder.gff3"), emit: transdecoder_gff3
+  path("*.transdecoder.pep"), emit: transdecoder_pep
 
-	"""
- /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --PASACONF ${conftxt} --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
- """
+  """
+  /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --PASACONF ${conftxt} --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
+  """
 
 }
 
