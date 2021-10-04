@@ -104,9 +104,9 @@ process runPASA {
   path("*assemblies.gff3"), emit: pasa_gff3
 
   if ( workflow.containerEngine == "singularity" ) {
-    containerOptions "--bind $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+    containerOptions "--bind ./conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
   } else {
-    containerOptions "--volume $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+    containerOptions "--volume ./conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
   }
 
 	"""
@@ -136,9 +136,9 @@ process generatePASAtrainingSet {
   path("*.transdecoder.pep"), emit: transdecoder_pep
 
   if ( workflow.containerEngine == "singularity" ) {
-    containerOptions "--bind $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+    containerOptions "--bind ./conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
   } else {
-    containerOptions "--volume $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+    containerOptions "--volume ./conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
   }
 
   """
