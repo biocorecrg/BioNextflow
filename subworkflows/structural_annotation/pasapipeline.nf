@@ -82,14 +82,13 @@ process importMySQLPasa {
 
 process runPASA {
 
-  tag { id }
   label (params.LABEL)
 
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
   input:
-  tuple val(id), path(relatedfasta)
+  path(relatedfasta)
   path(genome)
   path(seqclean_idx)
   path(seqclean_clean)
