@@ -142,12 +142,12 @@ workflow PASA_SEQ_CLEAN {
     filterfasta
 
     main:
-    seqClean(fasta, filterfasta)
+    out = seqClean(fasta, filterfasta)
 
     emit:
-    cln = seqClean.out.cln
-    cidx =  seqClean.out.cidx
-    clean =  seqClean.out.clean
+    out.cln
+    out.cidx
+    out.clean
 
 }
 
