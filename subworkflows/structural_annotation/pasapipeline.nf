@@ -87,12 +87,6 @@ process runPASA {
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
-  if ( workflow.containerEngine == "singularity" ) {
-    containerOptions "--bind ${conftxt}:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
-  } else {
-    containerOptions "--volume ${conftxt}:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
-  }
-
   input:
   path(relatedfasta)
   path(genome)
@@ -101,13 +95,19 @@ process runPASA {
   path(seqclean_cln)
   path(model_gtf_file)
   path(pasaconffiledb)
-  path(conftxt)
+  path(conftxt) // This is conftxt.new
   val(pasamode)
 
   output:
   path("pasa*"), emit: pasa_files
   path("*assemblies.fasta"), emit: pasa_fasta
   path("*assemblies.gff3"), emit: pasa_gff3
+
+  if ( workflow.containerEngine == "singularity" ) {
+    containerOptions "--bind $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  } else {
+    containerOptions "--volume $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  }
 
 	"""
  /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c ${pasaconffiledb} \
@@ -129,14 +129,20 @@ process generatePASAtrainingSet {
   input:
   path(pasa_assemblies_fasta)
   path(pasa_assemblies_gff3)
-  path(conftxt)
+  path(conftxt) // This is conftxt.new
 
   output:
   path("*.transdecoder.gff3"), emit: transdecoder_gff3
   path("*.transdecoder.pep"), emit: transdecoder_pep
 
+  if ( workflow.containerEngine == "singularity" ) {
+    containerOptions "--bind $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  } else {
+    containerOptions "--volume $(pwd)/conftxt.new:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  }
+
   """
-  /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --PASACONF ${conftxt} --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
+  /usr/local/src/PASApipeline/scripts/pasa_asmbls_to_training_set.dbi --pasa_transcripts_fasta ${pasa_assemblies_fasta} --pasa_transcripts_gff3 ${pasa_assemblies_gff3} --single_best_only
   """
 
 }
