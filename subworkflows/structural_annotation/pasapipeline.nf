@@ -40,9 +40,9 @@ process seqClean {
   path(filterfasta)
 
   output:
-  tuple val(id), path("${id}.cln"), emit: cln
-  tuple val(id), path("${id}.cidx"), emit: cidx
-  tuple val(id), path("${id}.clean"), emit: clean
+  path("${id}.cln"), emit: cln
+  path("${id}.cidx"), emit: cidx
+  path("${id}.clean"), emit: clean
 
   """
   export USER=\$(id -u -n)
