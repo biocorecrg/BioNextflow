@@ -110,7 +110,7 @@ process runPASA {
   path("*assemblies.gff3"), emit: pasa_gff3
 
 	"""
- /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -PASACONF ${conftxt} -c ${pasaconffiledb} \
+ /usr/local/src/PASApipeline/Launch_PASA_pipeline.pl -c ${pasaconffiledb} \
  -R -g ${genome} -t ${seqclean_clean} -T -u ${relatedfasta} \
  --trans_gtf ${model_gtf_file} --ALIGNERS ${pasamode} --TRANSDECODER --CPU ${task.cpus}
 	"""
