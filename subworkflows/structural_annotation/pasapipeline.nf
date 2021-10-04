@@ -87,6 +87,12 @@ process runPASA {
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
+  if ( workflow.containerEngine == "singularity" ) {
+    containerOptions "--bind ${conftxt}:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  } else {
+    containerOptions "--volume ${conftxt}:/usr/local/src/PASApipeline/pasa_conf/conf.txt"
+  }
+
   input:
   path(relatedfasta)
   path(genome)
