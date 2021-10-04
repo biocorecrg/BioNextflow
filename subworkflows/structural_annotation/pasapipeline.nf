@@ -182,7 +182,9 @@ workflow PASA_RUN_PASA {
     out = runPASA(relatedfasta, genome, seqclean_idx, seqclean_clean, seqclean_cln, model_gtf_file, pasaconffiledb, conftxt, pasamode)
 
     emit:
-    out
+    out.pasa_files
+    out.pasa_fasta
+    out.pasa_gff3
 
 }
 
@@ -196,7 +198,8 @@ workflow PASA_GENERATE_TRAINING_SET {
     out = generatePASAtrainingSet(pasa_assemblies_fasta, pasa_assemblies_gff3, conftxt)
 
     emit:
-    out
+    out.transdecoder_gff3
+    out.transdecoder_pep
 
 }
 
