@@ -69,32 +69,6 @@ process eventalign {
     """
 }
 
-/*
-* CONCAT_EVENTS
-*/
-
-process concatenate_events {
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE , pattern: '*.gz') }
-
-    container params.CONTAINER
-    label (params.LABEL)
-    tag "${idsample}" 
-	
-    input:
-    tuple val(idsample), path("event_align_*") 
-    
-    output:
-    tuple val(idsample), path("${idsample}_event_collapsed"), emit: cat_events
-    tuple val(idsample), path("${idsample}_processed_perpos_median.tsv.gz"), emit: cat_medians
-
-
-    script:
-    """
-	zcat event_align* | awk '!(/^contig/ && NR>1)' | tee   >(pigz -p ${task.cpus} -9 - > ${idsample}_combined.eventalign.tsv.gz) | NanopolishComp Eventalign_collapse -t ${task.cpus} -o ${idsample}_event_collapsed
-	mean_per_pos.py -i ${idsample}_combined.eventalign.tsv.gz -o ${idsample} -s 500000
-	pigz -p ${task.cpus} -9 ${idsample}_processed_perpos_median.tsv
-    """
-}
 
 
 /*
@@ -185,9 +159,8 @@ workflow EVENTALIGN {
     	}.transpose().set{fast5_files}
     	datafiles = bams.join(bais).join(fastqs).join(summaries).join(indexes)
 	   	aligned_events = eventalign(fast5_files.combine(datafiles, by: 0), reference)
-		concat_events = concatenate_events(aligned_events.groupTuple()).cat_events
 	emit:
-		concat_events
+		aligned_events
  }
 
 
