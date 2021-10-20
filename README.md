@@ -2,6 +2,10 @@
 
 # ![BioNextflow](https://github.com/biocorecrg/BioNextflow/blob/master/bionextflow.png)
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3360455.svg)](https://doi.org/10.5281/zenodo.3360455)
+[![Nextflow version](https://img.shields.io/badge/Nextflow-21.04.1-brightgreen)](https://www.nextflow.io/)
+[![Nextflow DSL2](https://img.shields.io/badge/Nextflow-DSL2-brightgreen)](https://www.nextflow.io/)
+
 
 BioNextflow is a collection of modules and sub-workflows that can be used in any [Nextflow DSL2 pipeline](https://www.nextflow.io/docs/latest/dsl2.html). They are created with the idea in mind of having a single file per tool, containing different sub-workflows and modules.
 
