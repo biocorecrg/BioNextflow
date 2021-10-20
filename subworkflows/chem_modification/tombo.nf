@@ -6,7 +6,8 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = 	"quay.io/biocontainers/ont-tombo:1.5.1--py37r36h70f9b12_2"
+//params.CONTAINER = 	"quay.io/biocontainers/ont-tombo:1.5.1--py37r36h70f9b12_2"
+params.CONTAINER = 	"biocorecrg/mopmod:0.5"
 
 
 /*
@@ -62,8 +63,8 @@ process getModificationsWithModelSampleCompare {
     file(reference)
     
     output:
-    tuple val("${idA}---${idB}"), path("*.bedgraph"), emit: bedgraphs
-	tuple val("${idA}---${idB}"), path("*.wig"), emit:  dampened_wiggles
+    tuple val("${idA}---${idB}"), path("*.bedgraph.gz"), emit: bedgraphs
+	tuple val("${idA}---${idB}"), path("*.wig.gz"), emit:  dampened_wiggles
  
     script:
 	"""
@@ -81,6 +82,8 @@ process getModificationsWithModelSampleCompare {
        --browser-file-basename ${idA}_vs_${idB}.features \
        --statistics-filename ${idA}_vs_${idB}_model_sample_compare.tombo.stats \
        --file-types 'dampened_fraction' 'coverage'
+    
+    for i in *.{bedgraph,wig,stats}; do gzip $i; done 
     """
 }
 
@@ -98,8 +101,8 @@ process getModificationsWithLevelSampleCompare {
     file(reference)
     
     output:
-    tuple val("${idA}---${idB}"), path("*.bedgraph"), emit: bedgraphs
-	tuple val("${idA}---${idB}"), path("*.wig"), emit: dampened_wiggles
+    tuple val("${idA}---${idB}"), path("*.bedgraph.gz"), emit: bedgraphs
+	tuple val("${idA}---${idB}"), path("*.wig.gz"), emit: dampened_wiggles
     
     script:
 	"""
@@ -117,6 +120,8 @@ process getModificationsWithLevelSampleCompare {
        --browser-file-basename ${idA}_vs_${idB}.features \
        --statistics-filename ${idA}_vs_${idB}_level_sample_compare.tombo.stats \
        --file-types {'coverage','statistic'}
+       
+    for i in *.{bedgraph,wig,stats}; do gzip $i; done 
     """
 }
 
