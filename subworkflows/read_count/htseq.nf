@@ -1,7 +1,7 @@
 /*
 *  nanoCount module
 *  This workflow allows to make count on input data
-*  It needs input fastq
+*  It needs input aln_data (id, bam and index)
 */
 
 params.LABEL = ""
@@ -22,7 +22,7 @@ process HtseqCount {
    
     input:
     path(annotation_file)
-    tuple val(id), path(bamfile)
+    tuple val(id), path(bamfile), path(indexfile)
     val(doanno)
 
     output:
@@ -44,12 +44,12 @@ process HtseqCount {
 workflow COUNT {
     take: 
     annotation
-    fastq
+    aln_data
     
     main:
 	anno_file = file(annotation)
 	if( !anno_file.exists() ) exit 1, "Missing ${annotation} file!"
-    out = HtseqCount(annotation, fastq, "no")
+    out = HtseqCount(annotation, aln_data, "no")
     
     emit:
 	counts = out.counts
@@ -59,12 +59,12 @@ workflow COUNT {
 workflow COUNT_AND_ANNO {
     take: 
     annotation
-    fastq
+    aln_data
     
     main:
 	anno_file = file(annotation)
 	if( !anno_file.exists() ) exit 1, "Missing ${annotation} file!"
-    out = HtseqCount(annotation, fastq, "yes")
+    out = HtseqCount(annotation, aln_data, "yes")
     
     emit:
 	counts = out.counts
