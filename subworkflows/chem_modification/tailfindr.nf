@@ -41,7 +41,7 @@ process estimateTailSize {
 
 	script:
 	"""
-	R --slave -e "library(tailfindr); find_tails(fast5_dir = './' , save_dir = './', ${params.EXTRAPARS}, csv_filename = \'${sampleID}_findr.csv\', num_cores = ${task.cpus})"
+	R --vanilla --slave -e "library(tailfindr); find_tails(fast5_dir = './' , save_dir = './', ${params.EXTRAPARS}, csv_filename = \'${sampleID}_findr.csv\', num_cores = ${task.cpus})"
 	"""
 }
 

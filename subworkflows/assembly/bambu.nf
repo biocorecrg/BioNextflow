@@ -6,7 +6,9 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = "quay.io//biocontainers/bioconductor-bambu:1.2.0--r41h399db7b_0"
+params.CONTAINER = "biocorecrg/mopexpress:0.1"
+
+include { unzipCmd } from '../global_functions.nf'
 
 /*
 */
@@ -18,7 +20,7 @@ process getVersion {
     
     shell:
     """
-    	echo tailfindr' '`Rscript -e "library('bambu'); packageVersion('bambu')"` 2>/dev/null
+    	echo bambu' '`Rscript -e "library('bambu'); packageVersion('bambu')"` 2>/dev/null
     """
 }
 
@@ -26,41 +28,63 @@ process getVersion {
 /*
 */
 
-process calcVarFrequencies {
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.csv.gz') }
+process assembleTranscripts {
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     container params.CONTAINER
     label (params.LABEL)
     tag "${sampleID}" 
  	
     input:
-    tuple val(sampleID), path(tsvfile)
+    path(genome)
+    path(annotation)
+    tuple val(sampleID), path(bamfiles)
     
     output:
-    tuple val(sampleID), path("*.tsv.per.site.var.csv.gz"), emit: per_site_vars
-    tuple val(sampleID), path("*.csv.gz"), emit: all_vars
+    tuple val(sampleID), path("${sampleID}_bambu")
     
     script:
+	def unzipGen  	 = unzipCmd(genome)
+	def genome_name  = unzipGen[0]
+	def cmd_g_unzip  = unzipGen[1]
+	def cmd_g_clean  = unzipGen[2]
+
+	def unzipAnno  		 = unzipCmd(annotation)
+	def annotation_name  = unzipAnno[0]
+	def cmd_a_unzip  	 = unzipAnno[1]
+	def cmd_a_clean  	 = unzipAnno[2]
+
 	"""
-	TSV_to_Variants_Freq.py3 -f ${tsvfile} -t ${task.cpus}
-	for i in *.csv; do gzip \$i; done
+	${cmd_g_unzip}
+	${cmd_a_unzip}
+	R --vanilla --slave -e "library(bambu)
+bamfiles <- list.files(path='./', full.names = TRUE, pattern = '*.bam')
+bamFiles <- Rsamtools::BamFileList(bamfiles)
+bambuAnnotations <- prepareAnnotations(\'./${annotation_name}\')
+Rsamtools::indexFa(\'./${genome_name}\')
+se <- bambu(reads = bamFiles, annotations = bambuAnnotations, genome = \'./${genome_name}\', \
+ncore = ${task.cpus} ${params.EXTRAPARS})
+writeBambuOutput(se, \'${sampleID}_bambu\')"
+	${cmd_g_clean}
+	${cmd_a_clean}
 	"""
 }
 
 /*
 */
 
-workflow CALC_VAR_FREQUENCIES {
+workflow ASSEMBLE {
 
     take: 
-    tsvfiles
+    genome
+    annotation
+    bamfiles
     
     main:
-    	calcVarFrequencies(tsvfiles)
+    	out = assembleTranscripts(genome, annotation, bamfiles)
 
 	emit:
-    	per_site_vars = calcVarFrequencies.out.per_site_vars
-    	all_vars = calcVarFrequencies.out.all_vars
+    	out
 }
 
 /*
