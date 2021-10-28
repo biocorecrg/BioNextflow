@@ -1,12 +1,12 @@
 /*
-* Epinano
+* isoquant
 */
 
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = "biocorecrg/mopexpress:0.1"
+params.CONTAINER = "quay.io/biocontainers/isoquant:2.0.0--hdfd78af_0"
 
 include { unzipCmd } from '../global_functions.nf'
 
@@ -20,7 +20,7 @@ process getVersion {
     
     shell:
     """
-    	echo bambu' '`Rscript -e "library('bambu'); packageVersion('bambu')"` 2>/dev/null
+    	
     """
 }
 
@@ -38,10 +38,10 @@ process assembleTranscripts {
     input:
     path(genome)
     path(annotation)
-    tuple val(sampleID), path(bamfiles)
+    tuple val(sampleID), path(bamfiles), path(indexes)
     
     output:
-    tuple val(sampleID), path("${sampleID}_bambu")
+    tuple val(sampleID), path("${sampleID}_isoquant")
     
     script:
 	def unzipGen  	 = unzipCmd(genome)
@@ -53,23 +53,13 @@ process assembleTranscripts {
 	def annotation_name  = unzipAnno[0]
 	def cmd_a_unzip  	 = unzipAnno[1]
 	def cmd_a_clean  	 = unzipAnno[2]
-    def extrapars		 = ""
-    if (params.EXTRAPARS != "") {
-    	extrapars = ", ${params.EXTRAPARS}"
-    }
+
 	"""
 	${cmd_g_unzip}
 	${cmd_a_unzip}
-	R --vanilla --slave -e "library(bambu)
-bamfiles <- list.files(path='./', full.names = TRUE, pattern = '*.bam')
-bamFiles <- Rsamtools::BamFileList(bamfiles)
-bambuAnnotations <- prepareAnnotations(\'./${annotation_name}\')
-Rsamtools::indexFa(\'./${genome_name}\')
-se <- bambu(reads = bamFiles, annotations = bambuAnnotations, genome = \'./${genome_name}\', \
-ncore = ${task.cpus} ${extrapars})
-writeBambuOutput(se, \'${sampleID}_bambu\')"
-	${cmd_g_clean}
+	isoquant.py -r ${genome_name} --threads ${task.cpus} ${params.EXTRAPARS} --genedb ${annotation_name} --bam ${bamfiles}  -o ${sampleID}_isoquant
 	${cmd_a_clean}
+	${cmd_g_clean}
 	"""
 }
 
@@ -79,7 +69,7 @@ writeBambuOutput(se, \'${sampleID}_bambu\')"
 workflow ASSEMBLE {
 
     take: 
-    genome
+	genome
     annotation
     bamfiles
     
