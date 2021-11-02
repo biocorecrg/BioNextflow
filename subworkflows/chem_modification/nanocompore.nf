@@ -44,8 +44,8 @@ process sampleCompare {
     script:
 	"""
 	nanocompore sampcomp --nthreads ${task.cpus}\
-    --file_list1 ${tsv_file_A}/out_eventalign_collapse.tsv \
-    --file_list2 ${tsv_file_B}/out_eventalign_collapse.tsv \
+    --file_list1 ${tsv_file_A} \
+    --file_list2 ${tsv_file_B} \
     --label1 ${folder_name_A} \
     --label2 ${folder_name_B} \
     --fasta ${reference} \

@@ -69,7 +69,24 @@ process eventalign {
     """
 }
 
+/*
+*/
+process eventalignCollapse {
+    container params.CONTAINER
+    label (params.LABEL)
+    tag "${idsample}" 
+ 	
+    input:
+    tuple val(idsample), path(aligned_events)
+    
+    output:
+    tuple val(idsample), path("*_collapsed_align_events")
 
+    script:
+    """ 
+		zcat ${aligned_events} | awk '!(/^contig/ && NR>1)' | tee   >(pigz -p ${task.cpus} -9 - > ${idsample}_combined.eventalign.tsv.gz) | NanopolishComp Eventalign_collapse -t ${task.cpus} -o ${idsample}_collapsed_align_events
+    """
+}
 
 /*
 * Estimate polyA tail size with nanopolish
@@ -159,9 +176,15 @@ workflow EVENTALIGN {
     	}.transpose().set{fast5_files}
     	datafiles = bams.join(bais).join(fastqs).join(summaries).join(indexes)
 	   	aligned_events = eventalign(fast5_files.combine(datafiles, by: 0), reference)
+	   	collapsed_aligned_events = eventalignCollapse(aligned_events.groupTuple())
 	emit:
-		aligned_events
+		aligned_events 
+		collapsed_aligned_events
  }
+
+
+
+
 
 
 /*
