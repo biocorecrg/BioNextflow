@@ -35,7 +35,7 @@ process sampleCompare {
     tag "${folder_name_A} vs ${folder_name_B}" 
  		
     input:
-    tuple val(folder_name_A), val(folder_name_B), path(tsv_file_A), path(tsv_file_B)
+    tuple val(folder_name_A), val(folder_name_B), path(tsv_folder_A), path(tsv_folder_B)
     file(reference)
     
     output:
@@ -44,8 +44,8 @@ process sampleCompare {
     script:
 	"""
 	nanocompore sampcomp --nthreads ${task.cpus}\
-    --file_list1 ${tsv_file_A}/out_eventalign_collapse.tsv \
-    --file_list2 ${tsv_file_B}/out_eventalign_collapse.tsv \
+    --file_list1 ${tsv_folder_A}/out_eventalign_collapse.tsv \
+    --file_list2 ${tsv_folder_B}/out_eventalign_collapse.tsv \
     --label1 ${folder_name_A} \
     --label2 ${folder_name_B} \
     --fasta ${reference} \

@@ -83,7 +83,7 @@ process getModificationsWithModelSampleCompare {
        --statistics-filename ${idA}_vs_${idB}_model_sample_compare.tombo.stats \
        --file-types 'dampened_fraction' 'coverage'
     
-    for i in *.{bedgraph,wig,stats}; do gzip $i; done 
+    for i in *.{bedgraph,wig,stats}; do gzip \$i; done 
     """
 }
 
@@ -121,7 +121,7 @@ process getModificationsWithLevelSampleCompare {
        --statistics-filename ${idA}_vs_${idB}_level_sample_compare.tombo.stats \
        --file-types {'coverage','statistic'}
        
-    for i in *.{bedgraph,wig,stats}; do gzip $i; done 
+    for i in *.{bedgraph,wig,stats}; do gzip \$i; done 
     """
 }
 
