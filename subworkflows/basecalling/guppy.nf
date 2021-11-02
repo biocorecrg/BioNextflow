@@ -61,8 +61,6 @@ process baseCall {
              
     input:
     tuple val(idfile), path(fast5)
-    val(flowcell) 
-    val(kit) 
     
     output:
     tuple val(idfile), path("${idfile}_out/workspace/*.fast5"), emit: basecalled_fast5
@@ -75,7 +73,6 @@ process baseCall {
     """
         ${library_export}
         guppy_basecaller ${gpu_cmd} \
-        --flowcell ${flowcell} --kit ${kit} \
         --fast5_out ${params.EXTRAPARS_BC} -i ${infolder} \
         --save_path ./${idfile}_out \
         --gpu_runners_per_device 1 \
@@ -97,8 +94,6 @@ process baseCallAndDemultiPlex {
              
     input:
     tuple val(idfile), path(fast5)
-    val(flowcell) 
-    val(kit) 
     
     output:
     tuple val(idfile), path("${idfile}_out/workspace/*.fast5"), emit: basecalled_fast5
@@ -112,8 +107,6 @@ process baseCallAndDemultiPlex {
      ${library_export}
 		guppy_basecaller ${gpu_cmd} \
 		${params.EXTRAPARS_BC} ${params.EXTRAPARS_DEM} \
-		--flowcell ${flowcell} \
-		--kit ${kit} \
 		--num_barcode_threads ${task.cpus} \
 		--trim_barcodes  \
 		--fast5_out -i ${infolder} \
@@ -135,11 +128,9 @@ process baseCallAndDemultiPlex {
  workflow BASECALL {
     take: 
     input_fast5
-    flowcell
-    kit
     
     main:
-    	baseCall(input_fast5, flowcell, kit)
+    	baseCall(input_fast5)
 
 	emit:
     	basecalled_fast5 = baseCall.out.basecalled_fast5
@@ -151,11 +142,9 @@ process baseCallAndDemultiPlex {
  workflow BASECALL_DEMULTI {
     take: 
     input_fast5
-    flowcell
-    kit
     
     main:
-    	baseCallAndDemultiPlex(input_fast5, flowcell, kit)
+    	baseCallAndDemultiPlex(input_fast5)
 
 	emit:
     	basecalled_fast5 = baseCallAndDemultiPlex.out.basecalled_fast5
