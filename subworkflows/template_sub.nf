@@ -42,6 +42,7 @@ process getVersion {
     """
 }
 
+// process
 process calcOverhang {
     label (params.LABEL)
     
