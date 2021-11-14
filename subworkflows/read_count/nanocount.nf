@@ -5,7 +5,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/mopprepr:0.7"
+params.CONTAINER = "biocorecrg/nanocount:0.1"
 params.OUTPUT = ""
 params.EXTRAPARS = ""
 
