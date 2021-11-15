@@ -16,7 +16,7 @@ process nanoCount {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
    
     input:
-    tuple val(id), path(bamfile)
+    tuple val(id), path(bamfile), path(bai)
 
     output:
     tuple val(id), path("${id}.count")
