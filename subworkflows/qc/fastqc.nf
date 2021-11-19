@@ -9,8 +9,7 @@ params.CONTAINER = "quay.io/biocontainers/fastqc:0.11.9--0"
 params.OUTPUT = ""
 
 process fastQC {
-    tag { "${fastq}" }
-
+    tag "${fastq}"
     label (params.LABEL)
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }

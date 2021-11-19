@@ -29,6 +29,7 @@ process demultiplex {
     container params.CONTAINER
              
     input:
+    path(models)
     tuple val(idfile), path(fast5)
 
     output:
@@ -42,10 +43,11 @@ process demultiplex {
 
  workflow DEMULTIPLEX {
     take: 
+    models
     input_fast5
     
     main:
-    	demultiplex(input_fast5)
+    	demultiplex(models,input_fast5)
 
 	emit:
     	demultiplex.out.demux_files
