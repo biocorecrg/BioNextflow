@@ -101,7 +101,7 @@ process polyAtail {
 	path(reference)
 
 	output:
-	tuple val(sampleID), path("*.polya.estimation.tsv")
+	tuple val(sampleID), path("*.polya.estimation.tsv.gz")
 
 	script:
 	def fast5_index=fast5.getSimpleName()
@@ -109,25 +109,26 @@ process polyAtail {
 	#index reads
 	nanopolish index -d ./ ${fastq}
 	# polya length estimation
-	nanopolish polya -r ${fastq} ${params.EXTRAPARS} -g ${reference} -t ${task.cpus} -b ${alignment} > ${sampleID}-${fast5_index}.polya.estimation.tsv
+	nanopolish polya -r ${fastq} ${params.EXTRAPARS} -g ${reference} -t ${task.cpus} -b ${alignment} | pigz -p ${task.cpus}  > ${sampleID}-${fast5_index}.polya.estimation.tsv.gz
 	"""
 } 
 
 process collect_polyA_results {
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT,pattern: "*.polya.estimation.tsv", mode:params.OUTPUTMODE ) }
+        if (params.OUTPUT != "") { publishDir(params.OUTPUT,pattern: "*.polya.estimation.tsv", mode:params.OUTPUTMODE ) }
 	tag { sampleID }  
+        container params.CONTAINER
 	
 	input:
 	tuple val(sampleID), path("nanopol_*")
 	
 	output:
-    tuple val(sampleID), path("${sampleID}.nanopol.len"), emit: filtered_est
-    path("*.polya.estimation.tsv"), emit: polya_est
+    tuple val(sampleID), path("${sampleID}.nanopol.len.gz"), emit: filtered_est
+    path("*.polya.estimation.tsv.gz"), emit: polya_est
 
 	script:
 	"""
-	cat nanopol_* | awk '!(NR>1 && /leader_start/)' | grep -v "READ_FAILED_LOAD"  >> ${sampleID}.polya.estimation.tsv	
-	awk -F"\t" '{if (\$10=="PASS") print \$1"\t"\$9}' ${sampleID}.polya.estimation.tsv > ${sampleID}.nanopol.len
+	zcat nanopol_* | awk '!(NR>1 && /leader_start/)' | grep -v "READ_FAILED_LOAD" | pigz > ${sampleID}.polya.estimation.tsv.gz
+	zcat ${sampleID}.polya.estimation.tsv.gz | awk -F"\t" '{if (\$10=="PASS") print \$1"\t"\$9}' | pigz > ${sampleID}.nanopol.len.gz
 	"""
 
 }

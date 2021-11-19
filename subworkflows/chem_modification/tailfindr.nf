@@ -1,5 +1,5 @@
 /*
-* Epinano
+* Tailfindr
 */
 
 params.LABEL = ""
@@ -37,12 +37,13 @@ process estimateTailSize {
 	tuple val(sampleID), path(fast5)
 
 	output:
-	tuple val(sampleID), path("*_findr.csv") 
+	tuple val(sampleID), path("*_findr.csv.gz") 
 
 	script:
 	"""
 	R --vanilla --slave -e "library(tailfindr); find_tails(fast5_dir = './' , save_dir = './', ${params.EXTRAPARS}, csv_filename = \'${sampleID}_findr.csv\', num_cores = ${task.cpus})"
-	"""
+	gzip *_findr.csv
+        """
 }
 
 
@@ -69,4 +70,4 @@ workflow GET_VERSION {
 		getVersion()
     emit:
     	getVersion.out
-}    
+}
