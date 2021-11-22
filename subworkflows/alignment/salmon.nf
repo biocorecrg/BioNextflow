@@ -79,17 +79,20 @@ process mapSE {
 process mapPE {
     label (params.LABEL)
     tag { "${pair_id}" }
+
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
 
     input:
-    tuple val(pair_id), path(readsA), path(readsB)
+    tuple val(pair_id), path(pairs)
     path(index)
 
     output:
     tuple val(pair_id), path("${pair_id}") 
     
     script:
+    def readsA = pairs[0]
+    def readsB = pairs[1]
     """
     salmon quant ${params.EXTRAPARS} --validateMappings --seqBias -l A --gcBias -p ${task.cpus} -i ${index} -1 ${readsA} -2 ${readsB} -o ${pair_id}
     """
