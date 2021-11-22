@@ -37,23 +37,28 @@ process index {
     output:
     path("${indexname}")
 
-	script:    
+    script:    
+    def unzip_ref = unzipCmd(reference)
+    def cmd_ref = unzip_ref[1]
+    def ref_name = unzip_ref[0]
+    def clean_ref = unzip_ref[2]
+    def unzip_genome = unzipCmd(genome)
+    def cmd_genome = unzip_genome[1]
+    def genome_name = unzip_genome[0]
+    def clean_genome = unzip_genome[2]
     """
-	if [ `echo ${reference} | grep ".gz"` ]; then 
-   		cp ${reference} ${indexname}.fa.gz   
-	else
-		gzip -c {reference} > ${indexname}.fa.gz  
-    fi
-	if [ `echo ${genome} | grep ".gz"` ]; then 
-   		cat ${genome} >> ${indexname}.fa.gz   
-   		grep "^>" <(gunzip -c ${genome}) | cut -d " " -f 1 > decoys.txt
-	else
-   		grep "^>" ${genome} | cut -d " " -f 1 > decoys.txt
-		gzip -c {genome} >> ${indexname}.fa.gz  
-    fi   
+    ${cmd_ref}
+    ${cmd_genome}
+
+    grep "^>" ${genome_name} | cut -d " " -f 1 > decoys.txt
     sed -i.bak -e 's/>//g' decoys.txt    
-    salmon index ${params.EXTRAPARSINDEX} -p ${task.cpus} -d decoys.txt -t ${indexname}.fa.gz -i ${indexname}
-    rm ${indexname}.fa.gz
+    cat ${ref_name} ${genome_name} >> gentrome.fa
+    gzip gentrome.fa 
+    salmon index ${params.EXTRAPARSINDEX} -p ${task.cpus} -d decoys.txt -t gentrome.fa.gz -i ${indexname}
+    
+    ${clean_ref}
+    ${clean_genome}
+    rm gentrome.fa.gz
     """
 }
 
