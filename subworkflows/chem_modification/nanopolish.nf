@@ -110,11 +110,12 @@ process polyAtail {
 	nanopolish index -d ./ ${fastq}
 	# polya length estimation
 	nanopolish polya -r ${fastq} ${params.EXTRAPARS} -g ${reference} -t ${task.cpus} -b ${alignment} | pigz -p ${task.cpus}  > ${sampleID}-${fast5_index}.polya.estimation.tsv.gz
-	"""
+	rm ${fastq}.inde*
+        """
 } 
 
 process collect_polyA_results {
-        if (params.OUTPUT != "") { publishDir(params.OUTPUT,pattern: "*.polya.estimation.tsv", mode:params.OUTPUTMODE ) }
+        if (params.OUTPUT != "") { publishDir(params.OUTPUT,pattern: "*.polya.estimation.tsv.gz", mode:params.OUTPUTMODE ) }
 	tag { sampleID }  
         container params.CONTAINER
 	
