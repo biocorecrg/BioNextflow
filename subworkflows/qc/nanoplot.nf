@@ -5,7 +5,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/mopprepr:0.7"
+params.CONTAINER = "biocorecrg/mopprepr:0.8"
 params.OUTPUT = ""
 
 process MOP_nanoPlot {

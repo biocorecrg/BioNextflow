@@ -11,7 +11,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "biocorecrg/mopprepr:0.7"
+params.CONTAINER = "biocorecrg/mopprepr:0.8"
 
 process getVersion {
     container params.CONTAINER
