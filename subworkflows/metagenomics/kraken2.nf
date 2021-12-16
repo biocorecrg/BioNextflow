@@ -34,11 +34,24 @@ process kraken2_build {
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
   input:
+  val(groups)
+  val(dbname)
 
   output:
+  path(dbname)
 
   script:
   """
+  listg=${groups//,/ }
+  #orgs=( viral bacteria archaea fungi protozoa human UniVec_Core )
+  orgs = (\$listg)
+  for o in "\${orgs[@]}"
+  do
+          kraken2-build --download-library \$o --db $dbname
+          sleep 30
+  done
+  kraken2-build --build --db $dbname
+
   """
 
 }
