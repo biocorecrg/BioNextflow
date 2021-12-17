@@ -31,7 +31,7 @@ process calcVarFrequencies {
 
     container params.CONTAINER
     label (params.LABEL)
-    tag "${sampleID}" 
+    tag "${alnfile} on ${sampleID}" 
  	
     input:
     tuple val(sampleID), path(alnfile), path(bais), path(reference), path(dict_index), path(faiidx) 
