@@ -46,7 +46,13 @@ process demultiplex {
     input_fast5
     
     main:
-    	demultiplex(input_fast5.combine(models))
+    	models.collect().map{
+		[it]
+	}.set{allmods}
+        data = input_fast5.combine(allmods)
+        
+	demultiplex(data)
+        
 
 	emit:
     	demultiplex.out.demux_files
