@@ -36,7 +36,7 @@ process demultiplex {
  
     script:  
     """	
-    	deeplexicon_sub.py dmux ${params.EXTRAPARS} -t ${task.cpus} -p ./ > ${idfile}_demux.tsv
+    	deeplexicon_sub.py dmux ${params.EXTRAPARS} -p ./ > ${idfile}_demux.tsv
     """
 }
 
