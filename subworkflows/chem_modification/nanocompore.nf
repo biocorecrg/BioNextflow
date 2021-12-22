@@ -39,7 +39,7 @@ process sampleCompare {
     file(reference)
     
     output:
-    file("${folder_name_A}-${folder_name_B}_nanocompore")
+    file("${folder_name_A}-${folder_name_B}_nanocompore/*_results.tsv.gz")
     
     script:
 	"""
@@ -51,7 +51,8 @@ process sampleCompare {
     --fasta ${reference} \
     --outpath ./${folder_name_A}-${folder_name_B}_nanocompore/ \
     ${params.EXTRAPARS} --pvalue_thr 1 --outprefix ${folder_name_A}_vs_${folder_name_B} --logit --comparison_methods GMM,KS,MW,TT --overwrite 
-	"""
+      gzip ${folder_name_A}-${folder_name_B}_nanocompore/*_results.tsv 	
+      """
 
 
 }
