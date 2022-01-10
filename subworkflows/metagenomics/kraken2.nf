@@ -25,36 +25,33 @@ process getVersion {
     """
 }
 
-// process kraken2Build {
-//
-//   tag { id }
-//   label (params.LABEL)
-//   container params.CONTAINER
-//   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
-//
-//   input:
-//   val(groups)
-//   val(dbname)
-//
-//   output:
-//   path(dbname)
-//
-//   script:
-//   """
-//   listg=${groups//,/ }
-//   orgs=()
-//   // orgs=( viral bacteria archaea fungi protozoa human UniVec_Core )
-//   orgs = (\$listg)
-//   for o in "\${orgs[@]}"
-//   do
-//           kraken2-build --download-library \$o --db $dbname
-//           sleep 30
-//   done
-//   kraken2-build --build --db $dbname
-//
-//   """
-//
-// }
+process kraken2Build {
+
+  label (params.LABEL)
+  container params.CONTAINER
+  if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+  input:
+  val(groups)
+  val(dbname)
+
+  output:
+  path(dbname)
+
+  script:
+  """
+  listg=${groups//,/ }
+  orgs = (\$listg)
+  for o in "\${orgs[@]}"
+  do
+          kraken2-build --download-library \$o --db ${dbname}
+          sleep 30
+  done
+  kraken2-build --build --db ${dbname}
+
+  """
+
+}
 
 process kraken2 {
 
@@ -85,18 +82,19 @@ process kraken2 {
 
 }
 
-// workflow BUILD {
-//     take:
-//
-//
-//     main:
-//
-//     out = kraken2Build()
-//
-//     emit:
-//     out
-//
-// }
+workflow BUILD {
+    take:
+    groups
+    dbname
+
+    main:
+
+    out = kraken2Build(groups, dbname)
+
+    emit:
+    out
+
+}
 
 
 workflow RUN {
