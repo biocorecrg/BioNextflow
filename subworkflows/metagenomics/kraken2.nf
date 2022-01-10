@@ -10,11 +10,10 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = "kraken2"
-params.CONTAINER = ""
-
-include { unzipCmd } from '../global_functions.nf'
+params.CONTAINER = "biocorecrg/kraken2:202112"
 
 process getVersion {
+
     container params.CONTAINER
 
     output:
@@ -26,35 +25,36 @@ process getVersion {
     """
 }
 
-process kraken2_build {
-
-  tag { id }
-  label (params.LABEL)
-  container params.CONTAINER
-  if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
-
-  input:
-  val(groups)
-  val(dbname)
-
-  output:
-  path(dbname)
-
-  script:
-  """
-  listg=${groups//,/ }
-  #orgs=( viral bacteria archaea fungi protozoa human UniVec_Core )
-  orgs = (\$listg)
-  for o in "\${orgs[@]}"
-  do
-          kraken2-build --download-library \$o --db $dbname
-          sleep 30
-  done
-  kraken2-build --build --db $dbname
-
-  """
-
-}
+// process kraken2Build {
+//
+//   tag { id }
+//   label (params.LABEL)
+//   container params.CONTAINER
+//   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+//
+//   input:
+//   val(groups)
+//   val(dbname)
+//
+//   output:
+//   path(dbname)
+//
+//   script:
+//   """
+//   listg=${groups//,/ }
+//   orgs=()
+//   // orgs=( viral bacteria archaea fungi protozoa human UniVec_Core )
+//   orgs = (\$listg)
+//   for o in "\${orgs[@]}"
+//   do
+//           kraken2-build --download-library \$o --db $dbname
+//           sleep 30
+//   done
+//   kraken2-build --build --db $dbname
+//
+//   """
+//
+// }
 
 process kraken2 {
 
@@ -65,6 +65,7 @@ process kraken2 {
 
   input:
   tuple val(pair_id), path(reads)
+  path(database)
 
   output:
   path("kraken2*.report")
@@ -74,30 +75,37 @@ process kraken2 {
 
   script:
   """
+  mode=""
+  if [[ "${reads}" = *" "* ]]; then
+    mode="--paired"
+  fi
+  kraken2 --db ${database} --report kraken2_${pair_id}.report --threads ${task.cpus} \${mode} ${reads} --classified-out cfs_${pair_id}#.fq --unclassified-out ucfs_${pair_id}#.fq ${params.EXTRAPARS} > kraken2_${pair_id}.out
+  gzip *.fq
   """
 
 }
 
-workflow KRAKEN2_BUILD {
-    take:
+// workflow BUILD {
+//     take:
+//
+//
+//     main:
+//
+//     out = kraken2Build()
+//
+//     emit:
+//     out
+//
+// }
 
+
+workflow RUN {
+    take:
+    fastq
+    database
 
     main:
-
-    out = kraken2_build()
-
-    emit:
-    out
-
-}
-
-workflow KRAKEN2 {
-    take:
-
-
-    main:
-
-    out = kraken2()
+    out = kraken2(fastq, database)
 
     emit:
     out
@@ -108,5 +116,5 @@ workflow GET_VERSION {
     main:
 		getVersion()
     emit:
-    	getVersion.out
+    getVersion.out
 }

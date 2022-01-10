@@ -16,8 +16,8 @@ process getVersion {
     container params.CONTAINER
 
     output:
-	stdout emit: out    
-    
+	stdout emit: out
+
     shell:
     """
     salmon --version
@@ -37,7 +37,7 @@ process index {
     output:
     path("${indexname}")
 
-    script:    
+    script:
     def unzip_ref = unzipCmd(reference)
     def cmd_ref = unzip_ref[1]
     def ref_name = unzip_ref[0]
@@ -51,11 +51,11 @@ process index {
     ${cmd_genome}
 
     grep "^>" ${genome_name} | cut -d " " -f 1 > decoys.txt
-    sed -i.bak -e 's/>//g' decoys.txt    
+    sed -i.bak -e 's/>//g' decoys.txt
     cat ${ref_name} ${genome_name} >> gentrome.fa
-    gzip gentrome.fa 
+    gzip gentrome.fa
     salmon index ${params.EXTRAPARSINDEX} -p ${task.cpus} -d decoys.txt -t gentrome.fa.gz -i ${indexname}
-    
+
     ${clean_ref}
     ${clean_genome}
     rm gentrome.fa.gz
@@ -73,8 +73,8 @@ process mapSE {
     path(index)
 
     output:
-    tuple val(pair_id), path("${pair_id}") 
-    
+    tuple val(pair_id), path("${pair_id}")
+
     script:
     """
     salmon quant ${params.EXTRAPARS} --validateMappings --seqBias -l A --gcBias -p ${task.cpus} -i ${index} -r ${reads} -o ${pair_id}
@@ -93,8 +93,8 @@ process mapPE {
     path(index)
 
     output:
-    tuple val(pair_id), path("${pair_id}") 
-    
+    tuple val(pair_id), path("${pair_id}")
+
     script:
     def readsA = pairs[0]
     def readsB = pairs[1]
@@ -105,10 +105,10 @@ process mapPE {
 
 
 workflow INDEX {
-    take: 
+    take:
     reference
     genome
-    
+
     main:
 	ref_file = file(reference)
 	if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
@@ -119,10 +119,10 @@ workflow INDEX {
 }
 
 workflow MAP {
-    take: 
+    take:
     index
     fastq
-    
+
     main:
     def sep_fastq = separateSEandPE(fastq)
     outpe = mapSE(sep_fastq.se, index)
@@ -135,12 +135,12 @@ workflow MAP {
 }
 
 workflow ALL {
-    take: 
+    take:
     reference
     genome
     fastq
-    
-    main:        
+
+    main:
     index = INDEX(reference, genome)
     outm = MAP(index, fastq)
 
@@ -150,4 +150,3 @@ workflow ALL {
     	outm
 
 }
-
