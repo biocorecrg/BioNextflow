@@ -68,10 +68,10 @@ process kraken2 {
   path(database)
 
   output:
-  path("kraken2*.report")
-  path("kraken2*.out")
-  path("cfs*.fq.gz")
-  path("ucfs*.fq.gz")
+  path("kraken2*.report"), emit: report
+  path("kraken2*.out"), emit: output
+  path("cfs*.fq.gz"), emit: classified
+  path("ucfs*.fq.gz"), emit: unclassified
 
   script:
   """
@@ -108,7 +108,10 @@ workflow RUN {
     out = kraken2(fastq, database)
 
     emit:
-    out
+    out.report
+    out.output
+    out.classified
+    out.unclassified
 
 }
 
