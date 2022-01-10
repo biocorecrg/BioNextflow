@@ -25,7 +25,7 @@ process getVersion {
     """
 }
 
-process kraken2Build {
+process kraken2_build {
 
   label (params.LABEL)
   container params.CONTAINER
@@ -40,9 +40,8 @@ process kraken2Build {
 
   script:
   """
-  listg=${groups//,/ }
-  orgs = (\$listg)
-  for o in "\${orgs[@]}"
+  orgs=${groups}
+  for o in \${orgs//,/ }
   do
           kraken2-build --download-library \$o --db ${dbname}
           sleep 30
@@ -89,7 +88,7 @@ workflow BUILD {
 
     main:
 
-    out = kraken2Build(groups, dbname)
+    out = kraken2_build(groups, dbname)
 
     emit:
     out
