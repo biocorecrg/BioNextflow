@@ -40,6 +40,7 @@ process kraken2_build {
 
   script:
   """
+  kraken2-build --download-taxonomy --db ${dbname}
   orgs=${groups}
   for o in \${orgs//,/ }
   do
