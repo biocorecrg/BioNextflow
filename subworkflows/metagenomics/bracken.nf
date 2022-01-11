@@ -52,7 +52,6 @@ process bracken_build {
   input:
   val(read_size)
   path(database)
-  path(brackendb)
 
   output:
   path("database*"), emit: brackendb
@@ -60,19 +59,9 @@ process bracken_build {
 
   script:
   """
-    if [ -f "${brackendb}/database.kraken" ]; then
-      ln -s "${brackendb}/database.kraken" .
-    else
-      kraken2 --db=${database} --threads=${task.cpus} <( find -L ${database}/library \\( -name "*.fna" -o -name "*.fasta" -o -name "*.fa" \\) -exec cat {} + ) > database.kraken
-    fi
-    if [ -f "${brackendb}/database${read_size}mers.kmer_distrib}" ]; then
-      ln -s "${brackendb}/database${read_size}mers.kraken" .
-      ln -s "${brackendb}/database${read_size}mers.kmer_distrib" .
-      touch out${read_size}
-    else
-      /usr/local/bracken/src/kmer2read_distr --seqid2taxid ${database}/seqid2taxid.map --taxonomy ${database}/taxonomy --kraken database.kraken --output database${read_size}mers.kraken -l ${read_size} -t ${task.cpus}
-      python /usr/local/bracken/src/generate_kmer_distribution.py -i database${read_size}mers.kraken -o database${read_size}mers.kmer_distrib > out${read_size}
-    fi
+  kraken2 --db=${database} --threads=${task.cpus} <( find -L ${database}/library \\( -name "*.fna" -o -name "*.fasta" -o -name "*.fa" \\) -exec cat {} + ) > database.kraken
+  /usr/local/bracken/src/kmer2read_distr --seqid2taxid ${database}/seqid2taxid.map --taxonomy ${database}/taxonomy --kraken database.kraken --output database${read_size}mers.kraken -l ${read_size} -t ${task.cpus}
+  python /usr/local/bracken/src/generate_kmer_distribution.py -i database${read_size}mers.kraken -o database${read_size}mers.kmer_distrib > out${read_size}
   """
 
 }
@@ -110,12 +99,11 @@ process bracken {
       take:
       fastq
       database
-      brackendb
 
       main:
 
       read_size = get_read_length(fastq).out.unique().map { it.trim().toInteger() }
-      out = bracken_build(read_size, database, brackendb)
+      out = bracken_build(read_size, database)
 
       emit:
       out.brackendb
