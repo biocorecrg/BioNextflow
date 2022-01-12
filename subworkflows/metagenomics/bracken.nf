@@ -78,7 +78,6 @@ process bracken {
   path(brackendb)
   path("kraken2_${pair_id}.report")
   path("kraken2_${pair_id}.out")
-  path(bracken_out)
 
   output:
   path("bracken_${pair_id}.*.report"), emit: report
