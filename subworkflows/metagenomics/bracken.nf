@@ -54,8 +54,7 @@ process bracken_build {
   path(database)
 
   output:
-  path("database.kraken"), emit: brackendb
-  path("database${read_size}*"), emit: bracken_kmers
+  path("database*"), emit: brackendb
   path("out${read_size}"), emit: bracken_out
 
   script:
@@ -79,7 +78,6 @@ process bracken {
   path(brackendb)
   path("kraken2_${pair_id}.report")
   path("kraken2_${pair_id}.out")
-  path(bracken_kmers)
   path(bracken_out)
 
   output:
@@ -92,7 +90,7 @@ process bracken {
   FIRST=\$(echo ${reads} | head -n1 | awk '{print \$1;}')
   if [ `echo \$FIRST | grep "gz"` ]; then cat="zcat"; else cat="cat"; fi
   READSIZE=\$(\$cat \$FIRST | awk '{num++}{if (num%4==2){line++; sum+=length(\$0)} if (line==100) {printf "%.0f", sum/100; exit} } ')
-  bracken -d ${brackendb} -i kraken2_${pair_id}.report -o bracken_${pair_id}.\${READSIZE}.report -r \$READSIZE -l S -t ${task.cpus} > bracken_${pair_id}.\${READSIZE}.out
+  bracken -d . -i kraken2_${pair_id}.report -o bracken_${pair_id}.\${READSIZE}.report -r \$READSIZE -l S -t ${task.cpus} > bracken_${pair_id}.\${READSIZE}.out
   """
 
   }
@@ -109,7 +107,6 @@ process bracken {
 
       emit:
       out.brackendb
-      out.bracken_kmers
       out.bracken_out
 
   }
@@ -121,11 +118,9 @@ process bracken {
       brackendb
       kraken2_report
       kraken2_outfile
-      bracken_kmers
-      bracken_out
 
       main:
-      out = bracken(fastq, brackendb.collect(), kraken2_report, kraken2_outfile, bracken_kmers.collect(), bracken_out.collect() )
+      out = bracken(fastq, brackendb.collect(), kraken2_report, kraken2_outfile)
 
       emit:
       out.report
