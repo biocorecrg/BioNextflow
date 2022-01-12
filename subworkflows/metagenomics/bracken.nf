@@ -54,7 +54,8 @@ process bracken_build {
   path(database)
 
   output:
-  path("database*"), emit: brackendb
+  path("database.kraken"), emit: brackendb
+  path("database${read_size}*"), emit: bracken_kmers
   path("out${read_size}"), emit: bracken_out
 
   script:
@@ -78,6 +79,7 @@ process bracken {
   path(brackendb)
   path("kraken2_${pair_id}.report")
   path("kraken2_${pair_id}.out")
+  path(bracken_kmers)
   path(bracken_out)
 
   output:
@@ -107,6 +109,7 @@ process bracken {
 
       emit:
       out.brackendb
+      out.bracken_kmers
       out.bracken_out
 
   }
@@ -118,10 +121,11 @@ process bracken {
       brackendb
       kraken2_report
       kraken2_outfile
+      bracken_kmers
       bracken_out
 
       main:
-      out = bracken(fastq, brackendb.collect(), kraken2_report, kraken2_outfile, bracken_out.collect() )
+      out = bracken(fastq, brackendb.collect(), kraken2_report, kraken2_outfile, bracken_kmers.collect(), bracken_out.collect() )
 
       emit:
       out.report
