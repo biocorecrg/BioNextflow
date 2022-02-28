@@ -48,7 +48,11 @@ workflow TRIMMING {
     main:
         out = trimWithSkewer(fastq)
     emit:
-        trimmed_reads = out.trimmed_reads
+        trimmed_reads = out.trimmed_reads.map{
+        	def id = it[0]
+        	def reads = it.remove(1)
+        	[ id, [reads] ]
+        }
         trim_log = out.trim_log
 }
 
