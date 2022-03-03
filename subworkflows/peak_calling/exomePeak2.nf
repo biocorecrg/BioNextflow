@@ -34,7 +34,7 @@ process peakCall {
     path(annofile)
 
     output:
-    tuple val(comp_id), path("exomePeak2_output/Mod.bed"), emit: bedPeaks
+    tuple val(comp_id), path("${comp_id}_peaks.bed"), emit: bedPeaks
     
 	script:
 	def filecontent = "SampleID\tBamIP\tBamInput"
@@ -73,6 +73,8 @@ exomePeak2(bam_ip = IP_BAM,
 EOL
 
 	Rscript  CMD.R 
+	mv exomePeak2_output/Mod.bed ${comp_id}_peaks.bed
+	
 	${cmd_clean}
     """
 }
