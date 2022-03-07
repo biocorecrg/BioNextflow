@@ -118,7 +118,9 @@ process baseCallAndDemultiPlex {
 		if [ -d barcode01 ]; then
 			for d in barcode*; do echo \$d; cat \$d/*.fastq > ../${idfile}.\$d.fastq; done;
 		fi
-		cat unclassified/*.fastq > ../${idfile}.unclassified.fastq; cd ../
+		if [ -d unclassified ]; then
+			cat unclassified/*.fastq > ../${idfile}.unclassified.fastq; cd ../
+		fi
 		for i in *.fastq; do gzip \$i; done	
         rm *_out/*/*.fastq
      """
