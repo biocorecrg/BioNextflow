@@ -1,5 +1,5 @@
-// make named pipe 
-def unzipNamedPipe(filename) { 
+// make named pipe
+def unzipNamedPipe(filename) {
     def cmd = filename.toString()
     if (cmd[-3..-1] == ".gz") {
     	cmd = "<(zcat ${filename})"
@@ -7,7 +7,7 @@ def unzipNamedPipe(filename) {
     return cmd
 }
 
-def zcatOrCat(filename) { 
+def zcatOrCat(filename) {
     def fname = filename.toString()
     def cmd = "cat ${filename}"
     if (fname[-3..-1] == ".gz") {
@@ -47,7 +47,6 @@ def unzipCmd(filename) {
     	fname = filename.baseName
     	cmd = "zcat ${filename} > ${fname}"
         clean = "rm ${fname}"
-    }	
+    }
     return [fname, cmd, clean]
 }
-

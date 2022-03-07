@@ -10,11 +10,10 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = "kraken2"
-params.CONTAINER = ""
-
-include { unzipCmd } from '../global_functions.nf'
+params.CONTAINER = "biocorecrg/kraken2:202112"
 
 process getVersion {
+
     container params.CONTAINER
 
     output:
@@ -28,7 +27,6 @@ process getVersion {
 
 process kraken2_build {
 
-  tag { id }
   label (params.LABEL)
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
@@ -42,15 +40,14 @@ process kraken2_build {
 
   script:
   """
-  listg=${groups//,/ }
-  #orgs=( viral bacteria archaea fungi protozoa human UniVec_Core )
-  orgs = (\$listg)
-  for o in "\${orgs[@]}"
+  kraken2-build --download-taxonomy --db ${dbname}
+  orgs=${groups}
+  for o in \${orgs//,/ }
   do
-          kraken2-build --download-library \$o --db $dbname
+          kraken2-build --download-library \$o --db ${dbname}
           sleep 30
   done
-  kraken2-build --build --db $dbname
+  kraken2-build --build --db ${dbname}
 
   """
 
@@ -58,49 +55,61 @@ process kraken2_build {
 
 process kraken2 {
 
-  tag { id }
+  tag { pair_id }
   label (params.LABEL)
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
   input:
   tuple val(pair_id), path(reads)
+  path(database)
 
   output:
-  path("kraken2*.report")
-  path("kraken2*.out")
-  path("cfs*.fq.gz")
-  path("ucfs*.fq.gz")
+  path("kraken2*.report"), emit: report
+  path("kraken2*.out"), emit: output
+  path("cfs*.fq.gz"), emit: classified
+  path("ucfs*.fq.gz"), emit: unclassified
 
   script:
   """
+  mode=""
+  if [[ "${reads}" = *" "* ]]; then
+    mode="--paired"
+  fi
+  kraken2 --db ${database} --report kraken2_${pair_id}.report --threads ${task.cpus} \${mode} ${reads} --classified-out cfs_${pair_id}#.fq --unclassified-out ucfs_${pair_id}#.fq ${params.EXTRAPARS} > kraken2_${pair_id}.out
+  gzip *.fq
   """
 
 }
 
-workflow KRAKEN2_BUILD {
+workflow BUILD {
     take:
-
+    groups
+    dbname
 
     main:
 
-    out = kraken2_build()
+    out = kraken2_build(groups, dbname)
 
     emit:
     out
 
 }
 
-workflow KRAKEN2 {
-    take:
 
+workflow RUN {
+    take:
+    fastq
+    database
 
     main:
-
-    out = kraken2()
+    out = kraken2(fastq, database)
 
     emit:
-    out
+    out.report
+    out.output
+    out.classified
+    out.unclassified
 
 }
 
@@ -108,5 +117,5 @@ workflow GET_VERSION {
     main:
 		getVersion()
     emit:
-    	getVersion.out
+    getVersion.out
 }

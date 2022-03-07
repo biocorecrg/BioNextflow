@@ -6,8 +6,8 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 
-params.OUTPUT = "bwa_out"
-params.CONTAINER = "quay.io/biocontainers/skewer:0.1.126--h2d50403_1"
+params.OUTPUT = ""
+params.CONTAINER = "biocorecrg/skewer:0.2.2"
 
 process getVersion {
     container params.CONTAINER
@@ -41,15 +41,19 @@ process trimWithSkewer {
 }
 
 
-workflow SKEWER {
+workflow TRIMMING {
     take: 
     fastq
     
     main:
-		out = trimWithSkewer(fastq)
+        out = trimWithSkewer(fastq)
     emit:
-        out.trimmed_reads
-        out.trim_log
+        trimmed_reads = out.trimmed_reads.map{
+        	def id = it[0]
+        	def reads = it.remove(1)
+        	[ id, [reads] ]
+        }
+        trim_log = out.trim_log
 }
 
 workflow GET_VERSION {
