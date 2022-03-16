@@ -40,6 +40,24 @@ process makeReport {
     """
 }
 
+process makeReportID {
+    label (params.LABEL)
+    tag { id }
+    
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(input)
+	
+    output:
+	tuple val(id), path("multiqc_report.html")
+	
+    script:
+    """
+		multiqc ${params.EXTRAPARS} .
+    """
+}
 
 workflow REPORT {
     take: 
@@ -51,6 +69,15 @@ workflow REPORT {
 		out	
 }
 
+workflow REPORT_ID {
+    take: 
+    input
+    
+    main:
+		out = makeReportID(input)
+	emit:
+		out	
+}
 
 
 workflow GET_VERSION {

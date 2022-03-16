@@ -34,7 +34,9 @@ process baseCall {
     tuple val(idfile), path(samplesheet), path(infolder)
     
     output:
-    tuple val(idfile), path("${idfile}_ouput")
+    tuple val(idfile), path("${idfile}_ouput"), emit: outfolder
+    tuple val(idfile), path("${idfile}_ouput/*.fastq.gz"), emit: fastqs
+    tuple val(idfile), path("${idfile}_ouput/Stats"), emit: statfolder
 
     script:
     """
@@ -51,6 +53,11 @@ process baseCall {
     
     main:
     	baseCall(input_data)
+    	
+	emit:
+    	outfolder = baseCall.out.outfolder
+    	fastqs = baseCall.out.fastqs
+    	statfolder = baseCall.out.statfolder
  
 }
 

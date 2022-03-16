@@ -26,6 +26,24 @@ process fastQC {
 	"""
 }
 
+process fastQC2 {
+    tag "${fastq}"
+    label (params.LABEL)
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(fastq)
+
+    output:
+    tuple val(id), path("*_fastqc.*") 
+
+    script:
+	"""
+	fastqc -t ${task.cpus} ${fastq} 
+	"""
+}
+
 workflow FASTQC {
     take: 
     fastq
@@ -65,6 +83,22 @@ workflow FASTQCP {
     out
 
 }
+
+workflow FASTQC_ID {
+    take: 
+    fastqp
+    
+    main:
+    fastqp.map{
+		[it[0], it[1]]
+	}.set{fastq}	
+    out = fastQC2(fastq)
+    
+    emit:
+    out
+
+}
+
 
 workflow GET_VERSION {
     main:
