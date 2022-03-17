@@ -36,7 +36,8 @@ process baseCall {
     
     output:
     tuple val(idfile), path("${idfile}_ouput"), emit: outfolder
-    tuple val(idfile), path("${idfile}_ouput/*.fastq.gz"), emit: fastqs
+    tuple val(idfile), path("${idfile}_ouput/*.fastq.gz"), emit: undet_fastqs
+    tuple val(idfile), path("${idfile}_ouput/*/*/*.fastq.gz"), emit: demux_fastqs
     tuple val(idfile), path("${idfile}_ouput/Stats"), emit: statfolder
 
     script:
@@ -57,7 +58,8 @@ process baseCall {
     	
 	emit:
     	outfolder = baseCall.out.outfolder
-    	fastqs = baseCall.out.fastqs
+    	undet_fastqs = baseCall.out.undet_fastqs
+    	demux_fastqs = baseCall.out.demux_fastqs
     	statfolder = baseCall.out.statfolder
  
 }
