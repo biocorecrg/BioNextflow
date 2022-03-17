@@ -26,6 +26,7 @@ process getVersion {
 process baseCall {
 
     tag { idfile }
+    label (params.LABEL)
 
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT,  mode: params.OUTPUTMODE) }
     container params.CONTAINER
