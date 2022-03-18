@@ -51,11 +51,11 @@ process makeReportID {
     tuple val(id), path(input)
 	
     output:
-	tuple val(id), path("multiqc_report.html")
+	tuple val(id), path(id)
 	
     script:
     """
-		multiqc ${params.EXTRAPARS} .
+		multiqc ${params.EXTRAPARS} -o ${id} .
     """
 }
 
