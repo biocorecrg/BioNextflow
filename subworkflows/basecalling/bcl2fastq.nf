@@ -8,6 +8,7 @@ params.EXTRAPARS = ""
 params.OUTPUTMODE = "copy"
 params.OUTPUT = ""
 params.CONTAINER = "centos:centos6.10"
+params.PARSING = "false"
 
 
 process getVersion {
@@ -41,17 +42,27 @@ process baseCall {
     tuple val(idfile), path("${idfile}_ouput/Stats"), emit: statfolder
 
     script:
+
+	def parsing_cmd = "par_cmd=''"
+	
+	if (params.PARSING == "true") {
+		parsing_cmd = "par_cmd=`grep OverrideCycles ${samplesheet} | awk -F ',' '{print \"--use-bases-mask \" \$2 }' | sed s@';'@,@g`"
+	} 
+
     """
-        bcl2fastq ${params.EXTRAPARS} --sample-sheet ${samplesheet} \
+    	${parsing_cmd}
+        bcl2fastq ${params.EXTRAPARS} \$par_cmd --sample-sheet ${samplesheet} \
         --output-dir ${idfile}_ouput \
         --runfolder-dir ${infolder} \
         -p ${task.cpus} -r ${task.cpus} -w ${task.cpus} 
     """
 }
 
+
  workflow BASECALL {
     take: 
     input_data
+    
     
     main:
     	baseCall(input_data)
