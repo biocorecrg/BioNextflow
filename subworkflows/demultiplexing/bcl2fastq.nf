@@ -24,7 +24,7 @@ process getVersion {
     """
 }
 
-process baseCall {
+process demultiplex {
 
     tag { idfile }
     label (params.LABEL)
@@ -59,19 +59,19 @@ process baseCall {
 }
 
 
- workflow BASECALL {
+ workflow CONV_DEMUX {
     take: 
     input_data
     
     
     main:
-    	baseCall(input_data)
+    	demultiplex(input_data)
     	
 	emit:
-    	outfolder = baseCall.out.outfolder
-    	undet_fastqs = baseCall.out.undet_fastqs
-    	demux_fastqs = baseCall.out.demux_fastqs
-    	statfolder = baseCall.out.statfolder
+    	outfolder = demultiplex.out.outfolder
+    	undet_fastqs = demultiplex.out.undet_fastqs
+    	demux_fastqs = demultiplex.out.demux_fastqs
+    	statfolder = demultiplex.out.statfolder
  
 }
 
