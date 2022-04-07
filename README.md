@@ -2,7 +2,7 @@
 
 # ![BioNextflow](https://github.com/biocorecrg/BioNextflow/blob/master/bionextflow.png)
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3360455.svg)](https://doi.org/10.5281/zenodo.3360455)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6394333.svg)](https://doi.org/10.5281/zenodo.6394333)
 [![Nextflow version](https://img.shields.io/badge/Nextflow-21.04.1-brightgreen)](https://www.nextflow.io/)
 [![Nextflow DSL2](https://img.shields.io/badge/Nextflow-DSL2-brightgreen)](https://www.nextflow.io/)
 
