@@ -1,0 +1,15 @@
+# This will do biocorecrg/alevinqc:0.1
+FROM satijalab/seurat:4.1.0
+
+# File Author / Maintainer
+MAINTAINER Luca Cozzuto <lucacozzuto@gmail.com> 
+
+RUN Rscript -e "BiocManager::install(c('tximport','fishpond','multtest'))"
+
+RUN apt install pkg-config
+
+RUN Rscript -e "install.packages('metap')"
+RUN Rscript -e "install.packages(c('ggplot2', 'cowplot'))"
+
+RUN Rscript -e "remotes::install_github('mojaveazure/seurat-disk')"
+

@@ -1,0 +1,8 @@
+# This will do biocorecrg/alevinqc:0.1
+FROM bioconductor/bioconductor_docker:RELEASE_3_15
+
+# File Author / Maintainer
+MAINTAINER Luca Cozzuto <lucacozzuto@gmail.com> 
+
+RUN Rscript -e "BiocManager::install('alevinQC')"
+
