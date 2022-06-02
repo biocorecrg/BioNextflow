@@ -28,34 +28,56 @@ library(dplyr)
 library(Seurat)
 library(patchwork)
 library(tximport)
-library(ggplot2)
-
+library("ggplot2")
+library("SingleR")
+library("celldex")
+library("stringr")
+ 
 tx2gene<-read.delim("${tx2gene}", header=FALSE)
 colnames(tx2gene)<-c("enst_id", "ensg_id", "ens_name")
-tx2gene2<-unique(tx2gene[, c(2,3)])
-mt_genes<-subset(tx2gene2, grepl("^MT-", tx2gene2\$ens_name))
 
+ens_gene_ids<-str_split(tx2gene\$ensg_id , "\\\\.", n = Inf, simplify = TRUE) 
+
+tx2gene\$ensg_id <- ens_gene_ids[, 1]
+tx2gene2<-unique(tx2gene[, c(2,3)])
+
+mt_genes<-subset(tx2gene2, grepl("^MT-", tx2gene2\$ens_name))
+rb_genes<-subset(tx2gene2, grepl("^RP[SL]", tx2gene2\$ens_name))
 files<- file.path("${quants_folder}/alevin/quants_mat.gz")
 txi <- tximport(files, type="alevin")
+
+ens_gene_ids2<-str_split(row.names(txi\$counts) , "\\\\.", n = Inf, simplify = TRUE) 
+
+row.names(txi\$counts)<-ens_gene_ids2[, 1]
 
 seurObj <- CreateSeuratObject(counts = txi\$counts , min.cells = 3, min.features = 200, project = "${id}")
 
 counts <- seurObj@assays\$RNA@counts
 mt <- mt_genes\$ensg_id[mt_genes\$ensg_id %in% rownames(counts)]
+rb <- rb_genes\$ensg_id[rb_genes\$ensg_id %in% rownames(counts)]
 
 seurObj[["percent.mt"]] <- PercentageFeatureSet(seurObj, features = mt,  assay = 'RNA')
+seurObj[["percent.rb"]] <- PercentageFeatureSet(seurObj, features = rb,  assay = 'RNA')
 
 pdf(paste("${id}", "_vp.pdf", sep=""), width=10, height=20)
-VlnPlot(seurObj, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
+VlnPlot(seurObj, features = c("nFeature_RNA", "nCount_RNA", "percent.mt", "percent.rb") , ncol = 4)
 dev.off()
 
+# subsetting and normalize 
+# We subset cells with less than 0.05 percentile MT and between 200 and 0.99 percentile of nFeatures 
+cutoff.mt<-round(quantile(seurObj[["percent.mt"]][, 1], c(.95)))[[1]]
+cutoff.nFeat<-round(quantile(seurObj[["nFeature_RNA"]][, 1], c(.99)))[[1]]
+
+
 pdf(paste("${id}", "_fc.pdf", sep=""), width=10)
-plot1 <- FeatureScatter(seurObj, feature1 = "nCount_RNA", feature2 = "percent.mt")
-plot2 <- FeatureScatter(seurObj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA")
+plot1 <- FeatureScatter(seurObj, feature1 = "nCount_RNA", feature2 = "percent.mt") + theme(legend.position="none") + geom_hline(yintercept = cutoff.mt) + annotate("text", x=-100, y=cutoff.mt+2, label= cutoff.mt)
+plot2 <- FeatureScatter(seurObj, feature1 = "nCount_RNA", feature2 = "nFeature_RNA") + theme(legend.position="none") + geom_hline(yintercept = 200) + geom_hline(yintercept = cutoff.nFeat) + annotate("text", x=c(-400,-400), y=c(300, cutoff.nFeat+100), label= c(200, cutoff.nFeat))
 plot1 + plot2
 dev.off()
 
-# normalize
+
+seurObj <- subset(seurObj, subset = nFeature_RNA > 200 & nFeature_RNA < cutoff.nFeat[1] & percent.mt < cutoff.mt)
+
 seurObj <- SCTransform(seurObj)
 seurObj <- FindVariableFeatures(seurObj, selection.method = "vst", nfeatures = 2000)
 
@@ -113,6 +135,27 @@ names(top10_cls)<-top10_cls_g\$ensg_id
 pdf(paste("${id}", "_hm.pdf", sep=""), width=10, height=20)
 DoHeatmap(seurObj, features = top10\$gene) + NoLegend() + scale_y_discrete(labels = top10_cls)
 dev.off()
+
+# We use HumanPrimaryCell as default annotation
+
+ref.data <- HumanPrimaryCellAtlasData(ensembl=TRUE)
+sce <- as.SingleCellExperiment(DietSeurat(seurObj))
+
+predictions.main <- SingleR(test=sce, assay.type.test=1, 
+    ref=ref.data, labels=ref.data\$label.main)
+
+table(predictions.main\$labels)
+
+seurObj@meta.data\$predictions.main <- predictions.main\$labels
+
+seurObj <- SetIdent(seurObj, value = "predictions.main")
+
+pdf(paste("${id}", "_ann.pdf", sep=""), width=10, height=10)
+DimPlot(seurObj, label = T , repel = T, label.size = 3) + NoLegend()
+dev.off()
+
+
+
 
 # save seurat object
 saveRDS(seurObj, file = "${id}.rds")

@@ -12,4 +12,8 @@ RUN Rscript -e "install.packages('metap')"
 RUN Rscript -e "install.packages(c('ggplot2', 'cowplot'))"
 
 RUN Rscript -e "remotes::install_github('mojaveazure/seurat-disk')"
+RUN Rscript -e "BiocManager::install('SingleR')"
+RUN Rscript -e "BiocManager::install('celldex')"
+RUN apt-get install -y liblzma-dev libbz2-dev
+RUN Rscript -e "BiocManager::install('ensembldb')"
 
