@@ -138,12 +138,12 @@ workflow ALL {
 
     main:
     index = INDEX(annotation, genome)
-    outm = COUNT(index, fastq)
+    out = COUNT(index, fastq)
 
 
     emit:
     	index
-    	outm
+    	out
 
 }
 
