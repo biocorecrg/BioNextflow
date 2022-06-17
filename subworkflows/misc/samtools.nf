@@ -9,6 +9,8 @@ params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8:aeac8200e5c50c5acf4dd14792fd8453255af835-0"
 params.OUTPUTMODE = "copy"
 
+include { unzipCmd } from '../global_functions.nf'
+
 
 process getVersion {
     container params.CONTAINER
@@ -40,6 +42,31 @@ process sortAln {
     samtools sort -@ ${task.cpus} ${params.EXTRAPARS} -o ${pair_id}_s.bam  ${reads}
     """
 }
+
+process faidx {
+    label (params.LABEL)
+    tag { genome }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    path(genome)
+
+    output:
+    path("*.fai") 
+    
+	script:
+    def unzip_ref = unzipCmd(genome)
+    def cmd_ref = unzip_ref[1]
+    def ref_name = unzip_ref[0]
+    def clean_ref = unzip_ref[2]
+    """    
+ 		${cmd_ref} 
+	    samtools faidx ${params.EXTRAPARS} ${ref_name}
+	    ${clean_ref}
+    """
+}
+
 
 process indexBam {
     label (params.LABEL)
@@ -119,6 +146,16 @@ workflow INDEX {
     
     main:
 		out = indexBam(reads)
+    emit:
+    	out
+}
+
+workflow FAIDX {
+    take: 
+    genome
+    
+    main:
+		out = faidx(genome)
     emit:
     	out
 }

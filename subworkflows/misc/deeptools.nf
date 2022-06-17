@@ -51,6 +51,64 @@ process BamCoverageChipSeq {
 }
 
 
+process computeMatrixForGenes {
+    label (params.LABEL)
+
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    path(bigwigs)
+    path(annotation_gtf)
+
+    output:
+    path("matrix.gz") 
+    
+	script:
+    """    
+	computeMatrix scale-regions -S ${bigwigs} \
+	-R ${annotation_gtf'}  \
+	--smartLabels  \
+	${params.EXTRAPARS}   \
+	--beforeRegionStartLength 3000    \
+	--regionBodyLength 5000  \
+	--afterRegionStartLength 3000  \
+	--numberOfProcessors ${task.cpus}   \
+	--skipZeros -o matrix.gz
+    """
+}
+
+process computeMatrixForTSS {
+    label (params.LABEL)
+
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    path(bigwigs)
+    path(annotation_gtf)
+
+    output:
+    path("matrix.gz") 
+    
+	script:
+    """    
+	computeMatrix reference-point -S ${bigwigs} \
+	-R ${annotation_gtf'} --referencePoint TSS \
+	--smartLabels  \
+	${params.EXTRAPARS}   \
+	--beforeRegionStartLength 3000    \
+	--afterRegionStartLength 3000  \
+	--numberOfProcessors ${task.cpus}   \
+	--skipZeros -o matrix.gz
+    """
+}
+
+
+
+
 
 workflow BAMCOV_CHIP {
     take: 
