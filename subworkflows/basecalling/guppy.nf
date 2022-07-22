@@ -115,7 +115,8 @@ process baseCallAndDemultiPlex {
 		--cpu_threads_per_caller 1  \
 		--num_callers ${task.cpus}
 		cd ${idfile}_out; 
-		if [ -d barcode01 ]; then
+		if [ "\$(find . -type d -name "barcode*" )" != "" ] 
+		then
 			for d in barcode*; do echo \$d; cat \$d/*.fastq > ../${idfile}.\$d.fastq; done;
 		fi
 		if [ -d unclassified ]; then
