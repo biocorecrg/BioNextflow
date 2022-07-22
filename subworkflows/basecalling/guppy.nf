@@ -9,7 +9,7 @@ params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.MOP = ""
-params.CONTAINER = "biocorecrg/mopbasecall:0.2"
+params.CONTAINER = "biocorecrg/mopbasecall:0.3"
 params.GPU = ""
 
 def gpu_cmd = ""
@@ -80,7 +80,7 @@ process baseCall {
 	    --num_callers  ${task.cpus}
         cat ${idfile}_out/*.fastq >> ${idfile}.fastq
         rm ${idfile}_out/*.fastq
-        gzip ${idfile}.fastq
+        bgzip ${idfile}.fastq
     """
 }
 
@@ -121,7 +121,7 @@ process baseCallAndDemultiPlex {
 		if [ -d unclassified ]; then
 			cat unclassified/*.fastq > ../${idfile}.unclassified.fastq; cd ../
 		fi
-		for i in *.fastq; do gzip \$i; done	
+		for i in *.fastq; do bgzip \$i; done	
         rm *_out/*/*.fastq
      """
 }
