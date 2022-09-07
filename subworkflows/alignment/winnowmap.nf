@@ -60,7 +60,7 @@ process map {
     
     script:
     """
-    winnowmap -W ${repetitive} -t ${task.cpus} -a ${params.EXTRAPARS} ${reference} ${fastq_file} | samtools view -@ ${task.cpus} -F4 -hSb - > ${idfile}.bam
+    winnowmap -W ${repetitive} -t ${task.cpus} -a ${params.EXTRAPARS} ${reference} ${fastq_file} | samtools view -@ ${task.cpus} -hSb - > ${idfile}.bam
     """
 }
 
