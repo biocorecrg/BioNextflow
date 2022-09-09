@@ -28,7 +28,7 @@ process getVersion {
 }
 
 process index {
-    label (params.LABEL)
+    label (params.LABELINDEX)
     tag "${reference}"
     container params.CONTAINER
 
