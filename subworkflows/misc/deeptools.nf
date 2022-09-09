@@ -68,7 +68,7 @@ process computeMatrixForGenes {
 	script:
     """    
 	computeMatrix scale-regions -S ${bigwigs} \
-	-R ${annotation_gtf'}  \
+	-R ${annotation_gtf}  \
 	--smartLabels  \
 	${params.EXTRAPARS}   \
 	--beforeRegionStartLength 3000    \
@@ -96,7 +96,7 @@ process computeMatrixForTSS {
 	script:
     """    
 	computeMatrix reference-point -S ${bigwigs} \
-	-R ${annotation_gtf'} --referencePoint TSS \
+	-R ${annotation_gtf} --referencePoint TSS \
 	--smartLabels  \
 	${params.EXTRAPARS}   \
 	--beforeRegionStartLength 3000    \
@@ -106,7 +106,24 @@ process computeMatrixForTSS {
     """
 }
 
+process BamCoverage {
+    label (params.LABEL)
 
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(id), path(bam), path(bai)
+
+    output:
+    tuple val(id), path("${id}.bw") 
+    
+	script:
+    """    
+	bamCoverage --bam ${bam} -o ${id}.bw ${params.EXTRAPARS} -p ${task.cpus}
+    """
+}
 
 
 
@@ -121,7 +138,15 @@ workflow BAMCOV_CHIP {
     	out
 }
 
-
+workflow BAMCOVERAGE {
+    take: 
+    bam
+    
+    main:
+		out = BamCoverage(bam)
+    emit:
+    	out
+}
 
 
 workflow GET_VERSION {
