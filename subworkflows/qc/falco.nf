@@ -5,7 +5,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/falco:1.1.0"
+params.CONTAINER = "biocorecrg/falco:700b3e2"
 params.OUTPUT = ""
 params.EXTRAPARS = ""
 
