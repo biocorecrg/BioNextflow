@@ -58,7 +58,7 @@ workflow BAMCOV_CHIP {
     gsize
     
     main:
-		out = BamCoverageChipSeq(bam, gsize.first())
+		out = BamCoverageChipSeq(bam, gsize)
     emit:
     	out
 }
