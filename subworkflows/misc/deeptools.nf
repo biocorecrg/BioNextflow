@@ -51,6 +51,81 @@ process BamCoverageChipSeq {
 }
 
 
+process computeMatrixForGenes {
+    label (params.LABEL)
+
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    path(bigwigs)
+    path(annotation_gtf)
+
+    output:
+    path("matrix.gz") 
+    
+	script:
+    """    
+	computeMatrix scale-regions -S ${bigwigs} \
+	-R ${annotation_gtf}  \
+	--smartLabels  \
+	${params.EXTRAPARS}   \
+	--beforeRegionStartLength 3000    \
+	--regionBodyLength 5000  \
+	--afterRegionStartLength 3000  \
+	--numberOfProcessors ${task.cpus}   \
+	--skipZeros -o matrix.gz
+    """
+}
+
+process computeMatrixForTSS {
+    label (params.LABEL)
+
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    path(bigwigs)
+    path(annotation_gtf)
+
+    output:
+    path("matrix.gz") 
+    
+	script:
+    """    
+	computeMatrix reference-point -S ${bigwigs} \
+	-R ${annotation_gtf} --referencePoint TSS \
+	--smartLabels  \
+	${params.EXTRAPARS}   \
+	--beforeRegionStartLength 3000    \
+	--afterRegionStartLength 3000  \
+	--numberOfProcessors ${task.cpus}   \
+	--skipZeros -o matrix.gz
+    """
+}
+
+process BamCoverage {
+    label (params.LABEL)
+
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(id), path(bam), path(bai)
+
+    output:
+    tuple val(id), path("${id}.bw") 
+    
+	script:
+    """    
+	bamCoverage --bam ${bam} -o ${id}.bw ${params.EXTRAPARS} -p ${task.cpus}
+    """
+}
+
+
 
 workflow BAMCOV_CHIP {
     take: 
@@ -63,7 +138,15 @@ workflow BAMCOV_CHIP {
     	out
 }
 
-
+workflow BAMCOVERAGE {
+    take: 
+    bam
+    
+    main:
+		out = BamCoverage(bam)
+    emit:
+    	out
+}
 
 
 workflow GET_VERSION {

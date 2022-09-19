@@ -103,6 +103,28 @@ process mapPE {
     """
 }
 
+process mapPEAlevin {
+    label (params.LABEL)
+    tag { "${pair_id}" }
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
+
+    input:
+    tuple val(pair_id), path(pairs)
+    path(index)
+    path(txp2gene)
+
+    output:
+    tuple val(pair_id), path("${pair_id}")
+
+    script:
+    def readsA = pairs[0]
+    def readsB = pairs[1]
+    """
+    salmon alevin ${params.EXTRAPARS} -p ${task.cpus} -i ${index} -1 ${readsA} -2 ${readsB} -o ${pair_id} --tgMap ${txp2gene}
+    """
+}
 
 workflow INDEX {
     take:
@@ -134,6 +156,24 @@ workflow MAP {
 
 }
 
+workflow MAP_ALEVIN {
+    take:
+    index
+    fastq
+    txp2gene
+
+    main:
+//   def sep_fastq = separateSEandPE(fastq)
+//    outpe = mapSE(sep_fastq.se, index)
+    out = mapPEAlevin(fastq, index, txp2gene)
+
+
+    emit:
+        out
+
+}
+
+
 workflow ALL {
     take:
     reference
@@ -148,5 +188,23 @@ workflow ALL {
     emit:
     	index
     	outm
+
+}
+
+workflow ALL_ALEVIN {
+    take:
+    reference
+    genome
+    fastq
+    txp2gene
+
+    main:
+    index = INDEX(reference, genome)
+    out = MAP_ALEVIN(index, fastq, txp2gene)
+
+
+    emit:
+    	index
+    	out
 
 }
