@@ -24,8 +24,11 @@
 */
 
 params.LABEL = ""
+params.LABELINDEX = ""
 params.EXTRAPARS = ""
-params.OUTPUT = "star_out"
+params.OUTPUT = ""
+params.OUTPUTALN = ""
+params.OUTPUTCOUNT = ""
 params.CONTAINER = "quay.io/biocontainers/star:2.7.7a--0"
 
 include { unzipCmd } from '../global_functions.nf'
@@ -43,7 +46,6 @@ process getVersion {
 }
 
 process calcOverhang {
-    label (params.LABEL)
     
     tag { pair_id }
     container params.CONTAINER
@@ -65,6 +67,8 @@ process calcOverhang {
 
 process indexWithAnno {
     label (params.LABEL)
+    label (params.LABELINDEX)
+    
     tag { "indexing ${reference} with ${annotation} and overhang=${overhang}"  }
     container params.CONTAINER
 
@@ -102,6 +106,8 @@ process indexWithAnno {
 
 process indexNoAnno {
     label (params.LABEL)
+    label (params.LABELINDEX)
+
     tag { reference }
     container params.CONTAINER
 
@@ -134,6 +140,8 @@ process map {
     tag "${pair_id}"
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.bam') }
+    if (params.OUTPUTALN != "") { publishDir(params.OUTPUTALN, mode:'copy', pattern: '*.bam') }
+    if (params.OUTPUTCOUNT != "") { publishDir(params.OUTPUTCOUNT, mode:'copy', pattern: '*ReadsPerGene.out.tab') }
 
     input:
     path(indexes)
