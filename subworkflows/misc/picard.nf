@@ -40,6 +40,26 @@ process sortSamCoord {
     """
 }
 
+process sortSamName {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_s.bam") 
+    
+	script:
+
+    """    
+	picard SortSam I=${reads} TMP_DIR=`pwd`/tmp O=${pair_id}_s.bam SORT_ORDER=queryname
+	rm -fr tmp
+    """
+}
+
 process markDuplicates {
     label (params.LABEL)
     tag { pair_id }
@@ -74,6 +94,15 @@ workflow SORT_COORD {
     	out
 }
 
+workflow SORT_NAME {
+    take: 
+    input
+    
+    main:
+		out = sortSamName(input)
+    emit:
+    	out
+}
 
 workflow REM_DUP {
     take: 
