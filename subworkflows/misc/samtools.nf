@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8:aeac8200e5c50c5acf4dd14792fd8453255af835-0"
+params.CONTAINER = "quay.io/biocontainers/samtools:1.16.1--h6899075_1"
 params.OUTPUTMODE = "copy"
 
 include { unzipCmd } from '../global_functions.nf'
@@ -136,7 +136,43 @@ process statBam {
     
 	script:
     """    
-	samtools flagstat -@ ${params.EXTRAPARS} ${reads} > ${pair_id}.stat
+	samtools flagstat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} > ${pair_id}.stat
+    """
+}
+
+process primaryCountFromStat {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), stdout
+    
+	script:
+    """    
+	samtools flagstat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} |  grep 'primary mapped' | cut -d " " -f 1 
+    """
+}
+
+process primaryCountPercStat {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), stdout
+    
+	script:
+    """    
+	samtools flagstat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} | grep "primary mapped" | cut -d " " -f 6 | sed s/\\(//g |  sed s/\\%//g
     """
 }
 
@@ -166,6 +202,26 @@ workflow STAT {
     
     main:
 		out = statBam(reads)
+    emit:
+    	out
+}
+
+workflow PRIM_COUNT {
+    take: 
+    reads
+    
+    main:
+		out = primaryCountFromStat(reads)
+    emit:
+    	out
+}
+
+workflow PRIM_PERC {
+    take: 
+    reads
+    
+    main:
+		out = primaryCountPercStat(reads)
     emit:
     	out
 }

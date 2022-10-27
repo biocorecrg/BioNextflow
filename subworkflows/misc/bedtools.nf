@@ -95,6 +95,29 @@ process multiInter {
 
 }
 
+process multiCov {
+    label (params.LABEL)
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(bed), path(bams), path(bais)
+
+    output:
+	tuple val(id), path("${id}.count")
+    
+	script:
+	def bam_list = bams.join(" ")
+	def bam_header = bams.join("\t")
+
+    """
+    echo "#chr	start	end	${bam_header}" > ${id}.count 
+	bedtools multicov ${params.EXTRAPARS} -bams ${bam_list} -bed ${bed} >> ${id}.count
+    """
+
+}
+
 workflow MULTIINTER {
     take: 
     input
@@ -136,6 +159,20 @@ workflow MERGE_MULTI {
     	out
 }
 
+workflow MULTICOV {
+    take: 
+    intervals
+    bams
+    bais
+    
+    main:
+    	bams_bais_coll = bams.toList().map{[it]}.combine(bais.toList().map{[it]})
+        comb = intervals.combine(bams_bais_coll)
+    	out = multiCov(comb)
+
+    emit:
+    	out
+}
 
 
 workflow GET_VERSION {
