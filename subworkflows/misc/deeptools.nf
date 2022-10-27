@@ -81,10 +81,10 @@ process calcFingerPrints {
 
     tag { id }
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: "*.pdf") }
 
     input:
-    path(bam), path(bai)
+    tuple path(bam), path(bai)
 
     output:
     path("fingerprints.pdf"), emit: pdf 
@@ -100,7 +100,7 @@ process calcFingerPrints {
 	--numberOfSamples 50000 \
 	-T "Fingerprints of samples"  \
     --plotFile fingerprints.pdf \
-    -outQualityMetrics fingerprint.qcmetrics.txt \
+    --outQualityMetrics fingerprint.qcmetrics.txt \
     --outRawCounts fingerprint.count.txt \
 	${params.EXTRAPARS} \
 	-p ${task.cpus}
@@ -174,7 +174,7 @@ process plotTSSprofile {
 	script:
     """    
 	plotHeatmap -m ${matrix}  \
-	-out enrichment_TSS.pdf  \
+	-out enrichment_TSS.pdf  --heatmapWidth 20\
 	--colorMap jet  --missingDataColor "#FFF6EB" --heatmapHeight 15
     """
 }
@@ -194,7 +194,7 @@ process plotGeneProfile {
 	script:
     """    
 	plotHeatmap -m ${matrix}  \
-	-out enrichment_Genes.pdf  \
+	-out enrichment_Genes.pdf  --heatmapWidth 20\
     --perGroup -T "Read enrichment in gene body"    
     """
 }
@@ -226,12 +226,12 @@ workflow CALC_FINGERPRINGS {
     bai
     
     main:
-    	bams.map{
-    	[ it ]
-    	}.view()
-		//out = calcFingerPrints(data)
-    //emit:
-    //	out
+		out = calcFingerPrints(bams.mix(bai).collate(2))
+    
+    emit:
+    	pdf = out.pdf 
+		metrics = out.metrics 
+    	counts = out.counts 
 }
 
 workflow BAMCOV_CHIP_SCALE {
