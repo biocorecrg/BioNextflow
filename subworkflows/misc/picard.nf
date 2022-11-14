@@ -35,7 +35,7 @@ process sortSamCoord {
 	script:
 
     """    
-	picard SortSam I=${reads} TMP_DIR=`pwd`/tmp O=${pair_id}_s.bam SORT_ORDER=coordinate
+	picard -Xmx${task.memory.giga}g SortSam I=${reads} TMP_DIR=`pwd`/tmp O=${pair_id}_s.bam SORT_ORDER=coordinate
 	rm -fr tmp
     """
 }
@@ -55,7 +55,7 @@ process sortSamName {
 	script:
 
     """    
-	picard SortSam I=${reads} TMP_DIR=`pwd`/tmp O=${pair_id}_s.bam SORT_ORDER=queryname
+	picard -Xmx${task.memory.giga}g SortSam I=${reads} TMP_DIR=`pwd`/tmp O=${pair_id}_s.bam SORT_ORDER=queryname
 	rm -fr tmp
     """
 }
@@ -80,7 +80,7 @@ process markDuplicates {
     	remove_cmd = "REMOVE_SEQUENCING_DUPLICATES=TRUE"
     }     
     """    
-	picard MarkDuplicates ${params.EXTRAPARS} TMP_DIR=`pwd`/tmp ${remove_cmd} I=${reads} O=${pair_id}_dedup.bam M=${pair_id}.dupmet.txt 
+	picard -Xmx${task.memory.giga}g MarkDuplicates ${params.EXTRAPARS} TMP_DIR=`pwd`/tmp ${remove_cmd} I=${reads} O=${pair_id}_dedup.bam M=${pair_id}.dupmet.txt 
     """
 }
 
