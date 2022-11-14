@@ -122,6 +122,25 @@ process viewBam {
     """
 }
 
+process viewBam_two {
+    label (params.LABEL)
+    tag { pair_id }
+    
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads), path(extrafile)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_f.bam") 
+    
+	script:
+    """    
+	samtools view -@ ${task.cpus} ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
+    """
+}
+
 process statBam {
     label (params.LABEL)
     tag { pair_id }
@@ -246,13 +265,22 @@ workflow CAT {
     	out
 }
 
-
 workflow BVIEW {
     take: 
     reads
     
     main:
 		out = viewBam(reads)
+    emit:
+    	out
+}
+
+workflow BVIEW2 {
+    take: 
+    reads
+    
+    main:
+		out = viewBam_two(reads)
     emit:
     	out
 }
