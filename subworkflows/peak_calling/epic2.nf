@@ -31,8 +31,7 @@ process peakCall {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple val(comp_id), path(sample), path(input), path(index_sample), path(index_input)
-    val(gfrac)
+    tuple val(comp_id), path(sample), path(input), path(index_sample), path(index_input), val(gfrac)
 
     output:
     tuple val(comp_id), path("${comp_id}_epic2_peaks.bed")
@@ -49,7 +48,7 @@ workflow CALL {
     gsize
     
     main:
-		out = peakCall(comparisons, gsize)
+		out = peakCall(comparisons.combine(gsize))
     emit:
     	out
 }
