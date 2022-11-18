@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = "epic_out"
-params.CONTAINER = "biocorecrg/epic:0.2.12"
+params.CONTAINER = "biocorecrg/epic_jellyfish:0.2.12_2.30"
 
 include { unzipCmd } from '../global_functions.nf'
 include { CALC_AVG_READSIZE as CALC_AVG_READSIZE } from "../misc/misc"
