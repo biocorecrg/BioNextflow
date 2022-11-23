@@ -56,6 +56,17 @@ workflow TRIMMING {
         trim_log = out.trim_log
 }
 
+workflow TRIMMING2 {
+    take: 
+    fastq
+    
+    main:
+        out = trimWithSkewer(fastq)
+    emit:
+        trimmed_reads = out.trimmed_reads
+        trim_log = out.trim_log
+}
+
 workflow GET_VERSION {
     main:
 		getVersion()
