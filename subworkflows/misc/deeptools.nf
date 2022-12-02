@@ -134,6 +134,33 @@ process computeMatrixForGenes {
     """
 }
 
+process computeSingleMatrixForGenes {
+    label (params.LABEL)
+
+    container params.CONTAINER
+
+    input:
+    tuple val(id), path(bigwigs)
+    path(annotation_gtf)
+
+    output:
+    tuple val(id), path("${id}_genes_matrix.gz") 
+    
+	script:
+    """    
+	computeMatrix scale-regions -S ${bigwigs} \
+	-R ${annotation_gtf}  \
+	--smartLabels  \
+	${params.EXTRAPARS}   \
+	--beforeRegionStartLength 3000    \
+	--regionBodyLength 5000  \
+	--afterRegionStartLength 3000  \
+	--numberOfProcessors ${task.cpus}   \
+	--skipZeros -o ${id}_genes_matrix.gz
+    """
+}
+
+
 process computeMatrixForTSS {
     label (params.LABEL)
 
@@ -159,6 +186,32 @@ process computeMatrixForTSS {
     """
 }
 
+process computeSingleMatrixForTSS {
+    label (params.LABEL)
+
+    container params.CONTAINER
+
+    input:
+    tuple val(id), path(bigwigs)
+    path(annotation_gtf)
+
+    output:
+    tuple val(id), path("${id}_TSS_matrix.gz") 
+    
+	script:
+    """    
+	computeMatrix reference-point -S ${bigwigs} \
+	-R ${annotation_gtf} --referencePoint TSS \
+	--smartLabels  \
+	${params.EXTRAPARS}   \
+	--beforeRegionStartLength 3000    \
+	--afterRegionStartLength 3000  \
+	--numberOfProcessors ${task.cpus}   \
+	--skipZeros -o ${id}_TSS_matrix.gz
+    """
+}
+
+
 process plotTSSprofile {
     label (params.LABEL)
 
@@ -175,6 +228,26 @@ process plotTSSprofile {
     """    
 	plotHeatmap -m ${matrix}  \
 	-out enrichment_TSS.pdf  --heatmapWidth 20\
+	--colorMap jet  --missingDataColor "#FFF6EB" --heatmapHeight 15
+    """
+}
+
+process plotSingleTSSprofile {
+    label (params.LABEL)
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(id), path(matrix)
+
+    output:
+    path("${id}_TSS.pdf") 
+    
+	script:
+    """    
+	plotHeatmap -m ${matrix}  \
+	-out ${id}_TSS.pdf  --heatmapWidth 20\
 	--colorMap jet  --missingDataColor "#FFF6EB" --heatmapHeight 15
     """
 }
@@ -198,6 +271,27 @@ process plotGeneProfile {
     --perGroup -T "Read enrichment in gene body"    
     """
 }
+
+process plotSingleGeneProfile {
+    label (params.LABEL)
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(id), path(matrix)
+
+    output:
+    tuple val(id), path("${id}_genes.pdf") 
+    
+	script:
+    """    
+	plotHeatmap -m ${matrix}  \
+	-out ${id}_genes.pdf  --heatmapWidth 20\
+    --perGroup -T "Read enrichment in gene body"    
+    """
+}
+
 process BamCoverage {
     label (params.LABEL)
 
@@ -279,6 +373,18 @@ workflow PLOT_COV_TSS {
     	out
 }
 
+workflow PLOT_SCOV_TSS {
+    take: 
+    bigwigs
+    annotation_gtf
+    
+    main:
+		matx = computeSingleMatrixForTSS(bigwigs, annotation_gtf)
+		out = plotSingleTSSprofile(matx)
+    emit:
+    	out
+}
+
 workflow PLOT_COV_GENES {
     take: 
     bigwigs
@@ -287,6 +393,18 @@ workflow PLOT_COV_GENES {
     main:
 		matx = computeMatrixForGenes(bigwigs, annotation_gtf)
 		out = plotGeneProfile(matx)
+    emit:
+    	out
+}
+
+workflow PLOT_SCOV_GENES {
+    take: 
+    bigwigs
+    annotation_gtf
+    
+    main:
+		matx = computeSingleMatrixForGenes(bigwigs, annotation_gtf)
+		out = plotSingleGeneProfile(matx)
     emit:
     	out
 }
