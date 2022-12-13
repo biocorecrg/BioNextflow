@@ -34,7 +34,8 @@ process filterPE {
     tuple val (pair_id), path(fastq)
 
     output:
-    tuple val (pair_id), path ("${pair_id}_1P.fq.gz"), path ("${pair_id}_2P.fq.gz"), emit: trimmed_reads
+    tuple val (pair_id), path ("${pair_id}_1P.fq.gz"), path ("${pair_id}_2P.fq.gz"), emit: trimmed_preads
+    tuple val (pair_id), path ("${pair_id}_1UP.fq.gz"), path ("${pair_id}_2UP.fq.gz"), emit: trimmed_ureads
     tuple val (pair_id), path ("${pair_id}.trim_out.log"), emit: trim_log
 
     script:
@@ -44,8 +45,8 @@ process filterPE {
     -threads ${task.cpus} -trimlog ${pair_id}.log \
     ${fastq} \
     ${pair_id}_1P.fq.gz \
-    ${pair_id}_2P.fq.gz \
     ${pair_id}_1UP.fq.gz \
+    ${pair_id}_2P.fq.gz \
     ${pair_id}_2UP.fq.gz \
     ${params.EXTRAPARS} 2> ${pair_id}.trim_out.log
     """
@@ -87,7 +88,8 @@ process filterPEAdapter {
     tuple val (pair_id), path(fastq), path(adapter)
 
     output:
-    tuple val (pair_id), path ("${pair_id}_1P.fq.gz"), path ("${pair_id}_2P.fq.gz"), emit: trimmed_reads
+    tuple val (pair_id), path ("${pair_id}_1P.fq.gz"), path ("${pair_id}_2P.fq.gz"), emit: trimmed_preads
+    tuple val (pair_id), path ("${pair_id}_1UP.fq.gz"), path ("${pair_id}_2UP.fq.gz"), emit: trimmed_ureads
     tuple val (pair_id), path ("${pair_id}.trim_out.log"), emit: trim_log
 
     script:
@@ -97,8 +99,8 @@ process filterPEAdapter {
     -threads ${task.cpus} -trimlog ${pair_id}.log \
     ${fastq} \
     ${pair_id}_1P.fq.gz \
-    ${pair_id}_2P.fq.gz \
     ${pair_id}_1UP.fq.gz \
+    ${pair_id}_2P.fq.gz \
     ${pair_id}_2UP.fq.gz \
     ${params.EXTRAPARS} 2> ${pair_id}.trim_out.log
     """
@@ -141,14 +143,18 @@ workflow FILTER {
     outpe = filterPE(sep_fastq.pe)
     outse = filterSE(sep_fastq.se)
     
-    trimmed_reads = outpe.trimmed_reads.map{
+    trimmed_reads = outpe.trimmed_preads.map{
     	[it[0], [it[1], it[2]] ] 
     }.mix(outse.trimmed_reads.map{
      	[it[0], [it[1]] ] 
     })
+	trimmed_ureads = outpe.trimmed_ureads.map{
+    	[it[0], [it[1], it[2]] ] 
+    }
 
     emit:
         trimmed_reads = trimmed_reads 
+        trimmed_ureads = trimmed_ureads 
         trim_log = outpe.trim_log.mix(outse.trim_log)       
 
 }
@@ -163,14 +169,18 @@ workflow FILTERADAPTER {
         
     outpe = filterPEAdapter(sep_fastq.pe.combine(adapter))
     outse = filterSEAdapter(sep_fastq.se.combine(adapter))
-    trimmed_reads = outpe.trimmed_reads.map{
+    trimmed_reads = outpe.trimmed_preads.map{
     	[it[0], [it[1], it[2]] ] 
     }.mix(outse.trimmed_reads.map{
      	[it[0], [it[1]] ] 
     })
+	trimmed_ureads = outpe.trimmed_ureads.map{
+    	[it[0], [it[1], it[2]] ] 
+    }
 
     emit:
         trimmed_reads = trimmed_reads
+        trimmed_ureads = trimmed_ureads 
         trim_log = outpe.trim_log.mix(outse.trim_log)       
 
 }
