@@ -56,7 +56,8 @@ process map {
     path(indexes)
 
     output:
-    tuple val(pair_id), path("${pair_id}.bam") 
+    tuple val(pair_id), path("${pair_id}.bam"), emit: aln
+    tuple val(pair_id), path("${pair_id}.aln.logs"), emit: logs
     
 	script:
     def indexname = "${indexes[0]}".replaceAll(".1.bt2", "")
@@ -70,7 +71,7 @@ process map {
 	}
 
     """    
-    bowtie2 -x ${indexname} -p ${task.cpus} ${cmd} ${cmd2} ${params.EXTRAPARS} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
+    bowtie2 -x ${indexname} -p ${task.cpus} ${cmd} ${cmd2} ${params.EXTRAPARS} 2>${pair_id}.aln.logs | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam 
     """
 }
 
@@ -80,9 +81,11 @@ workflow MAP {
     indexes
     
     main:
-		out = map(input, indexes)
+		map(input, indexes)
+		
     emit:
-    	out
+   		aln = map.out.aln
+    	logs = map.out.logs
 }
 
 workflow INDEX {
@@ -105,9 +108,11 @@ workflow ALL {
     
     main:
 		index = INDEX(reference)
-		out = MAP(input, index)
+		MAP(input, index)
+		
     emit:
-    	out
+    	aln = MAP.out.aln
+    	logs = MAP.out.logs
 }
 
 workflow GET_VERSION {
