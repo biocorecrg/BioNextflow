@@ -82,8 +82,8 @@ workflow ALN {
     outpe = alnSE(sep_fastq.se, index).output
     outse = alnPE(sep_fastq.pe, index).output
 
-    //emit:
-  //  out = outpe.mix(outse)
+    emit:
+    out = outpe.mix(outse)
 
 }
 
