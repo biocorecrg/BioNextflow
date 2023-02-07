@@ -78,7 +78,6 @@ workflow ALN {
 
     main:
     def sep_fastq = separateSEandPE(fastq)
-    sep_fastq.pe.view()
     outpe = alnSE(sep_fastq.se, index).output
     outse = alnPE(sep_fastq.pe, index).output
 

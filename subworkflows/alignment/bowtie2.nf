@@ -57,7 +57,7 @@ process map {
 
     output:
     tuple val(pair_id), path("${pair_id}.bam"), emit: aln
-    tuple val(pair_id), path("${pair_id}.aln.logs"), emit: logs
+    tuple val(pair_id), path("${pair_id}.aln.log"), emit: logs
     
 	script:
     def indexname = "${indexes[0]}".replaceAll(".1.bt2", "")
@@ -71,7 +71,7 @@ process map {
 	}
 
     """    
-    bowtie2 -x ${indexname} -p ${task.cpus} ${cmd} ${cmd2} ${params.EXTRAPARS} 2>${pair_id}.aln.logs | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam 
+    bowtie2 -x ${indexname} -p ${task.cpus} ${cmd} ${cmd2} ${params.EXTRAPARS} 2>${pair_id}.aln.log | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam 
     """
 }
 
