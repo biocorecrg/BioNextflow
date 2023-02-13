@@ -141,6 +141,28 @@ process viewBam_two {
     """
 }
 
+process viewBam_exclude {
+    label (params.LABEL)
+    tag { pair_id }
+    
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+    
+    input:
+    tuple val(pair_id), path(reads), path(extrafile)
+    
+    output:
+    tuple val(pair_id), path("${pair_id}_f.bam"), emit: filtered_bam
+    tuple val(pair_id), path("${pair_id}_ex.bam"), emit: excluded_bam
+    
+        script:
+    """    
+        samtools view -@ ${task.cpus} -U ${pair_id}_ex.bam ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
+    """ 
+}  
+
+
+
 process statBam {
     label (params.LABEL)
     tag { pair_id }
@@ -285,6 +307,20 @@ workflow BVIEW2 {
     	out
 }
 
+workflow BVIEW_EXCLUDE {
+   take:
+   reads
+
+   main:
+	viewBam_exclude(reads)
+
+   emit:
+
+   filtered_bam = viewBam_exclude.out.filtered_bam
+   excluded_bam = viewBam_exclude.out.excluded_bam
+
+
+}
 
 
 
