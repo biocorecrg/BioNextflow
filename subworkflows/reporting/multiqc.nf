@@ -32,7 +32,9 @@ process makeReport {
     path(input)
 	
     output:
-	path("multiqc_report.html")
+	path("multiqc_report.html") , emit: report
+	path("multiqc_data") , emit: data
+	
 	
     script:
     """
@@ -64,9 +66,10 @@ workflow REPORT {
     input
     
     main:
-		out = makeReport(input)
+		makeReport(input)
 	emit:
-		out	
+		out	= makeReport.out.report
+		data = makeReport.out.data
 }
 
 workflow REPORT_ID {

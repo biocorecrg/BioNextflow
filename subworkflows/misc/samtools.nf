@@ -10,6 +10,7 @@ params.CONTAINER = "quay.io/biocontainers/samtools:1.16.1--h6899075_1"
 params.OUTPUTMODE = "copy"
 
 include { unzipCmd } from '../global_functions.nf'
+include { separateSEandPE } from '../global_functions.nf'
 
 
 process getVersion {
@@ -21,6 +22,24 @@ process getVersion {
     shell:
     """
     samtools --version | grep samtools
+    """
+}
+
+process getFastqPairs {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_1.fq"), path("${pair_id}_2.fq")
+    
+	script:
+    """    
+    samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
     """
 }
 
@@ -322,6 +341,18 @@ workflow BVIEW_EXCLUDE {
 
 }
 
+
+workflow FASTQ_PAIRS {
+    take: 
+    alns
+    
+    main:
+ 		out = getFastqPairs(alns)
+ 
+    emit:
+    	out
+
+}
 
 
 workflow GET_VERSION {
