@@ -36,6 +36,7 @@ def separateSEandPE(fastq) {
 *  ${cmd_unzip}
 *  do something with ${file_name}
 *  ${cmd_clean}
+*  """
 */
 
 def unzipCmd(filename) {

@@ -49,6 +49,25 @@ process annotatePeaks {
     """    
 }
 
+process getDeNovoMotifs {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.anno') }
+
+    input:
+    tuple val(pair_id), path(infasta), path(background)
+
+    output:
+    tuple val(pair_id), path("${pair_id}.motifs") 
+    
+	script:
+	"""
+		homer2 denovo -p ${task.cpus} ${params.EXTRAPARS} -i ${infasta} -b ${background} -o ${pair_id}.motifs
+    """    
+}
+
 
 workflow ANNOTATE_PEAKS {
     take: 

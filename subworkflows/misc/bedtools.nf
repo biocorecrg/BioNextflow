@@ -9,6 +9,7 @@ params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/bedtools:2.30.0--hc088bd4_0"
 
 include { unzipCmd } from '../global_functions.nf'
+include { PossiblyUnzipGenome } from '../misc/misc.nf'
 
 process getVersion {
     container params.CONTAINER
@@ -22,6 +23,43 @@ process getVersion {
     """
 }
 
+process shuffleBed {
+    label (params.LABEL)
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(bed)
+	path(fasta) 
+	
+    output:
+	tuple val(id), path("${id}_shuffle.bed")
+    
+	script:
+    """
+    bedtools shuffle -i ${bed} ${params.EXTRAPARS} -g ${fasta} > ${id}_shuffle.bed
+    """
+}
+
+process bedToFasta {
+    label (params.LABEL)
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(bed)
+	path(fasta) 
+	
+    output:
+	tuple val(id), path("${id}.fasta")
+    
+	script:
+    """
+	bedtools getfasta -fi ${fasta} -bed ${bed} ${params.EXTRAPARS} > ${id}.fasta
+    """
+}
 
 process sortBed {
     label (params.LABEL)
@@ -116,6 +154,29 @@ process multiCov {
 	bedtools multicov ${params.EXTRAPARS} -bams ${bam_list} -bed ${bed} >> ${id}.count
     """
 
+}
+
+workflow BEDTOFASTA {
+    take: 
+    bed
+    fasta
+    
+    main:
+        fasta_ch = PossiblyUnzipGenome(fasta)
+		out = bedToFasta(bed, fasta_ch)
+    emit:
+    	out
+}
+
+workflow SHUFFLEBED {
+    take: 
+    bed
+    fasta
+    
+    main:
+        out = shuffleBed(bed, fasta)
+    emit:
+    	out
 }
 
 workflow MULTIINTER {

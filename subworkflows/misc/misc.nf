@@ -69,6 +69,30 @@ process calcIlluminaAvgReadSize {
     """
 }
 
+// Take first 100 bases
+process PossiblyUnzipGenome {
+    label (params.LABEL)
+    
+    tag { "${genome}" }
+    container params.CONTAINER
+
+    input:
+    path(genome)
+	
+    output:
+    path("outgenome.fa")
+
+    script:
+	"""
+	if [[ ${genome} == *.gz ]] 
+	then
+		zcat ${genome}  > outgenome.fa
+	else
+		cp ${genome} outgenome.fa
+	fi
+    """
+}
+
 
 
 workflow CALC_AVG_READSIZE {

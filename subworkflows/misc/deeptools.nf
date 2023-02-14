@@ -247,8 +247,8 @@ process plotSingleTSSprofile {
 	script:
     """    
 	plotHeatmap -m ${matrix}  \
-	-out ${id}_TSS.pdf  --heatmapWidth 20\
-	--colorMap jet  --missingDataColor "#FFF6EB" --heatmapHeight 15
+	-out ${id}_TSS.pdf  --heatmapWidth 10\
+	--colorMap jet  --missingDataColor "#FFF6EB" --heatmapHeight 10
     """
 }
 
