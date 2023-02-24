@@ -136,6 +136,7 @@ process computeMatrixForGenes {
 
 process computeSingleMatrixForGenes {
     label (params.LABEL)
+    tag { id }
 
     container params.CONTAINER
 
@@ -188,6 +189,7 @@ process computeMatrixForTSS {
 
 process computeSingleMatrixForTSS {
     label (params.LABEL)
+    tag { id }
 
     container params.CONTAINER
 
@@ -234,6 +236,7 @@ process plotTSSprofile {
 
 process plotSingleTSSprofile {
     label (params.LABEL)
+    tag { id }
 
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
@@ -274,6 +277,7 @@ process plotGeneProfile {
 
 process plotSingleGeneProfile {
     label (params.LABEL)
+    tag { id }
 
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }

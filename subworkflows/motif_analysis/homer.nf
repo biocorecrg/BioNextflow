@@ -54,17 +54,17 @@ process getDeNovoMotifs {
     tag { pair_id }
     container params.CONTAINER
     
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.anno') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
     tuple val(pair_id), path(infasta), path(background)
 
     output:
-    tuple val(pair_id), path("${pair_id}.motifs") 
+    tuple val(pair_id), path("${pair_id}_motifs") 
     
 	script:
 	"""
-		homer2 denovo -p ${task.cpus} ${params.EXTRAPARS} -i ${infasta} -b ${background} -o ${pair_id}.motifs
+		findMotifs.pl ${infasta} fasta ${pair_id}_motifs -fasta ${background} -p ${task.cpus} ${params.EXTRAPARS}
     """    
 }
 
@@ -81,6 +81,17 @@ workflow ANNOTATE_PEAKS {
     	out
 }
 
+workflow DE_NOVO_MOTIFS {
+    take: 
+    target
+    background
+    
+    main:
+    	
+		out = getDeNovoMotifs(target.join(background))
+    emit:
+    	out
+}
 
 workflow GET_VERSION {
     main:
