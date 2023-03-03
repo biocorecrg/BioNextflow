@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/ucsc-bedtobigbed@sha256:f27a6df27a91eb6ae64cbc18359c242b6642b0832e1b30737686b66b44157a66"
+params.CONTAINER = "quay.io/biocontainers/ucsc-bedtobigbed:377--ha8a8165_3"
 params.OUTPUTMODE = "copy"
 
 

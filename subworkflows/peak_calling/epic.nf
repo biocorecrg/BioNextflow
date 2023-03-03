@@ -27,7 +27,7 @@ process getVersion {
 
 process getEffectiveGenomeSize {
     label (params.LABEL)
-    tag { reference }
+    tag { "${reference}" }
     container params.CONTAINER
 
     input:

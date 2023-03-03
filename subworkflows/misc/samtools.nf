@@ -64,7 +64,7 @@ process sortAln {
 
 process faidx {
     label (params.LABEL)
-    tag { genome }
+    tag { "${genome}" }
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
 
