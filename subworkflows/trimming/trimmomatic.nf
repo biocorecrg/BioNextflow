@@ -74,6 +74,12 @@ process filterSE {
     ${fastq} \
     ${pair_id}_P.fq.gz \
     ${params.EXTRAPARS} 2> ${pair_id}.trim_out.log
+    
+    if [ `grep -i exception ${pair_id}.trim_out.log` ]; then
+	print "EXCEPTION FOUND!"
+    	exit 1
+    fi
+
     """
 }
 
@@ -103,7 +109,16 @@ process filterPEAdapter {
     ${pair_id}_2P.fq.gz \
     ${pair_id}_2UP.fq.gz \
     ${params.EXTRAPARS} 2> ${pair_id}.trim_out.log
+
+    if grep -i exception ${pair_id}.trim_out.log; then
+        echo "EXCEPTION FOUND!"
+        exit 1
+    fi
+
+
     """
+
+
 }
 
 process filterSEAdapter {
@@ -128,6 +143,13 @@ process filterSEAdapter {
     ${fastq} \
     ${pair_id}_P.fq.gz \
     ${params.EXTRAPARS} 2> ${pair_id}.trim_out.log
+
+
+    if grep -i exception ${pair_id}.trim_out.log; then
+        echo "EXCEPTION FOUND!"
+        exit 1
+    fi
+
     """
 }
 
