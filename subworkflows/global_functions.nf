@@ -1,3 +1,15 @@
+// notify
+
+def notify_slack(text, hook) {
+    def myFile = file('./notify.json')
+    myFile << '{"text": "'
+    myFile << text
+    myFile << '"}'
+    println "curl -X POST -H 'Content-type: application/json' -d @./notify.json ${hook}".execute().text
+    myFile.delete()
+
+}
+
 // make named pipe
 def unzipNamedPipe(filename) {
     def cmd = filename.toString()
