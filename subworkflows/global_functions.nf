@@ -3,10 +3,38 @@
 def notify_slack(text, hook) {
     def myFile = file('./notify.json')
     myFile << '{"text": "'
-    myFile << text
+    myFile << text.replace("\n",'\\n')
     myFile << '"}'
     println "curl -X POST -H 'Content-type: application/json' -d @./notify.json ${hook}".execute().text
     myFile.delete()
+
+}
+
+def trim_NF_date(nfdate){
+    newdate = nfdate.substring(0, nfdate.indexOf(".")).replaceAll("T", " ")
+    return(newdate)
+}
+
+def final_message(title="") {
+	def ostart = "${workflow.start}"
+	def ostop = "${workflow.complete}"
+	def start = trim_NF_date(ostart)
+        def stop = trim_NF_date(ostop)
+
+	def message =  """
+---------------------------------------------------------------------------------
+- *Pipeline ${title} completed!*
+- Command line: 
+- `$workflow.commandLine`
+- Launched by `$workflow.userName`
+- Started at $start
+- Finished at $stop
+- Time elapsed: $workflow.duration 
+- Execution status: ${ workflow.success ? 'OK' : 'failed' }
+---------------------------------------------------------------------------------
+"""
+
+return (message)
 
 }
 
