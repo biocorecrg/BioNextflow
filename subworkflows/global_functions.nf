@@ -21,12 +21,13 @@ def final_message(title="") {
 	def start = trim_NF_date(ostart)
         def stop = trim_NF_date(ostop)
         def error = ""
-        if ("${ workflow.success}") {
+        if (workflow.errorReport) {
             error = "\n```${workflow.errorReport}```\n"
         }
 
 	def message =  "-"*51 + "\n"
 	message = message + "*Pipeline ${title} completed!*".center(51) + "\n"
+    message = message + "- Launched by `$workflow.userName`" + "\n"
     message = message + "- Started at $start" + "\n"
     message = message + "- Finished at $stop" + "\n"
     message = message + "- Time elapsed: $workflow.duration" + "\n"
