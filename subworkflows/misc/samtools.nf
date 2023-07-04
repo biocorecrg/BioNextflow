@@ -8,6 +8,7 @@ params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/samtools:1.16.1--h6899075_1"
 params.OUTPUTMODE = "copy"
+params.GZIP = ""
 
 include { unzipCmd } from '../global_functions.nf'
 include { separateSEandPE } from '../global_functions.nf'
@@ -30,19 +31,32 @@ process getFastqPairs {
     tag { pair_id }
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+    
 
     input:
     tuple val(pair_id), path(reads)
 
     output:
-    tuple val(pair_id), path("${pair_id}_1.fq"), path("${pair_id}_2.fq")
+    tuple val(pair_id), path("${pair_id}_1.fq"), path("${pair_id}_2.fq"), optional: true, emit: fastq
+    tuple val(pair_id), path("${pair_id}_1.fq.gz"), path("${pair_id}_2.fq.gz"), optional: true, emit: gzfastq 
     
-	script:
-    """    
-    samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
-    """
-}
+    script:
+    if (params.GZIP != "YES") {
 
+	    """    
+	    samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
+	    """
+    }
+    else {
+            """
+            samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
+            gzip ${pair_id}_1.fq
+            gzip ${pair_id}_2.fq
+            """
+     
+    } 
+
+}
 
 process sortAln {
     label (params.LABEL)
@@ -56,7 +70,7 @@ process sortAln {
     output:
     tuple val(pair_id), path("${pair_id}_s.bam") 
     
-	script:
+    script:
     """    
     samtools sort -@ ${task.cpus} ${params.EXTRAPARS} -o ${pair_id}_s.bam  ${reads}
     """
@@ -347,7 +361,8 @@ workflow FASTQ_PAIRS {
     alns
     
     main:
- 		out = getFastqPairs(alns)
+ 		res = getFastqPairs(alns)
+                out = res.fastq.mix(res.gzfastq)
  
     emit:
     	out
