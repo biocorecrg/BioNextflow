@@ -6,7 +6,8 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/samtools:1.16.1--h6899075_1"
+//params.CONTAINER = "quay.io/biocontainers/samtools:1.16.1--h6899075_1"
+params.CONTAINER = "biocorecrg/samtools:1.17"
 params.OUTPUTMODE = "copy"
 params.GZIP = ""
 
@@ -50,8 +51,8 @@ process getFastqPairs {
     else {
             """
             samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
-            gzip ${pair_id}_1.fq
-            gzip ${pair_id}_2.fq
+            pigz -p ${task.cpus} ${pair_id}_1.fq
+            pigz -p ${task.cpus} ${pair_id}_2.fq
             """
      
     } 
