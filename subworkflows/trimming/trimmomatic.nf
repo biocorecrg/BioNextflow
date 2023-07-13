@@ -5,7 +5,7 @@
 include { separateSEandPE } from '../global_functions.nf'
 
 params.CONTAINER = "quay.io/biocontainers/trimmomatic:0.32--hdfd78af_4"
-params.OUTPUT = "trimmomatic_output"
+params.OUTPUT = ""
 
 params.LABEL = ""
 params.EXTRAPARS = ""
