@@ -1,5 +1,4 @@
 // notify
-
 def notify_slack(text, hook) {
     def myFile = file('./notify.json')
     myFile << '{"text": "'
@@ -7,6 +6,13 @@ def notify_slack(text, hook) {
     myFile << '"}'
     println "curl -X POST -H 'Content-type: application/json' -d @./notify.json ${hook}".execute().text
     myFile.delete()
+
+}
+
+// reverse complement DNA sequence
+def revCompDNA(seq) {
+	def newseq = seq.tr("ATGCatgc","TACGtacg").reverse()
+	return(newseq)
 
 }
 

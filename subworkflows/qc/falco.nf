@@ -5,7 +5,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/falco:700b3e2"
+params.CONTAINER = "quay.io/biocontainers/falco:1.2.1--h146fbdb_5"
 params.OUTPUT = ""
 params.EXTRAPARS = ""
 
