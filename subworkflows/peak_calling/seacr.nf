@@ -63,6 +63,31 @@ process makeBedGraph {
 
 }
 
+process makeNormBedGraph {
+
+    label (params.LABEL)
+    tag { id }
+    container params.CONTAINER
+
+    input:
+    tuple val(id), path(sample), val(norm)
+    file(genome)
+
+    output:
+    tuple val(id), path("${id}.fragments.bedgraph"), emit: bedgraph
+        
+        script:
+    """ 
+        bedtools bamtobed -bedpe -i ${sample} > ${id}.bed
+        awk '\$1 != "." && \$1==\$4 && \$6-\$2 < 1000 {print \$0}' ${id}.bed > ${id}.clean.bed
+        cut -f 1,2,6 ${id}.clean.bed | sort -k1,1 -k2,2n -k3,3n > ${id}.fragments.bed
+        bedtools genomecov -scale ${norm} -bg -i ${id}.fragments.bed -g ${genome} > ${id}.fragments.bedgraph
+    """
+
+}
+
+
+
 workflow MAKE_GRAPHS {
     take: 
     sample
@@ -74,6 +99,18 @@ workflow MAKE_GRAPHS {
     	bedgraph = makeBedGraph.out.bedgraph
 }
 
+workflow MAKE_NORMALIZED_GRAPHS {
+    take:
+    sample
+    genome
+
+    main:
+                makeNormBedGraph(sample, genome)
+    emit:
+        bedgraph = makeNormBedGraph.out.bedgraph
+
+
+}
 
 workflow CALL {
     take: 
