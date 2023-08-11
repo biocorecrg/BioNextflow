@@ -40,6 +40,25 @@ process peakCall {
     """
 }
 
+process peakCallNoCTRL {
+    label (params.LABEL)
+    tag { id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(sample)
+
+    output:
+    tuple val(id), path("${id}*.bed"), emit: peaks
+
+    script:
+    """
+    SEACR.sh ${sample}  ${params.EXTRAPARS} ${id}
+    """
+}
+
+
 process makeBedGraph {
 
     label (params.LABEL)
@@ -121,6 +140,17 @@ workflow CALL {
     emit:
     	peaks = peakCall.out.peaks
 }
+
+workflow CALL_NO_CONTROL {
+    take: 
+    sample
+    
+    main:
+                peakCallNoCTRL(sample)
+    emit:       
+        peaks = peakCallNoCTRL.out.peaks
+}  
+
 
 
 workflow GET_VERSION {
