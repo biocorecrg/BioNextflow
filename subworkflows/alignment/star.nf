@@ -66,8 +66,8 @@ process calcOverhang {
 
 
 process indexWithAnno {
-    //label (params.LABEL)
-    label (params.LABELINDEX)
+    if ( params.LABELINDEX == "") label (params.LABEL)
+    else label (params.LABELINDEX)
     
     tag { "indexing ${reference} with ${annotation} and overhang=${overhang}"  }
     container params.CONTAINER
