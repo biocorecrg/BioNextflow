@@ -25,7 +25,7 @@ process riboDetector {
     val(readsize)
 
     output:
-	tuple val(id), path ("${id}_rna_num.txt")
+	tuple val(id), path ("${id}_rna_perc.txt")
 
     script:
 
@@ -33,18 +33,32 @@ process riboDetector {
     def file_nameA  = unzipA[0]
     def cmd_unzipA  = unzipA[1]
     def cmd_cleanA  = unzipA[2]
-    def unzipB      = unzipCmd(fastqs[1])
-    def file_nameB  = unzipB[0]
-    def cmd_unzipB  = unzipB[1]
-    def cmd_cleanB  = unzipB[2]
-    """
-	${cmd_unzipA}
-	${cmd_unzipB}
-     ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no1.fq.gz no2.fq.gz -e rrna -r rna1.fq rna2.fq -i ${file_nameA} ${file_nameB} 
-	 awk -v id=${id} '{num++}END{print id" "num/4}' rna1.fq > ${id}_rna_num.txt
-      ${cmd_cleanA} 
-      ${cmd_cleanB}
-    """
+    
+    if (fastqs.size() == 2) {
+		def unzipB      = unzipCmd(fastqs[1])
+		def file_nameB  = unzipB[0]
+		def cmd_unzipB  = unzipB[1]
+		def cmd_cleanB  = unzipB[2]
+		"""
+		${cmd_unzipA}
+		${cmd_unzipB}
+		tot=`awk '{num++}END{print num/4}' ${file_nameA}`
+		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no1.fq.gz no2.fq.gz -e rrna -r rna1.fq rna2.fq -i ${file_nameA} ${file_nameB} 
+		awk -v id=${id} tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna1.fq > ${id}_rna_perc.txt
+		${cmd_cleanA} 
+		${cmd_cleanB}
+		"""
+	} else {
+	
+		"""
+		${cmd_unzipA}
+		tot=`awk '{num++}END{print num/4}' ${file_nameA}`
+		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no.fq.gz -e rrna -r rna.fq -i ${file_nameA} 
+		awk -v id=${id} tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna.fq > ${id}_rna_perc.txt
+		${cmd_cleanA} 
+		"""
+
+	}
 }
 
 process makeMultiQCReport {
@@ -54,7 +68,6 @@ process makeMultiQCReport {
 
     input:
  	path(reports)
-    val(downsize)
     
     output:
 	path ("ribo_stats_mqc.txt")
@@ -65,9 +78,9 @@ process makeMultiQCReport {
 echo '# id: ribodetector
 # plot_type: bargraph
 # section_name: Ribosome contamination
-# description: % of ribosomal reads on ${downsize}) 
+# description: % of ribosomal reads) 
 Filename	reads' > ribo_stats_mqc.txt;
-	awk -v tot=${downsize} '{print \$1"\t"\$2/tot*100}' ${reports} >> ribo_stats_mqc.txt
+	awk -v tot=${downsize} '{print \$1"\t"\$2}' ${reports} >> ribo_stats_mqc.txt
 	"""
 	
 	
@@ -82,7 +95,7 @@ workflow QC {
     avg_size = CALC_AVG_READSIZE(fastqs, "illumina")
     down_reads = DOWNSAMPLE_PAIRS(fastqs, downsize)
     out = riboDetector(down_reads, avg_size).map{it[1]}.collect()
-	mqc = makeMultiQCReport(out, downsize)
+	mqc = makeMultiQCReport(out)
 	 
     emit:
     out = out
