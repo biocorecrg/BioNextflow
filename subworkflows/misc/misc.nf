@@ -88,13 +88,21 @@ process downSamplePairs {
     def cmdA = zcatOrCat(readA)
     def rownum = readnum*4
 
-    def readB = reads[1]
-    def cmdB = zcatOrCat(readB)
+	if (reads.size() == 2) {
+	    def readB = reads[1]
+   		def cmdB = zcatOrCat(readB)
     
 	"""
 		${cmdA} | head -n ${rownum} | gzip > ${id}_sub_1.fq.gz
 		${cmdB} | head -n ${rownum} | gzip > ${id}_sub_2.fq.gz
     """
+    } else {
+    
+ 	"""
+		${cmdA} | head -n ${rownum} | gzip > ${id}_sub_1.fq.gz
+    """
+
+    }
 }
 
 // Take first 100 bases
