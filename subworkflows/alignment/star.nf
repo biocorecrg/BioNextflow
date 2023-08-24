@@ -30,6 +30,7 @@ params.OUTPUT = ""
 params.OUTPUTALN = ""
 params.OUTPUTCOUNT = ""
 params.CONTAINER = "quay.io/biocontainers/star:2.7.7a--0"
+params.STOREDIR = ""
 
 include { unzipCmd } from '../global_functions.nf'
 
@@ -71,6 +72,7 @@ process indexWithAnno {
     
     tag { "indexing ${reference} with ${annotation} and overhang=${overhang}"  }
     container params.CONTAINER
+    if (params.STOREDIR != "") { storeDir(params.STOREDIR) }
 
     input:
     val(overhang)
@@ -107,6 +109,8 @@ process indexWithAnno {
 process indexNoAnno {
     label (params.LABEL)
     label (params.LABELINDEX)
+
+    if (params.STOREDIR != "") { storeDir(params.STOREDIR) }
 
     tag { reference }
     container params.CONTAINER
