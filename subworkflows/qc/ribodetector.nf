@@ -44,7 +44,7 @@ process riboDetector {
 		${cmd_unzipB}
 		tot=`awk '{num++}END{print num/4}' ${file_nameA}`
 		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no1.fq.gz no2.fq.gz -e rrna -r rna1.fq rna2.fq -i ${file_nameA} ${file_nameB} 
-		awk -v id=${id} tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna1.fq > ${id}_rna_perc.txt
+		awk -v id=${id} -v tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna1.fq > ${id}_rna_perc.txt
 		${cmd_cleanA} 
 		${cmd_cleanB}
 		"""
@@ -54,7 +54,7 @@ process riboDetector {
 		${cmd_unzipA}
 		tot=`awk '{num++}END{print num/4}' ${file_nameA}`
 		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no.fq.gz -e rrna -r rna.fq -i ${file_nameA} 
-		awk -v id=${id} tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna.fq > ${id}_rna_perc.txt
+		awk -v id=${id} -v tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna.fq > ${id}_rna_perc.txt
 		${cmd_cleanA} 
 		"""
 
@@ -78,9 +78,9 @@ process makeMultiQCReport {
 echo '# id: ribodetector
 # plot_type: bargraph
 # section_name: Ribosome contamination
-# description: % of ribosomal reads) 
+# description: % of ribosomal reads 
 Filename	reads' > ribo_stats_mqc.txt;
-	awk -v tot=${downsize} '{print \$1"\t"\$2}' ${reports} >> ribo_stats_mqc.txt
+	awk '{print \$1"\t"\$2}' ${reports} >> ribo_stats_mqc.txt
 	"""
 	
 	
