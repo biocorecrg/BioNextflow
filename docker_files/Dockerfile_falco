@@ -1,11 +1,11 @@
-# Install biocorecrg/falco:700b3e2
+# Install biocorecrg/falco:20b2a85
 FROM ubuntu:focal-20211006
 
 # File Author / Maintainer
 MAINTAINER Luca Cozzuto <lucacozzuto@gmail.com> 
 
 ARG HTSLIB_VERSION=1.16
-ARG FALCO_VERSION=700b3e2
+ARG FALCO_VERSION=20b2a85
 
 
 #upgrade pip
