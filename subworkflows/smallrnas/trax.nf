@@ -44,7 +44,7 @@ process quickdb {
 }
 
 process trimAdapters {
-    if (params.OUTPUT != "") {publishDir(params.OUTPUT, mode: 'copy') }
+    if (params.OUTPUT != "") {publishDir(params.OUTPUT, mode: 'copy', pattern: "*.pdf") }
    
     tag ("All")
     
@@ -58,6 +58,7 @@ process trimAdapters {
 
     output:
 	path("*_{merge,trimmed}.fastq.gz"), emit: res
+	path("*_{ca,sp}.pdf"), emit: report
 
     script:
     def par = ""
@@ -84,8 +85,10 @@ process processSamples {
     path(samplefile)
     path(samplepairs)
 
-//    output:
-
+    output:
+	path("./expname/*.html")
+	path("./expname/*.pdf")
+    path("./expname/*-combine.txt")
 
     script:
     """
@@ -121,7 +124,7 @@ workflow TRIMADAPTERS {
 	runfile = read_list.collectFile(name: 'runfile.txt', newLine: true)
 	files = reads.map{it[1]}.collect()
 	type = checkSEorPE(reads)	
-    out = trimAdapters(runfile, files, type) 
+    out = trimAdapters(runfile, files, type).res
 
     emit:
   	out
