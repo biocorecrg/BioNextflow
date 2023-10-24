@@ -73,6 +73,14 @@ def separateSEandPE(fastq) {
     return (result)
 }
 
+def checkSEorPE(fastq){
+   num = fastq.map{it[1]}.first().size()
+   res = num.map{   
+	   it -> ( it == 2 ? "PE" : (it == 1 ? "SE" : "ERR" ))
+   }
+   return(res)
+}
+
 /*
 * unzip command: how to use it
 * script:
