@@ -48,6 +48,36 @@ process renameFilename {
 }
 
 
+/*
+*  Concatenate FastQ files
+*/
+process concatenateFastQFiles {
+
+    tag "${id}"
+    label (params.LABEL)
+    publishDir(params.OUTPUT, mode:'copy') 
+
+    input:
+    tuple val(id), path(fastq_pieces)
+
+    output:
+    tuple val(id), path("${id}.fq.gz")
+    
+
+    script:
+    if ("${fastq_pieces[0]}".endsWith("gz"))
+
+    """
+		cat ${fastq_pieces}  >> ${id}.fq.gz
+    """
+
+    else
+
+    """
+		cat fastq_pieces | gzip - >> ${id}.fq.gz
+    """
+}
+
 
 // Take first 100 bases
 process calcIlluminaAvgReadSize {
