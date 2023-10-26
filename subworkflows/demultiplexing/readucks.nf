@@ -35,7 +35,7 @@ process demultiplex {
  
     script:  
     """	
-    readucks ${params.EXTRAPARS} -p ${idfile}. -b -t ${task.cpus} -o ./ -i *.unclassified.fastq.gz
+    readucks ${params.EXTRAPARS} -p ${idfile}. -t ${task.cpus} -o ./ -i *.unclassified.fastq.gz
 
 	if ls ${idfile}.barcode*.fastq.gz  1> /dev/null 2>&1; then \
 		for i in ${idfile}.barcode*.fastq.gz; do cat \$i > `basename \$i .fastq.gz`_rd.fastq.gz; done \
@@ -50,8 +50,9 @@ process demultiplex {
 		gzip -c ${idfile}.unassigned.fastq > ${idfile}.unassigned_rd.fastq.gz; \
 	fi
 
-	rm *.fastq
-    	
+	if *.fastq 1> /dev/null 2>&1; then \
+		rm *.fastq
+    fi    	
 
 
     """
