@@ -40,6 +40,7 @@ process sniffles {
     output:
     tuple val(idfile), path("${idfile}.vcf"), emit: vcf
     tuple val(idfile), path("${idfile}.snf"), emit: snf
+    //tuple val(idfile), path("${idfile}.snf"), emit: snf, optional true
     
     script:
     """
