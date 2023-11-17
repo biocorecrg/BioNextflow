@@ -95,7 +95,7 @@ process map_with_params {
     def indexname = indexes[0].baseName
 
     """    
-    bwa mem -t ${task.cpus} ${params.EXTRAPARS} {extrapars} ${indexname} ${reads} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
+    bwa mem -t ${task.cpus} ${params.EXTRAPARS} ${extrapars} ${indexname} ${reads} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
     """
 }
 

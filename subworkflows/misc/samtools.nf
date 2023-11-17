@@ -116,7 +116,7 @@ process indexBam {
     
 	script:
     """    
-    samtools index ${params.EXTRAPARS} ${reads}
+    samtools index -@ ${task.cpus} ${params.EXTRAPARS} ${reads}
     """
 }
 
