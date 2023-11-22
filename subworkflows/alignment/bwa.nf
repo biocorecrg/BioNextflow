@@ -77,6 +77,28 @@ process map {
     """
 }
 
+process map_with_params {
+
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(pair_id), path(reads), val(extrapars)
+    path(indexes)
+
+    output:
+    tuple val(pair_id), path("${pair_id}.bam") 
+    
+	script:
+    def indexname = indexes[0].baseName
+
+    """    
+    bwa mem -t ${task.cpus} ${params.EXTRAPARS} ${extrapars} ${indexname} ${reads} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
+    """
+}
+
 workflow MAP {
     take: 
     input

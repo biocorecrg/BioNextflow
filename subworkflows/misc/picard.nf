@@ -84,6 +84,38 @@ process markDuplicates {
     """
 }
 
+process fixMateInformation {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_fixed.bam") 
+    
+
+	script:
+   
+    """    
+	picard -Xmx${task.memory.giga}g FixMateInformation ${params.EXTRAPARS} TMP_DIR=`pwd`/tmp I=${reads} O=${pair_id}_fixed.bam
+    """
+}
+
+workflow FIXMATE_INFO {
+    take: 
+    input
+    
+    main:
+		out = fixMateInformation(input)
+    emit:
+    	out
+}
+
+
+
 workflow SORT_COORD {
     take: 
     input
