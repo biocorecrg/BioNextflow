@@ -29,7 +29,7 @@ process getVersion {
     
     shell:
     """
-		guppy_basecaller --version       
+		guppy_basecaller --version | awk '{print \$NF}' | awk -F"+" '{print \$1}'      
     """
 }
 
