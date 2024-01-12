@@ -36,7 +36,9 @@ process demultiplex {
  
     script:  
     """	
-    	seqtagger -r -i ./ -o temp_output -t ${task.cpus}
+        mkdir tmp
+        export MPLCONFIGDIR=$PWD/tmp
+    	seqtagger ${params.EXTRAPARS} -r -i ./ -o temp_output -t ${task.cpus}
     	mv temp_output/..demux.tsv.gz ${idfile}_demux.tsv.gz
     	mv temp_output/..demux.tsv.gz.boxplot.pdf ${idfile}.boxplot.pdf
     """
