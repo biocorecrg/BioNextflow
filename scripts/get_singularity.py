@@ -12,6 +12,7 @@ parser.add_argument ('-c','--singularity_cache', action='store', required=True, 
 args = parser.parse_args()
 
 def get_images(jsonfile, outdir):
+	execDict = {}
 	f = open(jsonfile, "r")
 	json_content = f.read()
 	# remove the footer
@@ -25,10 +26,15 @@ def get_images(jsonfile, outdir):
 		newname = contname.replace('docker://', '')
 		newname = newname.replace('/', '-')
 		newname = outdir + "/" + newname.replace(':', '-') + ".img"
-		print("Downloading " + contname + " into " + " " + newname)
+		execDict[newname] = "singularity pull --name " + newname + " " + contname
+                #print("Downloading " + contname + " into " + " " + newname)
 		#print("singularity pull --name "+ newname + " " + contname)
-		os.system("singularity pull --name "+ newname + " " + contname)
- 
+		#os.system("singularity pull --name "+ newname + " " + contname)
+
+	for new_contname in execDict:
+		print("Downloading to " + new_contname)
+		os.system(execDict[new_contname])
+
 	# Closing file
 	f.close()
 	return 
