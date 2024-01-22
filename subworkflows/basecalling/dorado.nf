@@ -9,7 +9,7 @@ params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.MOP = ""
-params.CONTAINER = "ontresearch/dorado:mr314_shae59ce8ccdb28ee924ce688dccf7e4d1adb178942"
+params.CONTAINER = "ontresearch/dorado:shab1ff19616e2b8635791f17bef11f806628505a35"
 params.GPU = ""
 
 def gpu_cmd = ""
