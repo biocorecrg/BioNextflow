@@ -15,10 +15,6 @@ params.GPU = ""
 def gpu_cmd = ""
 def library_export = ""
 
-//if (params.GPU == "ON") {
-//	gpu_cmd = '-x "cuda:0"'
-//	library_export = 'export LD_LIBRARY_PATH="/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/.singularity.d/libs"'
-//}
 
 process getVersion {
     container params.CONTAINER
@@ -42,7 +38,7 @@ process baseCall {
     container params.CONTAINER
              
     input:
-    tuple val(idfile), path(fast5), path("*")
+    tuple val(idfile), path(fast5), path(models)
     
     output:
     tuple val(idfile), path("*.fastq.gz"), emit: basecalled_fastq
@@ -55,16 +51,14 @@ process baseCall {
     """
 }
 
-
-
-
  workflow BASECALL {
     take: 
     input_fast5
     model_folders
     
     main:
-    	baseCall(input_fast5.combine(model_folders))
+        models = model_folders.collect().map{ [ it ] }
+    	baseCall(input_fast5.combine(models))
 
 	emit:
     	basecalled_fastq = baseCall.out.basecalled_fastq
