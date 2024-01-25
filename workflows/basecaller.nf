@@ -10,6 +10,7 @@ params.output = ""
 params.label = ""
 params.extrapars = ""
 params.models = ""
+params.type = "dorado"
 
 def cuda_cont = (params.gpu == 'cuda11' ? 'biocorecrg/mopbasecallc11:0.3' : 'biocorecrg/mopbasecall:0.3')
 
@@ -46,7 +47,7 @@ workflow BASECALL {
         fast5_4_analysis
         
     main:
-        switch(params.basecalling) {                      
+        switch(params.type) {                      
            case "guppy":
            
                (newer, middle, older) = separateGuppy(fast5_4_analysis) 
