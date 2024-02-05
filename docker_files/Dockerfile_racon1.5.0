@@ -12,7 +12,7 @@ ARG RACON_VERSION=1.5.0
 #upgrade pip
 RUN apt-get update
 RUN apt-get install -y build-essential
-RUN apt install -y git zlib1g zlib1g-dev wget libbz2-dev liblzma-dev 
+RUN apt install -y procps git zlib1g zlib1g-dev wget libbz2-dev liblzma-dev 
 
 #Install HTSLIB
 RUN wget https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/htslib-${HTSLIB_VERSION}.tar.bz2
