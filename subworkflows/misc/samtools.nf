@@ -134,7 +134,25 @@ process catAln {
     
 	script:
     """    
-    samtools cat ${params.EXTRAPARS} -o ${pair_id}_cat.bam ${reads}
+    samtools cat -@ ${task.cpus} ${params.EXTRAPARS} -o ${pair_id}_cat.bam ${reads}
+    """
+}
+
+process catAln_header {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads), path(header)
+
+    output:
+    tuple val(pair_id), path("*_cat.bam") 
+    
+	script:
+    """    
+    samtools cat -@ ${task.cpus} ${params.EXTRAPARS} -h ${header} -o ${pair_id}_cat.bam ${reads}
     """
 }
 
@@ -316,7 +334,12 @@ workflow CAT {
     reads
     
     main:
-		out = catAln(reads)
+    	reads.branch {
+        	header: it.size() == 3
+        	nohead: it.size() == 2
+    	}.set { data }
+    	out = catAln_header(data.header).mix(catAln(data.nohead))
+
     emit:
     	out
 }
