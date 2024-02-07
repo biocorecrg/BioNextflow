@@ -17,7 +17,7 @@ process getVersion {
     
     shell:
     """
-	seqtagger --version
+	mRNA --version
     """
 }
 
@@ -38,7 +38,7 @@ process demultiplex {
     """	
         mkdir tmp
         export MPLCONFIGDIR=$PWD/tmp
-    	seqtagger mRNA ${params.EXTRAPARS} -r -i ./ -o temp_output -t ${task.cpus}
+    	mRNA ${params.EXTRAPARS} -r -i ./ -o temp_output -t ${task.cpus}
     	mv temp_output/..demux.tsv.gz ${idfile}_demux.tsv.gz
     	mv temp_output/..demux.tsv.gz.boxplot.pdf ${idfile}.boxplot.pdf
     """
