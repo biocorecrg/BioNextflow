@@ -28,7 +28,7 @@ process demultiplex {
     container params.CONTAINER
              
     input:
-    tuple val(idfile), path(fast5), path("models")
+    tuple val(idfile), path(fast5), path("*")
 
     output:
 	tuple val(idfile), path("${idfile}_demux.tsv.gz"), emit: demux_files
@@ -53,7 +53,8 @@ process demultiplex {
     	model_folder
     
     main:
-		demultiplex(input_fast5.combine(model_folder))
+        models = model_folder.collect().map{ [ it ] }
+		demultiplex(input_fast5.combine(models))
         
 
 	emit:

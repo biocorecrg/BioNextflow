@@ -76,13 +76,4 @@ workflow GET_VERSION {
     	getVersion.out
 } 
 
-workflow GET_WORKFLOWS {
-    take: 
-    flowcell
-    kit
 
-    main:
-		getWorkflow(flowcell, kit)
-    emit:
-    	getWorkflow.out
-} 
