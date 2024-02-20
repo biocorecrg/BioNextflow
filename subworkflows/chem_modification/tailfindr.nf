@@ -9,9 +9,13 @@ params.OUTPUTMODE = "copy"
 params.CONTAINER = "biocorecrg/moptail:1.3"
 params.MODE = "default"
 
-def newcontainer = (params.MODE == 'n3ps_r9' ? 'biocorecrg/moptail:nano3p_5' : 'biocorecrg/moptail:nano3p_5_r10')
+def mycontainer = params.CONTAINER
+if (params.MODE == 'n3ps_r9') {
+	mycontainer = 'biocorecrg/moptail:nano3p_5'
+} else if (params.MODE == 'n3ps_r10') {
+        mycontainer = 'biocorecrg/moptail:nano3p_5_r10'
+}
 
-def mycontainer = (params.MODE == 'default' ? params.CONTAINER : newcontainer)
 
 /*
 */
