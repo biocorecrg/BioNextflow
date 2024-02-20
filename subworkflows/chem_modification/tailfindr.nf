@@ -6,7 +6,12 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = "biocorecrg/mopnanotail:0.2"
+params.CONTAINER = "biocorecrg/moptail:1.3"
+params.MODE = "default"
+
+def newcontainer = (params.MODE == 'n3ps_r9' ? 'biocorecrg/moptail:nano3p_5' : 'biocorecrg/moptail:nano3p_5_r10')
+
+def mycontainer = (params.MODE == 'default' ? params.CONTAINER : newcontainer)
 
 /*
 */
@@ -29,7 +34,7 @@ process getVersion {
 process estimateTailSize {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.csv.gz') }
 
-    container params.CONTAINER
+    container mycontainer
     label (params.LABEL)
     tag "${sampleID}" 
  	
