@@ -173,9 +173,7 @@ def filterDemuxBacodes (mylists, mybarcodes) {
 	reshaped_barcoded_data = mylists.transpose().map{
 		[ "${it[0]}---${it[1].simpleName}", it[1] ] 
 	}
-	
-	reshaped_barcoded_data.combine(mybarcodes,  by: 0).view()
-	
+		
 	filtered_data = reshaped_barcoded_data.combine(mybarcodes,  by: 0).map{
 		def id = it[0].split("---")[0]
 		[id, it[1]]
@@ -183,10 +181,4 @@ def filterDemuxBacodes (mylists, mybarcodes) {
 	
 	return(filtered_data)
 }
-
-//[anna---bc_94, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_94.list]
-
-//anna---bc_104 
-
-//[anna, [/nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_101.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_102.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_104.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_11.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_12.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_13.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_15.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_17.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_25.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_26.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_28.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_29.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_32.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_37.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_39.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_46.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_47.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_5.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_52.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_6.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_61.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_62.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_7.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_71.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_77.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_78.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_79.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_80.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_91.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_92.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_94.list]]
 
