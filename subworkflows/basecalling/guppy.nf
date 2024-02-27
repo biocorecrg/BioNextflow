@@ -309,12 +309,27 @@ workflow BASECALL_MOD {
     input_fast5
     
     main:
-    	baseCallAndDemultiPlex(input_fast5)
+       switch(params.VERSION) {                      
+           case "6":
+                EXTRAPARS_BC = EXTRAPARS_BC + " --disable_qscore_filtering "
+           case "5":
+				baseCallAndDemultiPlex(input_fast5)
+     			basecalled_fast5 = baseCallAndDemultiPlex.out.basecalled_fast5
+    			basecalled_fastq = baseCallAndDemultiPlex.out.basecalled_fastq
+    			basecalling_stats = baseCallAndDemultiPlex.out.basecalling_stats
+           break;
+           case "6.5":
+ 		//		baseCallNew(input_fast5)
+     			basecalled_fast5 = channel.empty()
+    			basecalled_fastq = channel.empty()
+    			basecalling_stats = channel.empty()
+           break;           
+    	}
 
 	emit:
-    	basecalled_fast5 = baseCallAndDemultiPlex.out.basecalled_fast5
-    	basecalled_fastq = baseCallAndDemultiPlex.out.basecalled_fastq
-    	basecalling_stats = baseCallAndDemultiPlex.out.basecalling_stats
+    	basecalled_fast5 = basecalled_fast5
+    	basecalled_fastq = basecalled_fastq
+    	basecalling_stats = basecalling_stats
 }
 
 

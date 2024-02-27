@@ -1,0 +1,192 @@
+params.OUTPUT = ""
+params.OUTPUTST = ""
+params.OUTPUTMODE = "copy"
+params.TYPE = "guppy"
+params.LABEL = ""
+
+process extracting_demultiplexed_fast5_guppy {
+
+    tag "${ idfile }"
+    label (params.LABEL)
+
+    publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: '*-*')   
+    publishDir(params.OUTPUTST, mode:params.OUTPUTMODE, pattern: 'summaries/*_final_summary.stats', saveAs: { file -> "${file.split('\\/')[-1]}" })    
+
+    container "quay.io/biocontainers/ont-fast5-api:4.0.0--pyhdfd78af_0"
+             
+	input:
+	tuple val(idfile), path("summaries_*"), file("*")
+    
+	output:
+	path("${idfile}-*"), type: "dir", emit: dem_fast5
+	path("summaries/*_final_summary.stats"), emit: dem_summaries
+
+    script:
+    """
+      if [ -f "summaries_" ]; then
+	  ln -s summaries_ final_summary.stats
+	  else 
+		  head -n 1 summaries_1 > final_summary.stats
+	      for i in summaries_*; do cat \$i | awk -F"\t" -v id=${idfile} '
+	      NR==1 {
+    		for (i=1; i<=NF; i++) {
+        	  f[\$i] = i
+   		    }
+          }	      
+	      {OFS="\t"; \$(f["barcode_arrangement"]) = id"---"\$(f["barcode_arrangement"]); if (\$1!= "filename") { print \$0} }'  >> final_summary.stats; done
+	  fi
+
+		demux_fast5 -c vbz -t ${task.cpus} --input ./ --save_path ./ --summary_file final_summary.stats 
+
+	    mkdir summaries
+	    for i in */filename_mapping.txt; do awk 'BEGIN{print "filename\tread_id"}{print \$2"\t"\$1}' \$i > `echo \$i | awk -F"/" '{print "summaries/"\$1"_final_summary.stats"}'`; done
+
+		rm -fr barcode_arrangement
+    """
+}
+
+process preparing_demultiplexing_fast5_deeplexicon {
+
+    tag "${ idfile }"
+		
+	input:
+	tuple val(idfile), path("demux_*")
+
+	output:
+	tuple val(idfile), path("*.list")
+
+	
+	script:
+	"""
+	cat demux_* | grep -v ReadID >> dem.files
+	awk '{print \$2 > \$3".list" }' dem.files
+	"""
+}
+
+process preparing_demultiplexing_fast5_seqtagger {
+
+    label (params.LABEL)
+    tag "${ idfile }"
+		
+	input:
+	tuple val(idfile), path("demux_*")
+
+	output:
+	tuple val(idfile), path("*.list")
+
+	
+	script:
+	"""
+	zcat demux_* | grep -v read_id >> dem.files
+	awk '{if (\$5>=50) { print \$1 > "bc_"\$3".list" }}' dem.files
+	"""
+}
+
+process extracting_demultiplexed_fast5 {
+    label (params.LABEL)
+    
+	container 'lpryszcz/deeplexicon:1.2.0'
+    tag "${ idfile } on ${ idlist }"
+    
+    publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: '*-*')    
+    publishDir(params.OUTPUTST, mode:params.OUTPUTMODE, pattern: 'summaries/*_final_summary.stats', saveAs: { file -> "${file.split('\\/')[-1]}" })    
+
+		
+	input:
+	tuple val(idfile), path(idlist), file("*")
+
+	output:
+	path("${idfile}-*"), type: "dir", emit: dem_fast5
+	path("summaries/*_final_summary.stats"), emit: dem_summaries
+	
+	script:
+	"""
+	mkdir ${idfile}---`basename ${idlist} .list`; fast5_subset --input ./ --save_path ${idfile}---`basename ${idlist} .list`/ --read_id_list ${idlist} --batch_size 4000 -c vbz -t ${task.cpus}
+	mkdir summaries
+	for i in */filename_mapping.txt; do awk 'BEGIN{print "filename\tread_id"}{print \$2"\t"\$1}' \$i > `echo \$i | awk -F"/" '{print "summaries/"\$1"_final_summary.stats"}'`; done
+	rm */filename_mapping.txt;
+	"""
+} 
+
+
+
+
+
+workflow DEMULTI_FAST5 {
+
+    take: 
+    input_stats
+    input_fast5    
+    
+    main:
+       switch(params.TYPE) {                      
+           case "guppy":   
+				input_data = input_stats.join(input_fast5)
+                extracting_demultiplexed_fast5_guppy(input_data)
+          break;
+          case "deeplexicon":
+     		    prep_demux = preparing_demultiplexing_fast5_deeplexicon(input_stats)
+			    input_data = prep_demux.transpose().combine(input_fast5,  by: 0)
+     			extracting_demultiplexed_fast5(input_data)            
+          break;  
+          case "seqtagger":
+      		    prep_demux = preparing_demultiplexing_fast5_seqtagger(input_stats)
+			    input_data = prep_demux.transpose().combine(input_fast5,  by: 0)
+     			extracting_demultiplexed_fast5(input_data)            
+          break;  
+    	}
+ 
+ }
+ 
+ workflow DEMULTI_FAST5_FILTER {
+
+    take: 
+    input_stats
+    input_fast5 
+    barcodes   
+    
+    main:
+       switch(params.TYPE) {         
+           // not so clear how to filter             
+          case "guppy":   
+				input_data = input_stats.join(input_fast5)
+                extracting_demultiplexed_fast5_guppy(input_data)
+          break;
+          case "deeplexicon":
+     		    prep_demux = preparing_demultiplexing_fast5_deeplexicon(input_stats)
+			    filt_prep_demux = filterDemuxBacodes(prep_demux, barcodes)
+			    input_data = filt_prep_demux.transpose().combine(input_fast5,  by: 0)
+     			extracting_demultiplexed_fast5(input_data)            
+          break;  
+          case "seqtagger":
+      		    prep_demux = preparing_demultiplexing_fast5_seqtagger(input_stats)
+			    filt_prep_demux = filterDemuxBacodes(prep_demux, barcodes)
+			    input_data = filt_prep_demux.transpose().combine(input_fast5,  by: 0)
+     			extracting_demultiplexed_fast5(input_data)            
+          break;  
+    	}
+ 
+ }
+ 
+ // Create a channel for included ids
+def filterDemuxBacodes (mylists, mybarcodes) {
+	reshaped_barcoded_data = mylists.transpose().map{
+		[ "${it[0]}---${it[1].simpleName}", it[1] ] 
+	}
+	
+	reshaped_barcoded_data.combine(mybarcodes,  by: 0).view()
+	
+	filtered_data = reshaped_barcoded_data.combine(mybarcodes,  by: 0).map{
+		def id = it[0].split("---")[0]
+		[id, it[1]]
+	}.groupTuple()
+	
+	return(filtered_data)
+}
+
+//[anna---bc_94, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_94.list]
+
+//anna---bc_104 
+
+//[anna, [/nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_101.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_102.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_104.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_11.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_12.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_13.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_15.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_17.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_25.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_26.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_28.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_29.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_32.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_37.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_39.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_46.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_47.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_5.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_52.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_6.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_61.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_62.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_7.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_71.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_77.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_78.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_79.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_80.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_91.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_92.list, /nfs/no_backup/bi/lcozzuto/mop3/79/7c91f540bfb9334079c9735c00c5c3/bc_94.list]]
+
