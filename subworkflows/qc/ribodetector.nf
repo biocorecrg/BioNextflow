@@ -43,7 +43,7 @@ process riboDetector {
 		${cmd_unzipA}
 		${cmd_unzipB}
 		tot=`awk '{num++}END{print num/4}' ${file_nameA}`
-		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no1.fq.gz no2.fq.gz -e rrna -r rna1.fq rna2.fq -i ${file_nameA} ${file_nameB} 
+		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o /dev/null /dev/null -e rrna -r rna1.fq rna2.fq -i ${file_nameA} ${file_nameB} 
 		awk -v id=${id} -v tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna1.fq > ${id}_rna_perc.txt
 		${cmd_cleanA} 
 		${cmd_cleanB}
@@ -53,7 +53,7 @@ process riboDetector {
 		"""
 		${cmd_unzipA}
 		tot=`awk '{num++}END{print num/4}' ${file_nameA}`
-		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o no.fq.gz -e rrna -r rna.fq -i ${file_nameA} 
+		ribodetector_cpu  -t ${task.cpus} -l ${readsize} -o /dev/null -e rrna -r rna.fq -i ${file_nameA} 
 		awk -v id=${id} -v tot=\$tot '{num++}END{print id" "num/4/tot*100}' rna.fq > ${id}_rna_perc.txt
 		${cmd_cleanA} 
 		"""
