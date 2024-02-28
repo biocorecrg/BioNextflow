@@ -6,7 +6,7 @@
 
 params.LABEL = ""
 params.EXTRAPARS = ""
-params.CONTAINER = "quay.io/biocontainers/ribodetector:0.2.7--pyhdfd78af_0"
+params.CONTAINER = "quay.io/biocontainers/ribodetector:0.3.1--pyhdfd78af_0"
 params.OUTPUT = ""
 
 include { CALC_AVG_READSIZE } from "../misc/misc.nf"
