@@ -15,6 +15,9 @@ params.GPU = ""
 def gpu_cmd = ""
 def library_export = ""
 
+if (params.GPU == "OFF") {
+	gpu_cmd = '-x "cpu"'
+}
 
 process getVersion {
     container params.CONTAINER
@@ -46,7 +49,7 @@ process baseCall {
     script:
 
     """
-          dorado basecaller ${params.EXTRAPARS} --emit-fastq ./ > ${idfile}.fastq
+          dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --emit-fastq ./ > ${idfile}.fastq
           bgzip -@ ${task.cpus} ${idfile}.fastq
     """
 }
