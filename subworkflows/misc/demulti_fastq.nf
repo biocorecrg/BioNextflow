@@ -1,7 +1,7 @@
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.TYPE = "seqtagger"
-params.CONTAINER = "biocorecrg/demxufastq:0.1"
+params.CONTAINER = "biocorecrg/demxufastq:0.2"
 
 process extract_deeplexicon_fastq {
 
