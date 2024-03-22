@@ -77,7 +77,7 @@ process preparing_demultiplexing_fast5_seqtagger {
 	
 	script:
 	"""
-	cat demux_* | grep -v read_id >> dem.files
+	zcat demux_* | grep -v read_id >> dem.files
 	awk '{if (\$5>=50) { print \$1 > "bc_"\$3".list" }}' dem.files
 	"""
 }
