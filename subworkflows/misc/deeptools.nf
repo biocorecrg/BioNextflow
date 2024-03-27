@@ -79,7 +79,7 @@ process BamCoverageChipSeqScale {
 process calcFingerPrints {
     label (params.LABEL)
 
-    tag { id }
+    //tag { id }
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: "*.pdf") }
 
