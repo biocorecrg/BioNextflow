@@ -21,6 +21,12 @@ def trim_NF_date(nfdate){
     return(newdate)
 }
 
+def print_log_message(msg="") {
+	log_sep = "~"*51 + "\n"
+	log_text = log_sep + msg + "\n" + log_sep
+	return(log_text)
+}
+
 def final_message(title="") {
 	def ostart = "${workflow.start}"
 	def ostop = "${workflow.complete}"
