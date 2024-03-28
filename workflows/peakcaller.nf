@@ -15,7 +15,7 @@ include { GET_VERSION as EPIC2_VER;  CALL as EPIC2_CALL_CHIP} from "${moduleFold
 include { GET_VERSION as SEACR_VER; CALL as SEACR_CALL } from "${moduleFolder}/peak_calling/seacr" addParams(OUTPUT: params.output, LABEL: params.label, EXTRAPARS: params.progPars["seacr"]) 
 include { MAKE_GRAPHS as SEACR_MAKE_GRAPHS; MAKE_NORMALIZED_GRAPHS as SEACR_MAKE_NORMALIZED_GRAPHS } from "${moduleFolder}/peak_calling/seacr" 
 include { CALL as MACS2_CALL_CHIP } from "${moduleFolder}/peak_calling/macs2" addParams(OUTPUT: params.output, LABEL: params.label, EXTRAPARS: params.progPars["macs2"]) 
-include { CALL as MACS3_CALL_CHIP } from "${moduleFolder}/peak_calling/macs2" addParams(OUTPUT: params.output, LABEL: params.label, EXTRAPARS: params.progPars["macs3"], CONTAINER: "quay.io/biocontainers/macs3:3.0.1--py310h83093d7_2") 
+include { CALL as MACS3_CALL_CHIP } from "${moduleFolder}/peak_calling/macs3" addParams(OUTPUT: params.output, LABEL: params.label, EXTRAPARS: params.progPars["macs3"]) 
 include { GET_VERSION as BB_VER; BEDCLIP } from "${moduleFolder}/misc/bedclip"  
 
 
@@ -60,6 +60,9 @@ workflow PEAKCALL {
 	switch( params.type ) {
       case "macs2":
 		 macs_res = MACS2_CALL_CHIP(peak_data, peak_call_data["mappable_gsize"])
+		 macs_peaks = macs_res.broadPeaks.mix(macs_res.narrowPeaks)
+		 peak_res = convertTo6Bed(macs_peaks)
+      break;   
       case "macs3":
 		 macs_res = MACS3_CALL_CHIP(peak_data, peak_call_data["mappable_gsize"])
 		 macs_peaks = macs_res.broadPeaks.mix(macs_res.narrowPeaks)
@@ -74,8 +77,10 @@ workflow PEAKCALL {
         peak_res = channel.empty()
       break;   
     }
+    
 	emit:
-		peak_res
+		peaks = peak_res
+		combs = peak_data
 	
 }
 
