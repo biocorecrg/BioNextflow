@@ -53,7 +53,7 @@ workflow BASECALL_DEMULTIPLEX {
                basecalling_stats = outbc.basecalling_stats.concat(outbc6.basecalling_stats).concat(outbc65.basecalling_stats)    
 
   
-               if (params.demultiplexing == "readucks") {
+               if (params.type == "readucks") {
                     basecalled_fastq = READUCKS_DEMULTIPLEX(basecalled_fastq)
                }
     
