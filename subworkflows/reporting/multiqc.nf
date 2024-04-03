@@ -42,6 +42,27 @@ process makeReport {
     """
 }
 
+process makeReportWithConfig {
+    label (params.LABEL)
+    
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    path(input)
+    path(config)
+	
+    output:
+	path("multiqc_report.html"), emit: report
+	path("multiqc_data"), emit: data
+	
+	
+    script:
+    """
+		multiqc ${params.EXTRAPARS} -c ${config} .
+    """
+}
+
 process makeReportID {
     label (params.LABEL)
     tag { id }
@@ -71,6 +92,21 @@ workflow REPORT {
 		out	= makeReport.out.report
 		data = makeReport.out.data
 }
+
+workflow REPORT_WITH_CONFIG {
+    take: 
+    input
+    config
+    
+    main:
+		makeReportWithConfig(input, config)
+	emit:
+		out	= makeReportWithConfig.out.report
+		data = makeReportWithConfig.out.data
+}
+
+
+
 
 workflow REPORT_ID {
     take: 
