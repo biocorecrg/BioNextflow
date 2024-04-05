@@ -31,8 +31,8 @@ def separateGuppy (fast5) {
 	
 	
     older = data_and_ver.map{ if (it[0] < 6 ) [ it[1], it[2] ]}
-    middle = data_and_ver.map{ if (it[0] >= 6 && it[0] < 6.5) [ it[1], it[2] ]}
-    newer = data_and_ver.map{ if (it[0] >= 6.5 ) [ it[1], it[2] ]}
+    middle = data_and_ver.map{ if (it[0] >= 6 && it[0] <= 6.5) [ it[1], it[2] ]}
+    newer = data_and_ver.map{ if (it[0] > 6.5 ) [ it[1], it[2] ]}
 
     return([newer, middle, older])   
 }
