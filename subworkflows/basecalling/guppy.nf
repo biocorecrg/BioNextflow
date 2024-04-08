@@ -254,9 +254,7 @@ process baseCallAndDemultiPlexNew {
     tuple val(idfile), path(fast5)
     
     output:
-    tuple val(idfile), path("${idfile}_out/workspace/*.fast5"), emit: basecalled_fast5
     tuple val(idfile), path("${idfile}.*.gz"), emit: basecalled_fastq
-    tuple val(idfile), path("${idfile}_out/sequencing_summary.txt"), emit: basecalling_stats
 
     script:
     def infolder = "./"
