@@ -65,6 +65,28 @@ process mergeOutputPerChr {
 	"""
 }
 
+process runEncodeAndAlign {
+
+    container params.CONTAINER
+    label (params.LABEL)
+    tag "${sampleID}" 
+ 	
+    input:
+    tuple val(sampleID), path(fast5), path(reference)
+    
+    output:
+    tuple val(sampleID), path("./modPhred/minimap2/${sampleID}.bam"), emit: bams
+    tuple val(sampleID), path("./modPhred/reads/${sampleID}/"), emit: readdir
+    tuple val(sampleID), path("./modPhred/reads/${sampleID}/modPhred.pkl"), emit: pkl
+    
+    
+    script:
+	"""
+	mkdir ${sampleID}; cd ${sampleID}; ln -s ../*.fast5 ./; cd ../
+	/opt/modPhred/src/guppy_encode.py -o ./modPhred/ -ri ./${sampleID}  -t ${task.cpus}
+	/opt/modPhred/src/guppy_align.py -f ${reference} -o ./modPhred -ri ./modPhred/reads/* -t ${task.cpus}
+	"""
+}
 
 
 /*
@@ -78,9 +100,11 @@ workflow RUNBYCHROM {
     chr
 
     main:
-        data = fast5.combine(reference).combine(chr)
-        out_per_chr = runByChromosome(data).outfile
-        out_per_chr.groupTuple().view()
+    	out = runEncodeAndAlign(fast5.combine(reference))
+    	out.pkl.view()
+        //data = fast5.combine(reference).combine(chr)
+        //out_per_chr = runByChromosome(data).outfile
+        //out_per_chr.groupTuple().view()
 
 }
 

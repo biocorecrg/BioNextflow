@@ -257,7 +257,7 @@ process baseCallAndDemultiPlex {
     			basecalled_fastq = baseCall.out.basecalled_fastq
     			basecalling_stats = baseCall.out.basecalling_stats
            break;
-           case "6.5":
+           case "6.4":
  				baseCallNew(input_fast5)
      			basecalled_fast5 = channel.empty()
     			basecalled_fastq = baseCallNew.out.basecalled_fastq
@@ -318,7 +318,7 @@ workflow BASECALL_MOD {
     			basecalled_fastq = baseCallAndDemultiPlex.out.basecalled_fastq
     			basecalling_stats = baseCallAndDemultiPlex.out.basecalling_stats
            break;
-           case "6.5":
+           case "6.4":
  		//		baseCallNew(input_fast5)
      			basecalled_fast5 = channel.empty()
     			basecalled_fastq = channel.empty()
