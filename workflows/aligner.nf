@@ -31,7 +31,7 @@ workflow ALIGN {
 	    map_res = BOWTIE2_ALL(genome, reads).aln
       break;   
       case "star":
-        map_res = channel.empty()
+        map_res = channel.value()
       break;   
     }
 	emit:

@@ -291,9 +291,9 @@ process baseCallAndDemultiPlexNew {
     input_fast5
     
     main:
-   	basecalled_fast5 = channel.value()
-    basecalled_fastq = channel.value()
-    basecalling_stats = channel.value()
+   	basecalled_fast5 = channel.empty()
+    basecalled_fastq = channel.empty()
+    basecalling_stats = channel.empty()
     
        switch(params.VERSION) {                      
            case "6":
@@ -354,9 +354,9 @@ workflow BASECALL_MOD {
     input_fast5
     
     main:
-    basecalled_fast5 = channel.value()
-    basecalled_fastq = channel.value()
-    basecalling_stats = channel.value()
+    basecalled_fast5 = channel.empty()
+    basecalled_fastq = channel.empty()
+    basecalling_stats = channel.empty()
 
        switch(params.VERSION) {                      
            case "6":
