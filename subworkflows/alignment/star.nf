@@ -50,12 +50,14 @@ process calcOverhang {
     
     tag { pair_id }
     container params.CONTAINER
+    shell '/bin/bash', '-eu'
 
     input:
     tuple val(pair_id), path(reads)
 	
     output:
     stdout emit: readsize
+
 
     script:
     def first_pair = reads[0]
