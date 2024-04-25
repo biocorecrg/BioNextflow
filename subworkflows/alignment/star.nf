@@ -195,11 +195,13 @@ workflow INDEX {
 	overhang    
     
     main:
-		ref_file = file(reference)
-		anno_file = file(annotation)
-		if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
-		if( !anno_file.exists() ) exit 1, "Missing ${anno_file} file!"
-		def refname = ref_file.simpleName
+		//ref_file = file(reference)
+		//anno_file = file(annotation)
+		//if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
+		//if( !anno_file.exists() ) exit 1, "Missing ${anno_file} file!"
+		refname = reference.map{
+			it.getSimpleName()
+		}
 		out = indexWithAnno(overhang, refname, reference, annotation)
     emit:
     	out
