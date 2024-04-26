@@ -12,6 +12,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/snpsplit:0.6.0--hdfd78af_0"
+params.STOREDIR = ""
 
 process getVersion {
     container params.CONTAINER
@@ -30,6 +31,7 @@ process index_dual {
     label (params.LABEL)
     tag { "${reference}" }
     container params.CONTAINER
+    if (params.STOREDIR != "") { storeDir(params.STOREDIR) }
 
     input:
     tuple path(reference, stageAs: 'genome/*'), path(vcf), val(genomeA),  val(genomeB) 
@@ -42,7 +44,7 @@ process index_dual {
     """
     if [ `echo "${reference}" | grep ".gz"` ]; then zcat genome/*.gz >> genome/genome.fa; fi
        SNPsplit_genome_preparation ${params.EXTRAPARS} --vcf_file ${vcf} --reference_genome ./genome/ --dual_hybrid --strain ${genomeA} --strain2 ${genomeB}
-	   cat *_N-masked/*.fa | gzip -c >> genome.masked.fa.gz 
+	   cat *_dual_hybrid*_N-masked/* | gzip -c >> genome.masked.fa.gz 
 	   gzip *.based_on*.txt
     """
 }
@@ -54,17 +56,15 @@ process split {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple val(pair_id), path(reads)
-    path(indexes)
+    tuple val(pair_id), path(bam), path(snp_file)
 
     output:
     tuple val(pair_id), path("${pair_id}.bam") 
     
 	script:
-    def indexname = indexes[0].baseName - ~/\.\w+$/
 
     """
-    biscuit align -@ ${task.cpus} ${params.EXTRAPARS} ${indexname} ${reads} > ${pair_id}.bam
+       SNPsplit ${params.EXTRAPARS} --snp_file ${snp_file} -o ./ ${bam}
     """
 }
 
@@ -75,10 +75,10 @@ process split {
 workflow SPLIT {
     take: 
     input
-    indexes
+    snp_index
     
     main:
-		out = split(input, indexes)
+		out = split(input.combine(indexes))
     emit:
     	out
 }

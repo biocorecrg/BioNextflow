@@ -165,8 +165,6 @@ process map {
             STAR --genomeDir ${indexes} \
                  --readFilesIn ${reads} \
                   \$gzipped \
-                  --outSAMunmapped None \
-                  --outSAMtype BAM SortedByCoordinate \
                   --runThreadN ${task.cpus} \
                   --outFileNamePrefix ${pair_id} \
                   ${params.EXTRAPARS}
