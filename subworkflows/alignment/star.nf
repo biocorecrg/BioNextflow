@@ -154,7 +154,8 @@ process map {
     tuple val(pair_id), path(reads)
 
     output:
-    tuple val(pair_id), path("${pair_id}*.bam"), emit: bams 
+    tuple val(pair_id), path("${pair_id}*.bam"), emit: bams optional true
+    tuple val(pair_id), path("${pair_id}*.bam"), emit: sams optional true
     tuple val(pair_id), path("${pair_id}ReadsPerGene.out.tab"), emit: quants optional true
     tuple val(pair_id), path("${pair_id}Log.final.out"), emit: logs 
     tuple val(pair_id), path("${pair_id}SJ*"),  emit: junctions
