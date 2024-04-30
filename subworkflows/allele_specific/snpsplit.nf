@@ -59,7 +59,9 @@ process split {
     tuple val(pair_id), path(bam), path(snp_file)
 
     output:
-    tuple val(pair_id), path("${pair_id}.bam") 
+    tuple val(pair_id), path("*.SNPsplit_report.txt"), emit: report optional true
+    tuple val(pair_id), path("*.allele_flagged.bam"), emit: flagged optional true
+    tuple val(pair_id), path("*.genome1.bam"), path("*.genome2.bam"), path("*.unassigned.bam"), emit: alleles optional true
     
 	script:
 
@@ -75,12 +77,14 @@ process split {
 workflow SPLIT {
     take: 
     input
-    snp_index
+    indexes
     
     main:
 		out = split(input.combine(indexes))
     emit:
-    	out
+    	alleles = out.alleles
+    	flagged = out.flagged
+    	report = out.report
 }
 
 workflow INDEX {
@@ -95,7 +99,7 @@ workflow INDEX {
 
     emit:
     	genome = out.genome
-    	snps = out.genome
+    	snps = out.snps
 }
 
 
