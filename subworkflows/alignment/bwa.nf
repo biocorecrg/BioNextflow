@@ -25,6 +25,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.CONTAINER = "quay.io/biocontainers/mulled-v2-8a9a988fff4785176b70ce7d14ff00adccf8a5b8:aeac8200e5c50c5acf4dd14792fd8453255af835-0"
+params.STOREINDEX = ""
 
 process getVersion {
     container params.CONTAINER
@@ -44,6 +45,8 @@ process index {
     label (params.LABEL)
     tag { "${reference}" }
     container params.CONTAINER
+    if (params.STOREINDEX != "") { storeDir(params.STOREINDEX) }
+ 
 
     input:
     path(reference)

@@ -15,24 +15,27 @@ params.type = "dorado"
 def cuda_cont = (params.gpu == 'cuda11' ? 'biocorecrg/mopbasecallc11:0.3' : 'biocorecrg/mopbasecall:0.3')
 
 include { GET_VERSION as GUPPY_VERSION } from "${moduleFolder}/basecalling/guppy" 
+include { print_log_message } from "${moduleFolder}/global_functions.nf"
 include { BASECALL as GUPPY_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(LABEL: params.label, EXTRAPARS_BC: params.extrapars, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode )
 include { BASECALL as GUPPY6_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
-include { BASECALL as GUPPY65_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.5", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
+include { BASECALL as GUPPY64_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
 include { BASECALL as DORADO_BASECALL } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS:  params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
 
 // ADD A CHECK FOR GUPPY FOR DISABLING SCORE
 
 def separateGuppy (fast5) {
 
-	data_and_ver = GUPPY_VERSION().map{
+	ver = GUPPY_VERSION()
+    ver.view { gver -> print_log_message("The GUPPY VERSION IS: ${gver.trim()}") }
+	
+	data_and_ver = ver.map{
         def vals = it.split("\\.")
     	"${vals[0]}.${vals[1]}"
-    }.toBigDecimal().combine(fast5)
-	
+    }.toBigDecimal().combine(fast5)	
 	
     older = data_and_ver.map{ if (it[0] < 6 ) [ it[1], it[2] ]}
-    middle = data_and_ver.map{ if (it[0] >= 6 && it[0] < 6.5) [ it[1], it[2] ]}
-    newer = data_and_ver.map{ if (it[0] >= 6.5 ) [ it[1], it[2] ]}
+    middle = data_and_ver.map{ if (it[0] >= 6 && it[0] <= 6.3) [ it[1], it[2] ]}
+    newer = data_and_ver.map{ if (it[0] >= 6.4 ) [ it[1], it[2] ]}
 
     return([newer, middle, older])   
 }
@@ -52,7 +55,7 @@ workflow BASECALL {
            
                (newer, middle, older) = separateGuppy(fast5_4_analysis) 
     
-               outbc65 = GUPPY65_BASECALL(newer)  
+               outbc65 = GUPPY64_BASECALL(newer)  
                outbc6 = GUPPY6_BASECALL(middle)
                outbc = GUPPY_BASECALL(older)  
                

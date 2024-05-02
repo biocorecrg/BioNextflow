@@ -23,7 +23,7 @@ include { separateGuppy } from "./basecaller"
 
 include { BASECALL_DEMULTI as GUPPY_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
 include { BASECALL_DEMULTI as GUPPY6_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
-include { BASECALL_DEMULTI as GUPPY65_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.5", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
+include { BASECALL_DEMULTI as GUPPY65_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
 include { DEMULTIPLEX as READUCKS_DEMULTIPLEX } from "${moduleFolder}/demultiplexing/readucks" addParams(EXTRAPARS: params.extrapars, LABEL: params.label, OUTPUT: params.output, OUTPUTMODE: params.outmode)
 
 
@@ -53,7 +53,7 @@ workflow BASECALL_DEMULTIPLEX {
                basecalling_stats = outbc.basecalling_stats.concat(outbc6.basecalling_stats).concat(outbc65.basecalling_stats)    
 
   
-               if (params.demultiplexing == "readucks") {
+               if (params.type == "readucks") {
                     basecalled_fastq = READUCKS_DEMULTIPLEX(basecalled_fastq)
                }
     
