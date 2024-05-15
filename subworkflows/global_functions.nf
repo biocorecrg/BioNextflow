@@ -41,11 +41,11 @@ def final_message(title="") {
 	message = message + "*Pipeline ${title} completed!*".center(51) + "\n"
         message = message + "-"*51 + "\n"
 
-	message = message + "- Launched by `$workflow.userName`" + "\n"
+	message = message + "- Launched by *${workflow.userName}*" + "\n"
 	message = message + "- Started at $start" + "\n"
     	message = message + "- Finished at $stop" + "\n"
     	message = message + "- Time elapsed: $workflow.duration" + "\n"
-    	message = message + "- Execution status: ${ workflow.success ? 'OK' : 'failed' }" + "\n"
+    	message = message + "- Execution status: `${ workflow.success ? 'OK' : 'failed' }`" + "\n"
     	message = message + "```$workflow.commandLine```"+ "\n"
     	message = message + error + "-"*51 + "\n"
 return (message)
