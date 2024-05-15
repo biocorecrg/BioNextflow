@@ -24,7 +24,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/biscuit:1.4.0.20240108--h0be9327_0"
+params.CONTAINER = "quay.io/biocontainers/mulled-v2-d94f582b04a3edcede1215189c0d881506640fd9:6519548ea4f3d6a526c78ad0350c58f867f28574-0"
 
 process getVersion {
     container params.CONTAINER
@@ -72,7 +72,7 @@ process map {
     def indexname = indexes[0].baseName - ~/\.\w+$/
 
     """
-    biscuit align -@ ${task.cpus} ${params.EXTRAPARS} ${indexname} ${reads} > ${pair_id}.bam
+    biscuit align -@ ${task.cpus} ${params.EXTRAPARS} ${indexname} ${reads} | samtools view -@ ${task.cpus} -Sb > ${pair_id}.bam
     """
 }
 
