@@ -77,6 +77,36 @@ process map {
     """
 }
 
+process meth_extractor {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(pair_id), path(bam), path(genome)
+
+    output:
+    tuple val(pair_id), path("*.bismark.cov.gz") 
+    
+	script:
+    def my_cpus = (task.cpus/3).round(0)
+    """
+    bismark_methylation_extractor ${params.EXTRAPARS} --gzip --parallel ${my_cpus} --no_header --merge_non_CpG --comprehensive  --buffer_size ${task.memory.toGiga()}G  --bedGraph --counts --remove_spaces --cytosine_report --genome_folder ./ ${bam}
+    """
+}
+
+workflow METH_EXTRACT {
+    take: 
+    index
+    input
+    
+    main:
+		out = meth_extractor(input.combine(index))
+    emit:
+    	out
+}
+
 
 workflow MAP {
     take: 
@@ -108,7 +138,8 @@ workflow ALL {
 		index = INDEX(reference)
 		out = MAP(input.combine(index).combine(reference))
     emit:
-    	out
+    	out = out
+    	index = index
 }
 
 workflow GET_VERSION {
