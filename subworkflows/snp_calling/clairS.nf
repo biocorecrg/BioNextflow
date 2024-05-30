@@ -13,7 +13,7 @@ params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.CONTAINER = "hkubal/clairs:v0.2.0"
 
-include { PossiblyUnzipGenome } from '../misc/misc.nf'
+include { CHECK_FASTA } from '../misc/misc.nf'
 
 process getVersion {
     container params.CONTAINER
@@ -29,15 +29,15 @@ process getVersion {
 
 process clairS {
     label (params.LABEL)
-    tag "${idfile}"
+    tag "${comp_id}"
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple path(bamcancer), path(bamctrl), path(reference)
+    tuple val(comp_id), path(bamcancer), path(bamctrl), path(baicancer), path(baictrl), path(reference), path(refai)
 
     output:
-    //tuple val(idfile), path("${idfile}.snf"), emit: snf, optional true
+    tuple val(comp_id), path(comp_id)
     
     script:
     """
@@ -47,7 +47,7 @@ process clairS {
         --normal_bam_fn ${bamctrl} \
         --ref_fn ${reference} \
         --threads ${task.cpus} ${params.EXTRAPARS} \
-        --output_dir ./ \
+        --output_dir ${comp_id} \
         --conda_prefix /opt/conda/envs/clairs
 
     """
@@ -59,10 +59,11 @@ workflow RUN {
     take: 
     bams
     reference
+    reffai
     
     main:
-        ref_genome = PossiblyUnzipGenome(reference)
-        clairS(bams.combine(ref_genome))
+        ref_genome = CHECK_FASTA(reference)
+        clairS(bams.combine(ref_genome).combine(reffai))
         
 	//emit:
     	//vcf = clairS.out.vcf
