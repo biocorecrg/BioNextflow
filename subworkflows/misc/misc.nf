@@ -185,13 +185,13 @@ workflow CHECK_FASTA {
     fasta_unk
     
     main:
-        out = file(fasta_unk)
-        if (fasta_unk.getExtension() == "gz") {
-            out = unzipFasta(fasta_unk)
-        }  
+    fasta_gz = fasta_unk.filter { it.name =~ /(\.gz)$/ }
+    fasta_unz = unzipFasta(fasta_gz)
+    
+    fasta_res = fasta_unz.concat(fasta_unk).first()
 
     emit:
-        out
+        fasta_res
 
 }
 
