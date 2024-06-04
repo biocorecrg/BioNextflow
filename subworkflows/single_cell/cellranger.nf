@@ -3,7 +3,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocontainers/biocontainers:debian-stretch-backports"
+params.CONTAINER = "biocorecrg/debian-perlbrew:buster"
 params.EXTRAPARS = ""
 params.EXTRAPARSINDEX = ""
 params.OUTPUT = ""
@@ -89,7 +89,7 @@ process count {
     ln -s ${pairs[0]} ./${pair_id}_S1_L001_R1_001.fastq.gz
     ln -s ${pairs[1]} ./${pair_id}_S1_L001_R2_001.fastq.gz
     
-	cellranger count --id=${pair_id} \
+	cellranger count ${params.EXTRAPARS} --id=${pair_id} \
                    --transcriptome=${index} \
                    --fastqs=./ \
                    --sample=${pair_id} \
