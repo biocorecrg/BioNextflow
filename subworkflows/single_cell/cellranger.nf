@@ -121,7 +121,6 @@ process count_multiome {
 	cellranger-arc count ${params.EXTRAPARS} --id=${pair_id} \
                    --reference=${index} \
                    --libraries=./libraries.csv \
-                   --id=${pair_id} \
                    --localcores=${task.cpus} \
                    --localmem=${task.memory.toGiga()}   
     """
