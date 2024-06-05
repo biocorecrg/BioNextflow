@@ -159,6 +159,42 @@ process PossiblyUnzipGenome {
     """
 }
 
+process unzipFasta {
+    
+    tag { "${gzip}" }
+    container 'quay.io/biocontainers/pigz:2.8'
+
+    input:
+    path(gzip)
+	
+    output:
+    path("*")
+
+    script:
+    def output = gzip.getBaseName()
+
+	"""
+		zcat ${gzip}  > ${output}
+    """
+}
+
+
+workflow CHECK_FASTA {
+
+    take: 
+    fasta_unk
+    
+    main:
+    fasta_gz = fasta_unk.filter { it.name =~ /(\.gz)$/ }
+    fasta_unz = unzipFasta(fasta_gz)
+    
+    fasta_res = fasta_unz.concat(fasta_unk).first()
+
+    emit:
+        fasta_res
+
+}
+
 workflow DOWNSAMPLE_PAIRS {
 
     take: 

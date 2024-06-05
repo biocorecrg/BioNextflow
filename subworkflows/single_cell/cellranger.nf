@@ -3,7 +3,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocontainers/biocontainers:debian-stretch-backports"
+params.CONTAINER = "biocorecrg/debian-perlbrew:buster"
 params.EXTRAPARS = ""
 params.EXTRAPARSINDEX = ""
 params.OUTPUT = ""
@@ -89,7 +89,7 @@ process count {
     ln -s ${pairs[0]} ./${pair_id}_S1_L001_R1_001.fastq.gz
     ln -s ${pairs[1]} ./${pair_id}_S1_L001_R2_001.fastq.gz
     
-	cellranger count --id=${pair_id} \
+	cellranger count ${params.EXTRAPARS} --id=${pair_id} \
                    --transcriptome=${index} \
                    --fastqs=./ \
                    --sample=${pair_id} \
@@ -98,6 +98,33 @@ process count {
     """
 }
 
+process count_multiome {
+    label (params.LABEL)
+    tag { "${pair_id}" }
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
+
+    input:
+    tuple val(pair_id), path(rna_pairs, stageAs: 'rna/*'), path(atac_pairs, stageAs: 'atac/*'), path(index)
+
+    output:
+    tuple val(pair_id), path("${pair_id}")
+
+    script:
+        
+    """
+    echo "fastqs,sample,library_type
+./rna,${pair_id},Gene Expression
+./atac,${pair_id},Chromatin Accessibility" > ./libraries.csv
+
+	cellranger-arc count ${params.EXTRAPARS} --id=${pair_id} \
+                   --reference=${index} \
+                   --libraries=./libraries.csv \
+                   --localcores=${task.cpus} \
+                   --localmem=${task.memory.toGiga()}   
+    """
+}
 
 
 workflow INDEX {
@@ -122,6 +149,21 @@ workflow COUNT {
 
     main:
     out = count(fastq, index)
+
+
+    emit:
+        out 
+
+}
+
+workflow COUNT_MULTIOME {
+    take:
+    index
+    rna
+    atac
+
+    main:
+    out = count_multiome(rna.join(atac).combine(index))
 
 
     emit:

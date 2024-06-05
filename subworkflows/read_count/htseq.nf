@@ -21,10 +21,9 @@ process HtseqCount {
    
    
     input:
-    path(annotation_file)
-    tuple val(id), path(bamfile), path(indexfile)
+    tuple val(id), path(bamfile), path(indexfile), path(annotation_file)
     val(doanno)
-
+    
     output:
     tuple val(id), path("${id}.counts"), emit: counts
     tuple val(id), path("${id}_anno.bam"), emit: bam optional true
@@ -47,9 +46,7 @@ workflow COUNT {
     aln_data
     
     main:
-	anno_file = file(annotation)
-	if( !anno_file.exists() ) exit 1, "Missing ${annotation} file!"
-    out = HtseqCount(annotation, aln_data, "no")
+    out = HtseqCount(aln_data.combine(annotation), "no")
     
     emit:
 	counts = out.counts
@@ -62,9 +59,7 @@ workflow COUNT_AND_ANNO {
     aln_data
     
     main:
-	anno_file = file(annotation)
-	if( !anno_file.exists() ) exit 1, "Missing ${annotation} file!"
-    out = HtseqCount(annotation, aln_data, "yes")
+    out = HtseqCount(aln_data.combine(annotation), "yes")
     
     emit:
 	counts = out.counts
