@@ -116,7 +116,7 @@ process count_multiome {
     """
     echo "fastqs,sample,library_type
 ./rna,${pair_id},Gene Expression
-./atac,$pair_id},Chromatin Accessibility" > ./libraries.csv
+./atac,${pair_id},Chromatin Accessibility" > ./libraries.csv
 
 	cellranger-arc count ${params.EXTRAPARS} --id=${pair_id} \
                    --reference=${index} \
