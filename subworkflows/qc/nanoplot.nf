@@ -15,7 +15,7 @@ process MOP_nanoPlot {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
    
     input:
-    tuple val(id), path(bamfile), path(bai)
+    tuple val(id), path(bamfile)
 
     output:
     tuple val(id), path("*_plot/*"), emit: plots optional true
