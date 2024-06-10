@@ -13,7 +13,7 @@ def mycontainer = params.CONTAINER
 if (params.MODE == 'n3ps_r9') {
 	mycontainer = 'biocorecrg/moptail:nano3p_5'
 } else if (params.MODE == 'n3ps_r10') {
-        mycontainer = 'biocorecrg/moptail_nano3p_5_r10:0.4'
+        mycontainer = 'biocorecrg/moptail_nano3p_5_r10:0.5'
 }
 
 
