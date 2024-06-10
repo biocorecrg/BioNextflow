@@ -17,9 +17,9 @@ process HtseqCount {
     tag "${id}"
     label (params.LABEL)
     container params.CONTAINER
+
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern:'*.counts', mode:'copy') }
-   
-   
+      
     input:
     tuple val(id), path(bamfile), path(indexfile), path(annotation_file)
     val(doanno)
@@ -31,9 +31,11 @@ process HtseqCount {
 	script:    
 	def anno = unzipNamedPipe(annotation_file)
 	def annopar = ""
+
 	if (doanno=="yes") {
 		annopar = "-p bam -o ${id}_anno.bam"
-	} 
+	}
+ 
 	"""
 	    htseq-count ${annopar} ${params.EXTRAPARS} -n ${task.cpus} ${bamfile} ${anno} > ${id}.counts
 	"""
@@ -59,7 +61,7 @@ workflow COUNT_AND_ANNO {
     aln_data
     
     main:
-    out = HtseqCount(aln_data.combine(annotation), "yes")
+    out = HtseqCount(aln_data.combine(Channel.from(annotation)), "yes")
     
     emit:
 	counts = out.counts
