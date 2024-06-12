@@ -37,7 +37,8 @@ process clairS {
     tuple val(comp_id), path(bamcancer), path(bamctrl), path(baicancer), path(baictrl), path(reference), path(refai)
 
     output:
-    tuple val(comp_id), path(comp_id)
+    tuple val(comp_id), path(comp_id), emit: folder
+    tuple val(comp_id), path("${comp_id}/output.vcf.gz"), emit: vcf
     
     script:
     """
@@ -51,7 +52,9 @@ process clairS {
         --conda_prefix /opt/conda/envs/clairs
 
     """
+// --remove_intermediate_dir
 }
+
 
 
 workflow RUN {
@@ -63,11 +66,11 @@ workflow RUN {
     
     main:
         ref_genome = CHECK_FASTA(reference)
-        clairS(bams.combine(ref_genome).combine(reffai))
+        out = clairS(bams.combine(ref_genome).combine(reffai))
         
-	//emit:
-    	//vcf = clairS.out.vcf
-    	//snf = clairS.out.snf
+	emit:
+    	vcf = out.vcf
+    	folder = out.folder
 	
 }
 

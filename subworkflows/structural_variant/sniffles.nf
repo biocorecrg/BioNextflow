@@ -11,7 +11,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/sniffles:2.2--pyhdfd78af_0"
+params.CONTAINER = "quay.io/biocontainers/sniffles:2.3.3--pyhdfd78af_0"
 
 include { PossiblyUnzipGenome } from '../misc/misc.nf'
 
@@ -40,7 +40,6 @@ process sniffles {
     output:
     tuple val(idfile), path("${idfile}.vcf"), emit: vcf
     tuple val(idfile), path("${idfile}.snf"), emit: snf
-    //tuple val(idfile), path("${idfile}.snf"), emit: snf, optional true
     
     script:
     """
@@ -50,6 +49,25 @@ process sniffles {
     """
 }
 
+process sniffles_multisample {
+    label (params.LABEL)
+    tag "${idfile}"
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(idfile), path(snvfiles)
+
+    output:
+    tuple val(idfile), path("${idfile}.vcf"), emit: vcf
+    
+    script:
+	def snv_list = snvfiles.join(" ")
+    """
+    sniffles ${params.EXTRAPARS} \
+    --input ${snv_list} --vcf ${idfile}.vcf --threads ${task.cpus} 
+    """
+}
 
 workflow RUN {
     take: 
@@ -58,12 +76,21 @@ workflow RUN {
     reference
     
     main:
-		ref_genome = PossiblyUnzipGenome(reference)
-		sniffles(input.join(index), ref_genome)
+		sniffles(input.join(index), reference)
 	emit:
     	vcf = sniffles.out.vcf
     	snf = sniffles.out.snf
 	
+}
+
+workflow RUN_MULTI {
+    take: 
+    input
+    
+    main:
+		sniffles_multisample(input)
+	emit:
+    	out = sniffles_multisample.out.vcf
 }
 
 
