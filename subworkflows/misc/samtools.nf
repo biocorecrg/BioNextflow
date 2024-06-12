@@ -77,6 +77,34 @@ process sortAln {
     """
 }
 
+
+process dict {
+
+    label (params.LABEL)
+    tag { "${genome}" }
+    container params.CONTAINER 
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+    
+    input:
+    path(genome)
+    
+    output:
+    path("*.dict")
+    
+    script:
+    def unzip_ref = unzipCmd(genome)
+    def cmd_ref = unzip_ref[1]
+    def ref_name = unzip_ref[0]
+    def simple_name = ref_name.getBaseName()
+    def clean_ref = unzip_ref[2]
+    """    
+        ${cmd_ref} 
+        samtools dict ${params.EXTRAPARS} ${ref_name} > ${simple_name}.dict
+        ${clean_ref}
+    """
+
+}
+
 process faidx {
     label (params.LABEL)
     tag { "${genome}" }
@@ -89,15 +117,15 @@ process faidx {
     output:
     path("*.fai") 
     
-	script:
+    script:
     def unzip_ref = unzipCmd(genome)
     def cmd_ref = unzip_ref[1]
     def ref_name = unzip_ref[0]
     def clean_ref = unzip_ref[2]
     """    
- 		${cmd_ref} 
-	    samtools faidx ${params.EXTRAPARS} ${ref_name}
-	    ${clean_ref}
+ 	${cmd_ref} 
+        samtools faidx ${params.EXTRAPARS} ${ref_name}
+        ${clean_ref}
     """
 }
 
@@ -287,6 +315,16 @@ workflow FAIDX {
 		out = faidx(genome)
     emit:
     	out
+}
+
+workflow DICT {
+    take:
+    genome
+
+    main:
+                out = dict(genome)
+    emit:
+        out
 }
 
 workflow STAT {
