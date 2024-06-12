@@ -17,14 +17,13 @@ process HtseqCount {
     tag "${id}"
     label (params.LABEL)
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern:'*.counts', mode:'copy') }
-   
-   
-    input:
-    path(annotation_file)
-    tuple val(id), path(bamfile), path(indexfile)
-    val(doanno)
 
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern:'*.counts', mode:'copy') }
+      
+    input:
+    tuple val(id), path(bamfile), path(indexfile), path(annotation_file)
+    val(doanno)
+    
     output:
     tuple val(id), path("${id}.counts"), emit: counts
     tuple val(id), path("${id}_anno.bam"), emit: bam optional true
@@ -32,9 +31,11 @@ process HtseqCount {
 	script:    
 	def anno = unzipNamedPipe(annotation_file)
 	def annopar = ""
+
 	if (doanno=="yes") {
 		annopar = "-p bam -o ${id}_anno.bam"
-	} 
+	}
+ 
 	"""
 	    htseq-count ${annopar} ${params.EXTRAPARS} -n ${task.cpus} ${bamfile} ${anno} > ${id}.counts
 	"""
@@ -47,9 +48,7 @@ workflow COUNT {
     aln_data
     
     main:
-	anno_file = file(annotation)
-	if( !anno_file.exists() ) exit 1, "Missing ${annotation} file!"
-    out = HtseqCount(annotation, aln_data, "no")
+    out = HtseqCount(aln_data.combine(annotation), "no")
     
     emit:
 	counts = out.counts
@@ -62,9 +61,7 @@ workflow COUNT_AND_ANNO {
     aln_data
     
     main:
-	anno_file = file(annotation)
-	if( !anno_file.exists() ) exit 1, "Missing ${annotation} file!"
-    out = HtseqCount(annotation, aln_data, "yes")
+    out = HtseqCount(aln_data.combine(Channel.from(annotation)), "yes")
     
     emit:
 	counts = out.counts

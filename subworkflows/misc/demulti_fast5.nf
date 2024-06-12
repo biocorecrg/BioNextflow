@@ -72,13 +72,29 @@ process preparing_demultiplexing_fast5_seqtagger {
 	tuple val(idfile), path("demux_*")
 
 	output:
-	tuple val(idfile), path("*.list")
+	tuple val(idfile), path("*.files")
 
 	
 	script:
 	"""
-	zcat demux_* | grep -v read_id >> dem.files
-	awk '{if (\$5>=50) { print \$1 > "bc_"\$3".list" }}' dem.files
+	zcat demux_* | sed -e '2,\${/^read_id/d' -e '}' - >> dem.files
+	"""
+}
+
+process filterDemuxBacodes_seqtagger {
+	
+	input:
+	tuple val(idfile), path(dem_files)
+	val barcodes
+
+	output:
+	tuple val(idfile), path("filtered_dem.files")
+
+	script:
+	"""
+	for i in $barcodes; do barcode=\$(cut -d "_" -f 1 <(echo \$i| rev)); awk -v bar=\$barcode 'BEGIN{print "read_id\tadapter_end\tbarcode\tmapQ\tbaseQ"} {if (\$5>50 && \$3==bar){print \$0}}' $dem_files >> demux_file.txt ; done
+
+	sed -e '2,\${/^read_id/d' -e '}' demux_file.txt > filtered_dem.files	
 	"""
 }
 
@@ -103,11 +119,40 @@ process extracting_demultiplexed_fast5 {
 	"""
 	mkdir ${idfile}---`basename ${idlist} .list`; fast5_subset --input ./ --save_path ${idfile}---`basename ${idlist} .list`/ --read_id_list ${idlist} --batch_size 4000 -c vbz -t ${task.cpus}
 	mkdir summaries
-	for i in */filename_mapping.txt; do awk 'BEGIN{print "filename\tread_id"}{print \$2"\t"\$1}' \$i > `echo \$i | awk -F"/" '{print "summaries/"\$1"_final_summary.stats"}'`; done
+	for i in */filename_mapping.txt; do awk 'BEGIN{print \$2"\t"\$1}' \$i > `echo \$i | awk -F"/" '{print "summaries/"\$1"_final_summary.stats"}'`; done
 	rm */filename_mapping.txt;
 	"""
 } 
 
+process extracting_demultiplexed_fast5_seqtagger {
+    label (params.LABEL)
+    
+	container 'lpryszcz/seqtagger:1.0a3'
+    tag "${ idfile } on ${ idlist }"
+    
+    publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: '*-*')    
+    publishDir(params.OUTPUTST, mode:params.OUTPUTMODE, pattern: 'summaries/*_final_summary.stats', saveAs: { file -> "${file.split('\\/')[-1]}" })    
+	
+	input:
+	tuple val(idfile), path(idlist), file("*")
+
+	output:
+	path("${idfile}-*"), type: "dir", emit: dem_fast5
+	path("summaries/*_final_summary.stats"), emit: dem_summaries
+	
+	script:
+	"""
+	mkdir fast5_files_input
+	mv *.fast5 ./fast5_files_input
+
+	fast5_split_by_barcode.py -b 50 -f ./fast5_files_input -i $idlist -o ./
+
+	for dir in ./bc* ; do mv \$dir ${idfile}---\$(basename "\$dir") ; done
+
+	mkdir summaries
+	for i in */filename_mapping.txt; do mv \$i summaries/\$(cut -d "/" -f1 <(echo \$i))_final_summary.stats; done
+	"""
+} 
 
 
 
@@ -132,7 +177,7 @@ workflow DEMULTI_FAST5 {
           case "seqtagger":
       		    prep_demux = preparing_demultiplexing_fast5_seqtagger(input_stats)
 			    input_data = prep_demux.transpose().combine(input_fast5,  by: 0)
-     			extracting_demultiplexed_fast5(input_data)            
+     			extracting_demultiplexed_fast5_seqtagger(input_data)            
           break;  
     	}
  
@@ -160,9 +205,10 @@ workflow DEMULTI_FAST5 {
           break;  
           case "seqtagger":
       		    prep_demux = preparing_demultiplexing_fast5_seqtagger(input_stats)
-			    filt_prep_demux = filterDemuxBacodes(prep_demux, barcodes)
+			    //filt_prep_demux = filterDemuxBacodes(prep_demux, barcodes)
+				filt_prep_demux = filterDemuxBacodes_seqtagger(prep_demux, barcodes)
 			    input_data = filt_prep_demux.transpose().combine(input_fast5,  by: 0)
-     			extracting_demultiplexed_fast5(input_data)            
+     			extracting_demultiplexed_fast5_seqtagger(input_data)            
           break;  
     	}
  

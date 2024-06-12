@@ -50,12 +50,14 @@ process calcOverhang {
     
     tag { pair_id }
     container params.CONTAINER
+    shell '/bin/bash', '-eu'
 
     input:
     tuple val(pair_id), path(reads)
 	
     output:
     stdout emit: readsize
+
 
     script:
     def first_pair = reads[0]
@@ -152,7 +154,8 @@ process map {
     tuple val(pair_id), path(reads)
 
     output:
-    tuple val(pair_id), path("${pair_id}*.bam"), emit: bams 
+    tuple val(pair_id), path("${pair_id}*.bam"), emit: bams optional true
+    tuple val(pair_id), path("${pair_id}*.bam"), emit: sams optional true
     tuple val(pair_id), path("${pair_id}ReadsPerGene.out.tab"), emit: quants optional true
     tuple val(pair_id), path("${pair_id}Log.final.out"), emit: logs 
     tuple val(pair_id), path("${pair_id}SJ*"),  emit: junctions
@@ -163,8 +166,6 @@ process map {
             STAR --genomeDir ${indexes} \
                  --readFilesIn ${reads} \
                   \$gzipped \
-                  --outSAMunmapped None \
-                  --outSAMtype BAM SortedByCoordinate \
                   --runThreadN ${task.cpus} \
                   --outFileNamePrefix ${pair_id} \
                   ${params.EXTRAPARS}
@@ -193,11 +194,13 @@ workflow INDEX {
 	overhang    
     
     main:
-		ref_file = file(reference)
-		anno_file = file(annotation)
-		if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
-		if( !anno_file.exists() ) exit 1, "Missing ${anno_file} file!"
-		def refname = ref_file.simpleName
+		//ref_file = file(reference)
+		//anno_file = file(annotation)
+		//if( !ref_file.exists() ) exit 1, "Missing ${reference} file!"
+		//if( !anno_file.exists() ) exit 1, "Missing ${anno_file} file!"
+		refname = reference.map{
+			it.getSimpleName()
+		}
 		out = indexWithAnno(overhang, refname, reference, annotation)
     emit:
     	out

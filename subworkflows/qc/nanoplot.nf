@@ -5,7 +5,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/nanoplot:1.33.0"
+params.CONTAINER = "biocorecrg/nanoplot:1.42.0"
 params.OUTPUT = ""
 
 process MOP_nanoPlot {
@@ -27,8 +27,8 @@ process MOP_nanoPlot {
     mkdir tmp_dir
     cp ${id}_plot/PercentIdentityvsAverageBaseQuality_kde.png tmp_dir
     cp ${id}_plot/LengthvsQualityScatterPlot_dot.png tmp_dir
-    cp ${id}_plot/HistogramReadlength.png tmp_dir 
-    cp ${id}_plot/Weighted_HistogramReadlength.png tmp_dir
+    cp ${id}_plot/Non_weightedHistogramReadlength.png tmp_dir 
+    cp ${id}_plot/WeightedHistogramReadlength.png tmp_dir
     gm montage tmp_dir/*.png -tile 2x2 -geometry 800x800 ${id}_stats_mqc.png
     rm -fr tmp_dir
     """
@@ -38,10 +38,10 @@ process MOP_nanoPlot {
 
 workflow MOP_QC {
     take: 
-    fastq
+    bam
     
     main:
-    out = MOP_nanoPlot(fastq)
+    out = MOP_nanoPlot(bam)
     
     emit:
    	plots = out.plots

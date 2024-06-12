@@ -33,7 +33,7 @@ process trimWithSkewer {
 
     output:
     tuple val(pair_id), path("*trimmed*.fastq.gz"), emit: trimmed_reads
-    path "*trimmed.log", emit: trim_log
+    tuple val(pair_id), path("*trimmed.log"), emit: trim_log
     
     """
     skewer ${params.EXTRAPARS} -t ${task.cpus} -n -u -o ${pair_id} -z ${reads}
