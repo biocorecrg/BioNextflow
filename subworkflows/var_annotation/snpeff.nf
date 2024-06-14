@@ -30,7 +30,7 @@ process snpeff_ann {
     label (params.LABEL)
     tag "${id}"
     container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.vcf.gz') }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.vcf.gz|*.genes.txt') }
 
     input:
     tuple val(id), path(vcf), val(genomeid), path(spneffdata), path(config)

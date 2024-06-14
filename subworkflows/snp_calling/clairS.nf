@@ -50,9 +50,9 @@ process clairS {
         --threads ${task.cpus} ${params.EXTRAPARS} \
         --output_dir ${comp_id} \
         --conda_prefix /opt/conda/envs/clairs
-
     """
-// --remove_intermediate_dir
+//        --remove_intermediate_dir
+
 }
 
 
