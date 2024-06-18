@@ -39,9 +39,11 @@ process fastQC2 {
     tuple val(id), path("*_fastqc.*") 
 
     script:
-	"""
-	fastqc -m ${task.memory.toMega()}MB -t ${task.cpus} ${fastq} 
-	"""
+    def memory = task.memory.toMega() > 10000 ? 10000 : task.memory.toMega()
+
+    """
+	fastqc -m ${memory}MB -t ${task.cpus} ${fastq} 
+    """
 }
 
 workflow FASTQC {
