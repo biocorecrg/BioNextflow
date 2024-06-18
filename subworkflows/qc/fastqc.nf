@@ -40,7 +40,7 @@ process fastQC2 {
 
     script:
 	"""
-	fastqc -t ${task.cpus} ${fastq} 
+	fastqc -m ${task.memory.toMega()}MB -t ${task.cpus} ${fastq} 
 	"""
 }
 
