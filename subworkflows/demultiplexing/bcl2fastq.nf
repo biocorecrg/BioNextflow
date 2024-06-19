@@ -40,6 +40,7 @@ process demultiplex {
     tuple val(idfile), path("${idfile}_ouput/*.fastq.gz"), emit: undet_fastqs
     tuple val(idfile), path("${idfile}_ouput/*/*/*.fastq.gz"), emit: demux_fastqs
     tuple val(idfile), path("${idfile}_ouput/Stats"), emit: statfolder
+    tuple val(idfile), path("IndexMetricsOut.bin", optional: true), emit: indexmetrics
 
     script:
 
@@ -72,6 +73,7 @@ process demultiplex {
     	undet_fastqs = demultiplex.out.undet_fastqs
     	demux_fastqs = demultiplex.out.demux_fastqs
     	statfolder = demultiplex.out.statfolder
+    	indexmetrics = demultiplex.out.indexmetrics
  
 }
 
