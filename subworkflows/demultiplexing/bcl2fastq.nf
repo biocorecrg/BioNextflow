@@ -26,10 +26,10 @@ process getVersion {
 
 process demultiplex {
 
-    tag { idfile }
+    tag {"${idfile} with ${samplesheet.getName()}" }
     label (params.LABEL)
 
-	if (params.OUTPUT != "") { publishDir(params.OUTPUT,  mode: params.OUTPUTMODE) }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT,  mode: params.OUTPUTMODE) }
     container params.CONTAINER
              
     input:
