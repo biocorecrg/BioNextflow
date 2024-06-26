@@ -115,8 +115,8 @@ process count_multiome {
         
     """
     echo "fastqs,sample,library_type
-./rna,${pair_id},Gene Expression
-./atac,${pair_id},Chromatin Accessibility" > ./libraries.csv
+\$PWD/rna,${pair_id},Gene Expression
+\$PWD/atac,${pair_id},Chromatin Accessibility" > ./libraries.csv
 
 	cellranger-arc count ${params.EXTRAPARS} --id=${pair_id} \
                    --reference=${index} \
@@ -125,6 +125,33 @@ process count_multiome {
                    --localmem=${task.memory.toGiga()}   
     """
 }
+
+process aggr_multiome {
+    label (params.LABEL)
+    tag { "${id}" }
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
+
+    input:
+    tuple val(id), path(csv), path(index)
+
+    output:
+    tuple val(id), path("${id}")
+
+    script:
+        
+    """
+    cellranger-arc aggr ${params.EXTRAPARS} --id=${id} --csv=${csv} \
+                   --reference=${index} \
+                   --localcores=${task.cpus} \
+                   --localmem=${task.memory.toGiga()} \
+                   --localvmem=${task.memory.toGiga()}  
+
+    """
+}
+
+
 
 
 workflow INDEX {
@@ -167,7 +194,22 @@ workflow COUNT_MULTIOME {
 
 
     emit:
-        out 
+   		index
+    	out
+
+}
+
+workflow AGGR_MULTIOME {
+    take:
+    index
+    csv
+
+    main:
+    out = aggr_multiome(csv.combine(index))
+
+
+    emit:
+    	out
 
 }
 

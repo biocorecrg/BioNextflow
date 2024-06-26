@@ -36,6 +36,12 @@ library("stringr")
 data_dir <- "${quants_folder}/outs/filtered_feature_bc_matrix"
 data <- Read10X(data.dir = data_dir)
 
+
+if(is.list(data)) {
+	olddata <- data
+	data <- olddata[["Gene Expression"]]
+}
+
 seurObj = CreateSeuratObject(counts = data)
 
 seurObj[["percent.mt"]] <- PercentageFeatureSet(seurObj, pattern = "^MT-",  assay = 'RNA')
