@@ -62,16 +62,19 @@ workflow PEAKCALL {
 		 macs_res = MACS2_CALL_CHIP(peak_data, peak_call_data["mappable_gsize"])
 		 macs_peaks = macs_res.broadPeaks.mix(macs_res.narrowPeaks)
 		 peak_res = convertTo6Bed(macs_peaks)
+		 ori = macs_peaks
       break;   
       case "macs3":
 		 macs_res = MACS3_CALL_CHIP(peak_data, peak_call_data["mappable_gsize"])
 		 macs_peaks = macs_res.broadPeaks.mix(macs_res.narrowPeaks)
 		 peak_res = convertTo6Bed(macs_peaks)
+		 ori = macs_peaks
       break;   
       case "epic2":
          epic2_res = EPIC2_CALL_CHIP(peak_data.join(index_data), peak_call_data["gfrac"])
          epic_clip = BEDCLIP(peak_call_data["genome_fai"], epic2_res)
          epic_6_peaks = convertEpicTo6Bed(epic_clip)      
+		 ori = epic_6_peaks
       break;   
       case "seacr":
         peak_res = channel.empty()
@@ -79,6 +82,7 @@ workflow PEAKCALL {
     }
     
 	emit:
+	    oripeaks = ori
 		peaks = peak_res
 		combs = peak_data
 	
