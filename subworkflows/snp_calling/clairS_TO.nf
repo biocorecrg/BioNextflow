@@ -1,5 +1,5 @@
 /*
-* ClairS subworkflows 
+* ClairS_TO subworkflows 
 *
 * The parameters are: 
 *	LABEL that allows connecting labels specified in nextflow.config with the subworkflows
@@ -11,7 +11,8 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "hkubal/clairs:v0.2.0"
+params.CONTAINER = "hkubal/clairs-to:v0.1.0"
+
 
 include { CHECK_FASTA } from '../misc/misc.nf'
 
@@ -23,33 +24,33 @@ process getVersion {
     
     shell:
     """
-    clairs --version
+    clairs-TO --version
     """
 }
 
-process clairS {
+process clairS_TO {
     label (params.LABEL)
     tag "${comp_id}"
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple val(comp_id), path(bamcancer), path(bamctrl), path(baicancer), path(baictrl), path(reference), path(refai)
+    tuple val(comp_id), path(bamcancer), path(baicancer), path(reference), path(refai)
 
     output:
     tuple val(comp_id), path(comp_id), emit: folder
-    tuple val(comp_id), path("${comp_id}/output.vcf.gz"), emit: vcf
+    tuple val(comp_id), path("${comp_id}/snv.vcf.*"), emit: snps
+    tuple val(comp_id), path("${comp_id}/indel.vcf.*"), emit: indels, optional: true
+
     
     script:
     """
 
-    /opt/bin/run_clairs \
+    /opt/bin/run_clairs_to \
         --tumor_bam_fn ${bamcancer} \
-        --normal_bam_fn ${bamctrl} \
         --ref_fn ${reference} \
         --threads ${task.cpus} ${params.EXTRAPARS} \
         --output_dir ${comp_id} \
-        --conda_prefix /opt/conda/envs/clairs \
         --remove_intermediate_dir
     """
 
@@ -66,10 +67,11 @@ workflow RUN {
     
     main:
         ref_genome = CHECK_FASTA(reference)
-        out = clairS(bams.combine(ref_genome).combine(reffai))
+        out = clairS_TO(bams.combine(ref_genome).combine(reffai))
         
 	emit:
-    	vcf = out.vcf
+        indels = out.indels
+    	snps = out.snps
     	folder = out.folder
 	
 }

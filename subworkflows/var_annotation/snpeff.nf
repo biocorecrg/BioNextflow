@@ -45,7 +45,7 @@ process snpeff_ann {
     
     script:
     """
-    snpEff -Xmx${task.memory.giga}g ann -csvStats ${id}.snpEff_summary.csv -dataDir ./${spneffdata} ${genomeid} ${vcf} | gzip -c > ${id}.ann.vcf.gz
+    snpEff -XX:-UsePerfData -Xmx${task.memory.giga}g ann -csvStats ${id}.snpEff_summary.csv -dataDir ./${spneffdata} ${genomeid} ${vcf} | gzip -c > ${id}.ann.vcf.gz
     """
 }
 
