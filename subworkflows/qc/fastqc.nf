@@ -42,7 +42,7 @@ process fastQC2 {
     def memory = task.memory.toMega() > 10000 ? 10000 : task.memory.toMega()
 
     """
-	fastqc -m ${memory}MB -t ${task.cpus} ${fastq} 
+	fastqc --dir ./ --memory ${memory} -t ${task.cpus} ${fastq} 
     """
 }
 
