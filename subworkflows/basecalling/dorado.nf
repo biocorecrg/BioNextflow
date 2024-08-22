@@ -35,8 +35,7 @@ process getVersion {
 process baseCall {
     tag { idfile }
     label (params.LABEL)
-	if (params.MOP == "YES")  { if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile.split('---')[0]}/${file.split('\\/')[-1]}" } ) } }
-	else if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*_out/workspace/*.fast5',  mode: params.OUTPUTMODE, saveAs: { file -> "${idfile}/${file.split('\\/')[-1]}" } ) }
+	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
 
     container params.CONTAINER
              
@@ -54,6 +53,30 @@ process baseCall {
     """
 }
 
+process baseCallMod {
+    tag { idfile }
+    label (params.LABEL)
+	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
+
+    container params.CONTAINER
+             
+    input:
+    tuple val(idfile), path(fast5), path(models)
+    
+    output:
+    tuple val(idfile), path("*.fastq.gz"), emit: basecalled_fastq
+
+    script:
+
+    """
+          dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} ./ > ${idfile}.bam
+          samtools fastq -@ ${task.cpus} -T MN,MM,ML ${idfile}.bam > ${idfile}.fastq
+          bgzip -@ ${task.cpus} ${idfile}.fastq
+          rm *.bam
+    """
+}
+
+
  workflow BASECALL {
     take: 
     input_fast5
@@ -65,6 +88,20 @@ process baseCall {
 
 	emit:
     	basecalled_fastq = baseCall.out.basecalled_fastq
+ 
+}
+
+ workflow BASECALLMOD {
+    take: 
+    input_fast5
+    model_folders
+    
+    main:
+        models = model_folders.collect().map{ [ it ] }
+    	baseCallMod(input_fast5.combine(models))
+
+	emit:
+    	basecalled_fastq = baseCallMod.out.basecalled_fastq
  
 }
 

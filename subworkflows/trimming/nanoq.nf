@@ -4,7 +4,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/nanoq:0.8.2--h779adbc_0"
+params.CONTAINER = "quay.io/biocontainers/nanoq:0.10.0--h031d066_2"
 
 
 process getVersion {
@@ -42,10 +42,44 @@ process filter {
 
 }
 
+process report {
+    tag { idfile }
+    label (params.LABEL)
+    if (params.OUTPUT != "") {publishDir(params.OUTPUT, mode: 'copy') }
+
+    container params.CONTAINER
+             
+    input:
+    tuple val(idfile), path(fastq)
+ 
+    
+    output:
+    tuple val(idfile), path("*-report.txt")
+
+    script:
+
+	"""
+		nanoq -i ${fastq} -s ${params.EXTRAPARS} -r ${idfile}-report.txt
+	"""
+
+}
 
 
+ workflow REPORT {
+
+    take: 
+    input_fastq
+    
+    main:
+     out = report(input_fastq)
+
+	emit:
+		out
+		
+}
 
  workflow FILTER {
+ 
     take: 
     input_fastq
     

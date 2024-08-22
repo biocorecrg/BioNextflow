@@ -5,7 +5,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/multiqc:1.10.1--pyhdfd78af_1"
+params.CONTAINER = "quay.io/biocontainers/multiqc:1.24.1--pyhdfd78af_0"
 
 
 include { unzipCmd } from '../global_functions.nf'
@@ -32,8 +32,8 @@ process makeReport {
     path(input)
 	
     output:
-	path("multiqc_report.html") , emit: report
-	path("multiqc_data") , emit: data
+	path("*_report.html"), emit: report
+	path("*_data"), emit: data
 	
 	
     script:
@@ -53,8 +53,8 @@ process makeReportWithConfig {
     path(config)
 	
     output:
-	path("multiqc_report.html"), emit: report
-	path("multiqc_data"), emit: data
+	path("*_report.html"), emit: report
+	path("*_data"), emit: data
 	
 	
     script:
