@@ -8,6 +8,7 @@ params.gpu = ""
 params.outmode = "copy"
 params.output = ""
 params.label = ""
+params.label2 = ""
 params.extrapars = ""
 params.models = ""
 params.type = "dorado"
@@ -19,7 +20,7 @@ include { print_log_message } from "${moduleFolder}/global_functions.nf"
 include { BASECALL as GUPPY_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(LABEL: params.label, EXTRAPARS_BC: params.extrapars, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode )
 include { BASECALL as GUPPY6_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
 include { BASECALL as GUPPY64_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
-include { BASECALLMOD as DORADO_BASECALL } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS:  params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALLMOD as DORADO_BASECALL } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS:  params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
 
 // ADD A CHECK FOR GUPPY FOR DISABLING SCORE
 

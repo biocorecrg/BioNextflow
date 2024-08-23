@@ -8,6 +8,7 @@ params.gpu = ""
 params.outmode = "copy"
 params.output = ""
 params.label = ""
+params.label2 = ""
 params.extrapars = ""
 params.models = ""
 params.type = "guppy"
@@ -24,6 +25,7 @@ include { separateGuppy } from "./basecaller"
 include { BASECALL_DEMULTI as GUPPY_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
 include { BASECALL_DEMULTI as GUPPY6_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
 include { BASECALL_DEMULTI as GUPPY65_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
+include { BASECALL_DEMULTI as DORADO_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV: params.label2,  GPU: params.gpu, OUTPUT: params.output, OUTPUTMODE: params.outmode)
 include { DEMULTIPLEX as READUCKS_DEMULTIPLEX } from "${moduleFolder}/demultiplexing/readucks" addParams(EXTRAPARS: params.extrapars, LABEL: params.label, OUTPUT: params.output, OUTPUTMODE: params.outmode)
 
 
@@ -57,8 +59,13 @@ workflow BASECALL_DEMULTIPLEX {
                     basecalled_fastq = READUCKS_DEMULTIPLEX(basecalled_fastq)
                }
     
-               break;
+           break;
+           case "dorado":
+               dorado_models = Channel.fromPath("${params.models}/*", type: "dir")
+               basecalled_fastq = DORADO_BASECALL_DEMULTI(fast5_4_analysis, dorado_models)
 
+		   break;
+			
         }        
 
     emit:
