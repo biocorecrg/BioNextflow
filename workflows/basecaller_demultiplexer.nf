@@ -62,8 +62,9 @@ workflow BASECALL_DEMULTIPLEX {
            break;
            case "dorado":
                dorado_models = Channel.fromPath("${params.models}/*", type: "dir")
-               basecalled_fastq = DORADO_BASECALL_DEMULTI(fast5_4_analysis, dorado_models)
-
+               out_demulti = DORADO_BASECALL_DEMULTI(fast5_4_analysis, dorado_models)
+               basecalled_fastq = out_demulti.basecalled_fastq
+			   basecalling_stats = out_demulti.demulti_report
 		   break;
 			
         }        

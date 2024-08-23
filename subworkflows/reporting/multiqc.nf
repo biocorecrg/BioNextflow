@@ -78,7 +78,7 @@ process makeReportID {
 	
     script:
     """
-		multiqc ${params.EXTRAPARS} -o ${id} .
+		multiqc ${params.EXTRAPARS} -o ${id} --filename ${id}_multiqc .
     """
 }
 
