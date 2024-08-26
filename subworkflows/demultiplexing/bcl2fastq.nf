@@ -36,10 +36,10 @@ process demultiplex {
     tuple val(idfile), path(samplesheet), path(infolder)
     
     output:
-    tuple val(idfile), path("${idfile}_ouput"), emit: outfolder
-    tuple val(idfile), path("${idfile}_ouput/*.fastq.gz"), emit: undet_fastqs
-    tuple val(idfile), path("${idfile}_ouput/*/*/*.fastq.gz"), emit: demux_fastqs
-    tuple val(idfile), path("${idfile}_ouput/Stats"), emit: statfolder
+    tuple val(idfile), path("${idfile}_output"), emit: outfolder
+    tuple val(idfile), path("${idfile}_output/*.fastq.gz"), emit: undet_fastqs
+    tuple val(idfile), path("${idfile}_output/*/*/*.fastq.gz"), emit: demux_fastqs
+    tuple val(idfile), path("${idfile}_output/Stats"), emit: statfolder
     tuple val(idfile), path("IndexMetricsOut.bin", optional: true), emit: indexmetrics
     tuple val(idfile), path("samplesheet*.csv", optional: true, includeInputs: true), emit: samplesheet
 
@@ -54,7 +54,7 @@ process demultiplex {
     """
     	${parsing_cmd}
         bcl2fastq ${params.EXTRAPARS} \$par_cmd --sample-sheet ${samplesheet} \
-        --output-dir ${idfile}_ouput \
+        --output-dir ${idfile}_output \
         --runfolder-dir ${infolder} \
         -p ${task.cpus} -r ${task.cpus} -w ${task.cpus} 
     """
