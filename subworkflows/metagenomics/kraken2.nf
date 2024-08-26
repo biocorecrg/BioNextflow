@@ -9,8 +9,8 @@
 
 params.LABEL = ""
 params.EXTRAPARS = ""
-params.OUTPUT = "kraken2"
-params.CONTAINER = "biocorecrg/kraken2:202112"
+params.OUTPUT = ""
+params.CONTAINER = "quay.io/biocontainers/kraken2@sha256:7ebac5af43dc1afbc05bb08c806712112374dc2ea1921db6f29e140d7e123e69"
 
 process getVersion {
 
@@ -53,7 +53,7 @@ process kraken2_build {
 
 }
 
-process kraken2 {
+process kraken2_class {
 
   tag { pair_id }
   label (params.LABEL)
@@ -61,14 +61,13 @@ process kraken2 {
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
   input:
-  tuple val(pair_id), path(reads)
-  path(database)
+  tuple val(pair_id), path(reads), path(database)
 
   output:
-  path("kraken2*.report"), emit: report
-  path("kraken2*.out"), emit: output
-  path("cfs*.fq.gz"), emit: classified
-  path("ucfs*.fq.gz"), emit: unclassified
+  tuple val(pair_id), path("kraken2*.report"), emit: report
+  tuple val(pair_id), path("kraken2*.out"), emit: output
+  tuple val(pair_id), path("cfs*.fq.gz"), emit: classified
+  tuple val(pair_id), path("ucfs*.fq.gz"), emit: unclassified
 
   script:
   """
@@ -80,6 +79,31 @@ process kraken2 {
   gzip *.fq
   """
 
+}
+
+process kraken2 {
+
+  tag { pair_id }
+  label (params.LABEL)
+  container params.CONTAINER
+  if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+  input:
+  tuple val(pair_id), path(reads), path(database)
+  
+
+  output:
+  tuple val(pair_id), path("kraken2*.report"), emit: report
+  tuple val(pair_id), path("kraken2*.out"), emit: output
+
+  script:
+  """
+  mode=""
+  if [[ "${reads}" = *" "* ]]; then
+    mode="--paired"
+  fi
+  kraken2 --db ${database} --report kraken2_${pair_id}.report --threads ${task.cpus} \${mode} ${reads} ${params.EXTRAPARS} > kraken2_${pair_id}.out
+  """
 }
 
 workflow BUILD {
@@ -102,14 +126,28 @@ workflow RUN {
     fastq
     database
 
-    main:
-    out = kraken2(fastq, database)
+    main:    
+    out = kraken2(fastq.combine(database))
 
     emit:
-    out.report
-    out.output
-    out.classified
-    out.unclassified
+    report = out.report
+    output = out.output
+
+}
+
+workflow CLASSIFY {
+    take:
+    fastq
+    database
+
+    main:
+    out = kraken2_class(fastq.combine(database))
+    
+    emit:
+    report = out.report
+    output = out.output
+    classified = out.classified
+    unclassified = out.unclassified
 
 }
 
