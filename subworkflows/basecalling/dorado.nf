@@ -113,15 +113,15 @@ process demultiPlex {
     
     output:
     tuple val(idfile), path("*.bam"), emit: demulti_bams
+    tuple val(idfile), path("barcoding_summary.txt.gz"), emit: bar_summary
 
     script:
 
     """
-         dorado demux --threads ${task.cpus} --output-dir ./ --no-classify ${bam}
+         dorado demux --emit-summary --threads ${task.cpus} --output-dir ./ --no-classify ${bam}
+         gzip barcoding_summary.txt
     """
 }
-
-
 
 
  workflow BASECALL_DEMULTI {
@@ -132,7 +132,8 @@ process demultiPlex {
     main:
         models = model_folders.collect().map{ [ it ] }
     	bam = baseCallMod(input_fast5.combine(models))
-    	demulti_bams = demultiPlex(bam).transpose().map{
+    	dem_res = demultiPlex(bam)
+    	demulti_bams = dem_res.demulti_bams.transpose().map{
             def bam_name = it[1].getSimpleName()
             def barcode = "${bam_name}".split("_").last()
     	    def new_id = "${it[0]}.${barcode}"
@@ -142,6 +143,7 @@ process demultiPlex {
 
 	emit:
     	basecalled_fastq = demulti_fastqs.groupTuple()
+    	demulti_report = dem_res.bar_summary
  
 }
 
