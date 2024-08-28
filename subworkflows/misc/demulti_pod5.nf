@@ -147,8 +147,6 @@ workflow DEMULTI_POD5 {
     main:
        prep_demux = preparing_demultiplexing_pod5(input_stats)
        pod5s = input_pod5.transpose().groupTuple()
-	   prep_demux.transpose().view()
-	   pod5s.view()
 	   input_data = prep_demux.transpose().combine(pod5s,  by: 0)
        switch(params.TYPE) {                      
           case "dorado":
@@ -172,8 +170,6 @@ workflow DEMULTI_POD5 {
        prep_demux = preparing_demultiplexing_pod5(input_stats)
        pod5s = input_pod5.transpose().groupTuple()
 	   filt_prep_demux = filterDemuxBarcodes(prep_demux.combine(barcodes))
-	   filt_prep_demux.transpose().view()
-	   pod5s.view()
 	   input_data = filt_prep_demux.transpose().combine(pod5s,  by: 0)
        
        switch(params.TYPE) {                      
