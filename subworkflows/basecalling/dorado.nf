@@ -98,7 +98,6 @@ process bam2ModFastq {
 }
 
 
-
 process demultiPlex {
 
     tag { idfile }
