@@ -5,7 +5,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/trust4:1.0.12--h43eeafb_0"
+params.CONTAINER = "quay.io/biocontainers/trust4:1.1.4--h43eeafb_0"
 
 include { unzipCmd } from '../global_functions.nf'
 
@@ -39,6 +39,32 @@ process run_se {
     """
 }
 
+process run_pe {
+    label (params.LABEL)
+    tag "${id}"
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(reads), path(BCwhiteList), path(reference), path(coord_f)
+
+    output:
+    tuple val(id), path("${id}*"), emit: results 
+         
+	script:
+    """    
+    run-trust4 -f ${coord_f} \
+        --ref ${reference} \
+        -1 ${reads[0]} \
+        -2 ${reads[1]} \
+        --barcode ${reads[0]} \
+        -t ${task.cpus} ${params.EXTRAPARS} + \
+        --barcodeWhitelist ${BCwhiteList} \
+        --od ${id}
+
+    """
+}
+
 workflow RUN {
     take: 
     reference
@@ -47,6 +73,20 @@ workflow RUN {
     
     main:
 		out = run_se(reads.combine(rec_genes).combine(reference))
+	emit:
+    	out
+ 	
+}
+
+workflow RUNPE {
+    take: 
+    reference
+    coord_f
+    whiteBC
+    reads
+    
+    main:
+		out = run_pe(reads.combine(whiteBC, by: 0).combine(reference).combine(coord_f))
 	emit:
     	out
  	
