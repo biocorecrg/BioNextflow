@@ -66,7 +66,7 @@ workflow BASECALL {
                break; 
                
            case "dorado": 
-               dorado_models = Channel.fromPath("${params.models}/*", type: "dir")
+               dorado_models = Channel.fromPath("${params.models}/*", type: "dir", checkIfExists: true)
                outbc = DORADO_BASECALL (fast5_4_analysis, dorado_models)
                basecalled_fastq = outbc.basecalled_fastq
                basecalled_fast5 = Channel.empty()

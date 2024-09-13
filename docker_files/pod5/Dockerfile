@@ -1,7 +1,7 @@
 # This will do biocorecrg/pod5:0.2.4 
 
 FROM mambaorg/micromamba:1.5
-COPY --chown=$MAMBA_USER:$MAMBA_USER environment.yml /tmp/env.yaml
+COPY --chown=$MAMBA_USER:$MAMBA_USER environment_0.2.4.yml  /tmp/env.yaml
 RUN micromamba install -y -n base -f /tmp/env.yaml && \
     micromamba clean --all --yes
 RUN rm /tmp/env.yaml
