@@ -76,8 +76,7 @@ process count {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
 
     input:
-    tuple val(pair_id), path(pairs)
-    path(index)
+    tuple val(pair_id), path(pairs), path(index)
 
     output:
     tuple val(pair_id), path("${pair_id}")
@@ -97,60 +96,6 @@ process count {
                    --localmem=${task.memory.toGiga()}   
     """
 }
-
-process count_multiome {
-    label (params.LABEL)
-    tag { "${pair_id}" }
-
-    container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
-
-    input:
-    tuple val(pair_id), path(rna_pairs, stageAs: 'rna/*'), path(atac_pairs, stageAs: 'atac/*'), path(index)
-
-    output:
-    tuple val(pair_id), path("${pair_id}")
-
-    script:
-        
-    """
-    echo "fastqs,sample,library_type
-\$PWD/rna,${pair_id},Gene Expression
-\$PWD/atac,${pair_id},Chromatin Accessibility" > ./libraries.csv
-
-	cellranger-arc count ${params.EXTRAPARS} --id=${pair_id} \
-                   --reference=${index} \
-                   --libraries=./libraries.csv \
-                   --localcores=${task.cpus} \
-                   --localmem=${task.memory.toGiga()}   
-    """
-}
-
-process aggr_multiome {
-    label (params.LABEL)
-    tag { "${id}" }
-
-    container params.CONTAINER
-    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
-
-    input:
-    tuple val(id), path(csv), path(index)
-
-    output:
-    tuple val(id), path("${id}")
-
-    script:
-        
-    """
-    cellranger-arc aggr ${params.EXTRAPARS} --id=${id} --csv=${csv} \
-                   --reference=${index} \
-                   --localcores=${task.cpus} \
-                   --localmem=${task.memory.toGiga()} \
-                   --localvmem=${task.memory.toGiga()}  
-
-    """
-}
-
 
 
 
@@ -175,41 +120,11 @@ workflow COUNT {
     fastq
 
     main:
-    out = count(fastq, index)
+    out = count(fastq.combine(index))
 
 
     emit:
         out 
-
-}
-
-workflow COUNT_MULTIOME {
-    take:
-    index
-    rna
-    atac
-
-    main:
-    out = count_multiome(rna.join(atac).combine(index))
-
-
-    emit:
-   		index
-    	out
-
-}
-
-workflow AGGR_MULTIOME {
-    take:
-    index
-    csv
-
-    main:
-    out = aggr_multiome(csv.combine(index))
-
-
-    emit:
-    	out
 
 }
 
