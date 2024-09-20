@@ -1,9 +1,9 @@
 /*
-*  cellranger module
+*  spipe module
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/debian-perlbrew:buster"
+params.CONTAINER = "biocorecrg/spipe:1.3.1"
 params.EXTRAPARS = ""
 params.EXTRAPARSINDEX = ""
 params.OUTPUT = ""
@@ -19,7 +19,7 @@ process getVersion {
 
     shell:
     """
-    cellranger -V
+    split-pipe --version
     """
 }
 
@@ -53,13 +53,13 @@ process index {
     ${cmd_genome}
     ${cmd_annot}
 
-    cellranger mkgtf ${params.EXTRAPARSINDEX} ${anno_name} anno.filtered.gtf 
-    cellranger mkref \
- 		 --genome=${indexname} \
- 		 --fasta=${genome_name} \
-  		 --genes=anno.filtered.gtf \
-  		 --nthreads=${task.cpus} \
-  		 --memgb=${task.memory.toGiga()}
+    split-pipe \
+	   --mode mkref {params.EXTRAPARSINDEX} \
+	   --genome_name ${indexname}  \
+	   --fasta ${genome_name} \
+       --genes ${anno_name} \
+       --nthreads ${task.cpus} \
+	   --output_dir ./indexname
 
     ${clean_genome}
     ${clean_anno}    
@@ -82,18 +82,14 @@ process count {
     tuple val(pair_id), path("${pair_id}")
 
     script:    
-
-	
     """
-    ln -s ${pairs[0]} ./${pair_id}_S1_L001_R1_001.fastq.gz
-    ln -s ${pairs[1]} ./${pair_id}_S1_L001_R2_001.fastq.gz
+    split-pipe \
+       --mode all ${params.EXTRAPARS} \
+       --genome_dir ${index} \
+       --fq1 ${pairs[0]} \
+       --fq2 ${pairs[1]} \
+       --output_dir ${pair_id} \
     
-	cellranger count ${params.EXTRAPARS} --id=${pair_id} \
-                   --transcriptome=${index} \
-                   --fastqs=./ \
-                   --sample=${pair_id} \
-                   --localcores=${task.cpus} \
-                   --localmem=${task.memory.toGiga()}   
     """
 }
 

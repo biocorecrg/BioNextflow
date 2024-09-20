@@ -46,7 +46,7 @@ process run_pe {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple val(id), path(reads), path(BCwhiteList), path(reference), path(coord_f)
+    tuple val(id), path(readsA), path(readsB), path(BCwhiteList), path(reference), path(coord_f)
 
     output:
     tuple val(id), path("${id}*"), emit: results 
@@ -55,9 +55,9 @@ process run_pe {
     """    
     run-trust4 -f ${coord_f} \
         --ref ${reference} \
-        -1 ${reads[0]} \
-        -2 ${reads[1]} \
-        --barcode ${reads[0]} \
+        -1 ${readsA} \
+        -2 ${readsB} \
+        --barcode ${readsA} \
         -t ${task.cpus} ${params.EXTRAPARS} + \
         --barcodeWhitelist ${BCwhiteList} \
         --od ${id}
