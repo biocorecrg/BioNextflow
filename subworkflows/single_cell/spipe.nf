@@ -89,7 +89,7 @@ process count {
        --fq1 ${pairs[0]} \
        --fq2 ${pairs[1]} \
        --output_dir ${pair_id} \
-    
+       --nthreads ${task.cpus}
     """
 }
 
