@@ -61,7 +61,8 @@ workflow BASECALL_DEMULTIPLEX {
     
            break;
            case "dorado":
-               dorado_models = Channel.fromPath("${params.models}/*", type: "dir", checkIfExists:true)
+           	   dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists:true)
+               //dorado_models = Channel.fromPath("${params.models}/*", type: "dir", checkIfExists:true)
                out_demulti = DORADO_BASECALL_DEMULTI(fast5_4_analysis, dorado_models)
                basecalled_fastq = out_demulti.basecalled_fastq
 			   basecalling_stats = out_demulti.demulti_report

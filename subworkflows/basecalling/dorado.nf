@@ -11,8 +11,7 @@ params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.MOP = ""
-//params.CONTAINER = "ontresearch/dorado:shab1ff19616e2b8635791f17bef11f806628505a35"
-params.CONTAINER = "ontresearch/dorado:sha4fa3fd6a5b5ed1b6256500c4368f7dae9c43df97"
+params.CONTAINER = "ontresearch/dorado:shaa2ceb44eb92c08f9a3a53f97077904d7e23e28ec"
 params.GPU = ""
 
 def gpu_cmd = ""
@@ -122,13 +121,33 @@ process demultiPlex {
     """
 }
 
+process downloadModel {
+
+    tag { idfile }
+    label (params.LABELBC)
+   
+    container params.CONTAINER
+             
+    input:
+    tuple val(idfile), path(bam), path(modelfolder)
+    
+    output:
+    path("${modelfolder}/*", type:'dir')
+
+    script:
+    """
+        dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam
+    """
+}
+
 
  workflow BASECALL_DEMULTI {
     take: 
     input_fast5
-    model_folders
+    model_folder
     
     main:
+     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
     	bam = baseCallMod(input_fast5.combine(models))
     	dem_res = demultiPlex(bam)
@@ -149,9 +168,10 @@ process demultiPlex {
  workflow BASECALL {
     take: 
     input_fast5
-    model_folders
+    model_folder
     
     main:
+    	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
     	baseCall(input_fast5.combine(models))
 
@@ -163,9 +183,10 @@ process demultiPlex {
  workflow BASECALLMOD {
     take: 
     input_fast5
-    model_folders
+    model_folder
     
     main:
+    	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
     	bam = baseCallMod(input_fast5.combine(models)).basecalled_bam
     	bam2ModFastq(bam)
