@@ -136,7 +136,13 @@ process downloadModel {
 
     script:
     """
-        dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam
+        if dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
+        then
+        	echo "Automatic model download succeeded"
+        else 
+        	echo "Trying the manual download...";
+	        dorado download --model ${params.EXTRAPARS} --models-directory \$PWD/${modelfolder}
+	    fi
     """
 }
 
