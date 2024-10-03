@@ -134,14 +134,17 @@ process downloadModel {
     output:
     path("${modelfolder}/*", type:'dir')
 
-    script:
+    script:    
+    def down_pars = params.EXTRAPARS.split(" ").find { it.contains('@') }
+
+    
     """
         if dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
         then
         	echo "Automatic model download succeeded"
         else 
         	echo "Trying the manual download...";
-	        dorado download --model ${params.EXTRAPARS_BC} --models-directory \$PWD/${modelfolder}
+	        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
 	    fi
     """
 }
