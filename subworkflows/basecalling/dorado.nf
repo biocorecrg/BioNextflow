@@ -141,7 +141,7 @@ process downloadModel {
         	echo "Automatic model download succeeded"
         else 
         	echo "Trying the manual download...";
-	        dorado download --model ${params.EXTRAPARS} --models-directory \$PWD/${modelfolder}
+	        dorado download --model ${params.EXTRAPARS_BC} --models-directory \$PWD/${modelfolder}
 	    fi
     """
 }
