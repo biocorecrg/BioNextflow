@@ -93,6 +93,28 @@ process count {
     """
 }
 
+process comb {
+    label (params.LABEL)
+    tag { "comb" }
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy')}
+
+    input:
+	path(sublib_folders)
+	path(index)
+
+    output:
+    path("${comb}")
+
+    script:    
+    """
+    split-pipe \
+       --mode comb --sublibraries ${sublib_folders} \
+       --output_dir comb
+    """
+}
+
 
 
 workflow INDEX {
@@ -124,6 +146,20 @@ workflow COUNT {
 
 }
 
+workflow COMB {
+    take:
+    sublibs
+    index
+
+    main:
+    all_subs = sublibs.map{it[1]}.collect()
+    out = comb(all_subs, index)
+
+
+    emit:
+        out 
+
+}
 
 workflow ALL {
     take:
@@ -133,12 +169,15 @@ workflow ALL {
 
     main:
     index = INDEX(annotation, genome)
-    out = COUNT(index, fastq)
-
+    counts = COUNT(index, fastq)
+    out = COMB(counts, index)
+    
 
     emit:
     	index
+    	counts
     	out
+    	
 
 }
 
