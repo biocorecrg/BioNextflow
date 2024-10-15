@@ -141,7 +141,7 @@ process downloadModel {
 
     tag { idfile }
     label (params.LABELBC)
-   
+    
     container params.CONTAINER
              
     input:
@@ -167,14 +167,19 @@ process downloadModel {
     """
     } else {
     """
-       if dorado duplex ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
-        then
-        	echo "Automatic model download succeeded"
-        else 
-        	echo "Trying the manual download...";
-	        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
-	    fi
-    """
+
+	touch stderr.txt
+	timeout 1m dorado duplex ${gpu_cmd} ${params.EXTRAPARS} --models-directory \$PWD/dorado_models ./ > test.bam 2>stderr.txt || ( [[ \$? -ne 0 ]] &&  echo "Timeout reached" )
+
+	# Check if the dorado process succeeded or failed
+	if grep -q "Starting Stereo Duplex pipeline" stderr.txt; then
+    	    echo "Automatic model download succeeded"
+	else
+        echo "Trying the manual download..."
+        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
+	fi
+
+	"""
     }
  }
 
