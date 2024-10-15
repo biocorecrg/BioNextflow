@@ -21,6 +21,7 @@ include { BASECALL as GUPPY_BASECALL } from "${moduleFolder}/basecalling/guppy" 
 include { BASECALL as GUPPY6_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
 include { BASECALL as GUPPY64_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
 include { BASECALLMOD as DORADO_BASECALL } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALLMOD as DORADO_BASECALL_DUPLEX } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, DUPLEX:"YES")
 
 // ADD A CHECK FOR GUPPY FOR DISABLING SCORE
 
@@ -72,8 +73,17 @@ workflow BASECALL {
                basecalled_fast5 = Channel.empty()
                basecalling_stats = Channel.empty()
                break; 
+
+           case "dorado-dup": 
+               dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists: true)
+               outbc = DORADO_BASECALL_DUPLEX (fast5_4_analysis, dorado_models)
+               basecalled_fastq = outbc.basecalled_fastq
+               basecalled_fast5 = Channel.empty()
+               basecalling_stats = Channel.empty()
+               break; 
+
         }        
-		
+        		
     emit:
        basecalled_fast5 = basecalled_fast5
        basecalled_fastq = basecalled_fastq

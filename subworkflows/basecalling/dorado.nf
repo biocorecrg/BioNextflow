@@ -13,6 +13,7 @@ params.OUTPUTMODE = "copy"
 params.MOP = ""
 params.CONTAINER = "ontresearch/dorado:shaa2ceb44eb92c08f9a3a53f97077904d7e23e28ec"
 params.GPU = ""
+params.DUPLEX = ""
 
 def gpu_cmd = ""
 def library_export = ""
@@ -48,11 +49,18 @@ process baseCall {
     tuple val(idfile), path("*.fastq.gz"), emit: basecalled_fastq
 
     script:
-
+    if (params.DUPLEX == "") {
+    
     """
           dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --emit-fastq ./ > ${idfile}.fastq
           bgzip -@ ${task.cpus} ${idfile}.fastq
     """
+    } else {
+    """
+          dorado duplex ${gpu_cmd} ${params.EXTRAPARS} --emit-fastq ./ > ${idfile}.fastq
+          bgzip -@ ${task.cpus} ${idfile}.fastq
+    """
+    }
 }
 
 process baseCallMod {
@@ -70,9 +78,17 @@ process baseCallMod {
 
     script:
 
+    script:
+    if (params.DUPLEX == "") {
+    
     """
           dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} ./ > ${idfile}.bam
     """
+    } else {
+    """
+          dorado duplex ${gpu_cmd} ${params.EXTRAPARS} ./ > ${idfile}.bam
+    """
+	}
 }
 
 process bam2ModFastq {
@@ -136,10 +152,12 @@ process downloadModel {
 
     script:    
     def down_pars = params.EXTRAPARS.split(" ").find { it.contains('@') }
-
+  
+    script:
+    if (params.DUPLEX == "") {
     
     """
-        if dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
+       if dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
         then
         	echo "Automatic model download succeeded"
         else 
@@ -147,7 +165,18 @@ process downloadModel {
 	        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
 	    fi
     """
-}
+    } else {
+    """
+       if dorado duplex ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
+        then
+        	echo "Automatic model download succeeded"
+        else 
+        	echo "Trying the manual download...";
+	        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
+	    fi
+    """
+    }
+ }
 
 
  workflow BASECALL_DEMULTI {
