@@ -74,7 +74,7 @@ workflow BASECALL {
                basecalling_stats = Channel.empty()
                break; 
 
-           case "dorado-dup": 
+           case "dorado-duplex": 
                dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists: true)
                outbc = DORADO_BASECALL_DUPLEX (fast5_4_analysis, dorado_models)
                basecalled_fastq = outbc.basecalled_fastq
