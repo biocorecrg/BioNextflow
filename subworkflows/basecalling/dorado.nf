@@ -86,7 +86,7 @@ process baseCallMod {
     """
     } else {
     """
-          dorado duplex ${gpu_cmd} ${params.EXTRAPARS} ./ > ${idfile}.bam
+          dorado duplex ${gpu_cmd} --models-directory ./ ${params.EXTRAPARS} ./ > ${idfile}.bam
     """
 	}
 }
