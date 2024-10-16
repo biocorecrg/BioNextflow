@@ -82,7 +82,7 @@ process baseCallMod {
     if (params.DUPLEX == "") {
     
     """
-          dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} ./ > ${idfile}.bam
+          dorado basecaller ${gpu_cmd} --models-directory ./ ${params.EXTRAPARS} ./ > ${idfile}.bam
     """
     } else {
     """
