@@ -40,12 +40,13 @@ process pileup {
     tuple val(id), path(bam), path(index)
     
     output:
-    path("${id}_pileup.bed")
+    path("${id}_pileup.bed.gz")
     
     script:
 
 	"""
-        modkit pileup -t ${task.cpus}  ${bam} ${id}_pileup.bed 
+        modkit pileup -t ${task.cpus}  ${bam} ${id}_pileup.bed
+        gzip ${id}_pileup.bed
 	"""
 }
 
