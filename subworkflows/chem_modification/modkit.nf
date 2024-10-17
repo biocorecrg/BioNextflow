@@ -40,7 +40,7 @@ process pileup {
     tuple val(id), path(bam), path(index)
     
     output:
-    path("${id}_pileup.bed.gz")
+    tuple val(id), path("${id}_pileup.bed.gz")
     
     script:
 
@@ -63,7 +63,9 @@ workflow PILEUP {
 
     main:
     	out = pileup(bam.join(bai))
- 		 	        
+ 
+   emit:
+   	out
 }
 
 /*
