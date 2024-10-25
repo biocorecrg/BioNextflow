@@ -71,11 +71,6 @@ process eventalign_slow {
 
 
 
-
-
-
-
-
 /*
 */
 
