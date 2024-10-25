@@ -1,7 +1,7 @@
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/blue-crab:0.2.0"
+params.CONTAINER = "quay.io/biocontainers/slow5tools:1.3.0--h56e2c18_0"
 
 
 process getVersion {
@@ -12,7 +12,7 @@ process getVersion {
     
     shell:
     """
-    blue-crab --version 
+    samtools --version | grep samtools
     """
 }
 
@@ -36,6 +36,27 @@ process pod5_2_blow5 {
 }
 
 
+process blow5_merge {
+
+    label (params.LABEL)
+    tag "${ idfile }"
+    container params.CONTAINER
+		
+	input:
+	tuple val(idfile), path(pod5s)
+
+	output:
+	tuple val(idfile), path("${idfile}.blow5")
+
+	
+	script:
+	"""
+		slow5tools merge -t ${task.cpus} ./ -o ${idfile}.blow5
+	"""
+}
+
+
+
 
 workflow CONVERT {
 
@@ -50,6 +71,18 @@ workflow CONVERT {
  
  }
  
+ workflow MERGE {
+
+    take: 
+    input_pod5    
+    
+    main:	   
+   	  out = blow5_merge(input_pod5)            
+
+	emit:
+		out
+ 
+ }
  
  
 
