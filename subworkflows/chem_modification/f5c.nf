@@ -64,7 +64,7 @@ process eventalign_slow {
 
     script:
     """ 
-    f5c eventalign -t ${task.cpus} -b ${bam} -g ${reference} -r ${fastq} --slow5 ${slow} | gzip -c > ${idsample}_events.tsv.gz
+    f5c eventalign ${params.EXTRAPARS} -t ${task.cpus} -b ${bam} -g ${reference} -r ${fastq} --slow5 ${slow} | gzip -c > ${idsample}_events.tsv.gz
     """
 }
 
