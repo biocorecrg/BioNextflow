@@ -5,7 +5,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/multiqc:1.24.1--pyhdfd78af_0"
+params.CONTAINER = "quay.io/biocontainers/multiqc:1.25.2--pyhdfd78af_0"
 
 
 include { unzipCmd } from '../global_functions.nf'
