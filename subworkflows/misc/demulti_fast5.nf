@@ -85,14 +85,21 @@ process filterDemuxBacodes_seqtagger {
 	
 	input:
 	tuple val(idfile), path(dem_files)
-	val barcodes
+	path(barcodes)
 
 	output:
 	tuple val(idfile), path("filtered_dem.files")
 
 	script:
 	"""
-	for i in $barcodes; do barcode=\$(cut -d "_" -f 1 <(echo \$i| rev)); awk -v bar=\$barcode 'BEGIN{print "read_id\tadapter_end\tbarcode\tmapQ\tbaseQ"} {if (\$5>50 && \$3==bar){print \$0}}' $dem_files >> demux_file.txt ; done
+	echo ${barcodes}
+
+	awk -F "_" '{print \$NF}' ${barcodes} > sel_barcodes.txt
+
+	while IFS= read -r line; do
+   		echo "processing barcode \${line}";
+   		awk -v bar=\$line 'BEGIN{print "read_id\tadapter_end\tbarcode\tmapQ\tbaseQ"} {if (\$5>=50 && \$3==bar){print \$0}}' ${dem_files} >> demux_file.txt
+	done < sel_barcodes.txt
 
 	sed -e '2,\${/^read_id/d' -e '}' demux_file.txt > filtered_dem.files	
 	"""
@@ -176,6 +183,8 @@ workflow DEMULTI_FAST5 {
           break;  
           case "seqtagger":
       		    prep_demux = preparing_demultiplexing_fast5_seqtagger(input_stats)
+      		    prep_demux.view()
+      		    input_fast5.view()
 			    input_data = prep_demux.transpose().combine(input_fast5,  by: 0)
      			extracting_demultiplexed_fast5_seqtagger(input_data)            
           break;  
@@ -206,7 +215,7 @@ workflow DEMULTI_FAST5 {
           case "seqtagger":
       		    prep_demux = preparing_demultiplexing_fast5_seqtagger(input_stats)
 			    //filt_prep_demux = filterDemuxBacodes(prep_demux, barcodes)
-				filt_prep_demux = filterDemuxBacodes_seqtagger(prep_demux, barcodes)
+				filt_prep_demux = filterDemuxBacodes_seqtagger(prep_demux, barcodes.collectFile(newLine: true))
 			    input_data = filt_prep_demux.transpose().combine(input_fast5,  by: 0)
      			extracting_demultiplexed_fast5_seqtagger(input_data)            
           break;  
