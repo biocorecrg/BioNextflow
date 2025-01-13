@@ -126,7 +126,8 @@ process computeMatrixForGenes {
 	-R ${annotation_gtf}  \
 	--smartLabels  \
 	${params.EXTRAPARS}   \
-	--beforeRegionStartLength 3000    \
+	--missingDataAsZero \
+        --beforeRegionStartLength 3000    \
 	--regionBodyLength 5000  \
 	--afterRegionStartLength 3000  \
 	--numberOfProcessors ${task.cpus}   \
@@ -151,6 +152,7 @@ process computeSingleMatrixForGenes {
     """    
 	computeMatrix scale-regions -S ${bigwigs} \
 	-R ${annotation_gtf}  \
+        --missingDataAsZero \
 	--smartLabels  \
 	${params.EXTRAPARS}   \
 	--beforeRegionStartLength 3000    \
@@ -179,6 +181,7 @@ process computeMatrixForTSS {
 	computeMatrix reference-point -S ${bigwigs} \
 	-R ${annotation_gtf} --referencePoint TSS \
 	--smartLabels  \
+        --missingDataAsZero \
 	${params.EXTRAPARS}   \
 	--beforeRegionStartLength 3000    \
 	--afterRegionStartLength 3000  \
@@ -205,6 +208,7 @@ process computeSingleMatrixForTSS {
 	computeMatrix reference-point -S ${bigwigs} \
 	-R ${annotation_gtf} --referencePoint TSS \
 	--smartLabels  \
+        --missingDataAsZero \
 	${params.EXTRAPARS}   \
 	--beforeRegionStartLength 3000    \
 	--afterRegionStartLength 3000  \
