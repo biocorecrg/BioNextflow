@@ -173,7 +173,7 @@ process unionBedG {
 	def bed_list = bed_files.join(" ")
 
     """
-	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -i ${bed_list} > ${id}.union.bed
+	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -names ${bed_list} -i ${bed_list} > ${id}.union.bed
     """
 
 }
