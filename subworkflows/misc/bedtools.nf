@@ -170,10 +170,11 @@ process unionBedG {
 	path("${id}.union.bed")
     
 	script:
-	def bed_list = bed_files.join(" ").replaceAll("\\.bedgraph\\.gz", "")
+	def bed_list = bed_files.join(" ")
+	def bed_names = bed_files.join(" ").replaceAll("\\.bedgraph\\.gz", "")
 
     """
-	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -names ${bed_list} -i ${bed_list} > ${id}.union.bed
+	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -names ${bed_names} -i ${bed_list} > ${id}.union.bed
     """
 
 }
