@@ -16,7 +16,6 @@ params.type = "dorado"
 def cuda_cont = (params.gpu == 'cuda11' ? 'biocorecrg/mopbasecallc11:0.3' : 'biocorecrg/mopbasecall:0.3')
 
 include { GET_VERSION as GUPPY_VERSION } from "${moduleFolder}/basecalling/guppy" 
-include { print_log_message } from "${moduleFolder}/global_functions.nf"
 include { BASECALL as GUPPY_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(LABEL: params.label, EXTRAPARS_BC: params.extrapars, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode )
 include { BASECALL as GUPPY6_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
 include { BASECALL as GUPPY64_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
@@ -29,7 +28,7 @@ include { BASECALL as DORADO_BASECALL_DUPLEX } from "${moduleFolder}/basecalling
 def separateGuppy (fast5) {
 
 	ver = GUPPY_VERSION()
-    ver.view { gver -> print_log_message("The GUPPY VERSION IS: ${gver.trim()}") }
+    //ver.view { gver -> print_log_message("The GUPPY VERSION IS: ${gver.trim()}") }
 	
 	data_and_ver = ver.map{
         def vals = it.split("\\.")
