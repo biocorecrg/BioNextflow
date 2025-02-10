@@ -150,8 +150,7 @@ process map {
     if (params.OUTPUTCOUNT != "") { publishDir(params.OUTPUTCOUNT, mode:'copy', pattern: '*ReadsPerGene.out.tab') }
 
     input:
-    path(indexes)
-    tuple val(pair_id), path(reads)
+    tuple val(pair_id), path(reads), path(indexes)
 
     output:
     tuple val(pair_id), path("${pair_id}*.bam"), emit: bams optional true
@@ -178,7 +177,7 @@ workflow MAP {
     indexes
     
     main:
-		map(indexes, input)
+		map(input.combine(indexes))
 	emit:
     	bams = map.out.bams
     	logs = map.out.logs

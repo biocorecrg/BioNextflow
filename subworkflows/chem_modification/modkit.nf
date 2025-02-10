@@ -45,7 +45,7 @@ process pileup {
     script:
 
 	"""
-        modkit pileup -t ${task.cpus}  ${bam} ${id}_pileup.bed
+        modkit pileup ${params.EXTRAPARS} -t ${task.cpus}  ${bam} ${id}_pileup.bed
         gzip ${id}_pileup.bed
 	"""
 }

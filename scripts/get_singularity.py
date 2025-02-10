@@ -16,8 +16,12 @@ def get_images(jsonfile, outdir):
 	f = open(jsonfile, "r")
 	json_content = f.read()
 	# remove the footer
+	firstpar = json_content.find('{')
 	lastpar = json_content.rfind('}')
-	json_content_clean = json_content[:lastpar+1]
+	json_content_clean = json_content[firstpar-1 + 1:lastpar+1]
+
+	print(json_content_clean, file=open('output.txt', 'a'))
+
 	# returns JSON object as a dictionary
 	data = json.loads(json_content_clean)
  	# Iterating through the json list
@@ -27,10 +31,7 @@ def get_images(jsonfile, outdir):
 		newname = newname.replace('/', '-')
 		newname = outdir + "/" + newname.replace(':', '-') + ".img"
 		execDict[newname] = "singularity pull --name " + newname + " " + contname
-                #print("Downloading " + contname + " into " + " " + newname)
-		#print("singularity pull --name "+ newname + " " + contname)
-		#os.system("singularity pull --name "+ newname + " " + contname)
-
+ 
 	for new_contname in execDict:
 		print("Downloading to " + new_contname)
 		os.system(execDict[new_contname])

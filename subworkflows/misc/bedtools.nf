@@ -158,22 +158,23 @@ process multiCov {
 
 process unionBedG {
     label (params.LABEL)
+    tag { id }
 
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    path(bed_files)
-    path(genome_index)
+    tuple val(id), path(bed_files), path(genome_index)
 
     output:
-	path("union.bed")
+	path("${id}.union.bed")
     
 	script:
 	def bed_list = bed_files.join(" ")
+	def bed_names = bed_files.join(" ").replaceAll("\\.bedgraph\\.gz", "")
 
     """
-	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -i ${bed_list} > union.bed
+	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -names ${bed_names} -i ${bed_list} > ${id}.union.bed
     """
 
 }
@@ -209,7 +210,7 @@ workflow UNIONBEDG {
     genomeindex
     
     main:
-		out = unionBedG(input, genomeindex)
+		out = unionBedG(input.combine(genomeindex))
     emit:
     	out
 }

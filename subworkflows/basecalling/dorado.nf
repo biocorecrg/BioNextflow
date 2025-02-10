@@ -35,7 +35,7 @@ process getVersion {
     """
 }
 
-process baseCall {
+process baseCall2Fastq {
     tag { idfile }
     label (params.LABELBC)
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
@@ -63,7 +63,7 @@ process baseCall {
     }
 }
 
-process baseCallMod {
+process baseCall {
     tag { idfile }
     label (params.LABELBC)
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.bam',  mode: params.OUTPUTMODE ) }
@@ -108,6 +108,27 @@ process bam2ModFastq {
 
     """
           samtools fastq -@ ${task.cpus} -T MN,MM,ML,mv,pt,ts ${bam} > ${idfile}.fastq
+          bgzip -@ ${task.cpus} ${idfile}.fastq
+    """
+}
+
+process bam2Fastq {
+    tag { idfile }
+    label (params.LABELCONV)
+	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
+
+    container params.CONTAINER
+             
+    input:
+    tuple val(idfile), path(bam)
+    
+    output:
+    tuple val(idfile), path("*.fastq.gz"), emit: basecalled_fastq
+
+    script:
+
+    """
+          samtools fastq -@ ${task.cpus} ${bam} > ${idfile}.fastq
           bgzip -@ ${task.cpus} ${idfile}.fastq
     """
 }
@@ -192,7 +213,31 @@ process downloadModel {
     main:
      	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
-    	bam = baseCallMod(input_fast5.combine(models))
+    	bam = baseCall(input_fast5.combine(models))
+    	dem_res = demultiPlex(bam)
+    	demulti_bams = dem_res.demulti_bams.transpose().map{
+            def bam_name = it[1].getSimpleName()
+            def barcode = "${bam_name}".split("_").last()
+    	    def new_id = "${it[0]}.${barcode}"
+    		[ new_id, it[1] ]
+    	}
+    	demulti_fastqs = bam2Fastq(demulti_bams)
+
+	emit:
+    	basecalled_fastq = demulti_fastqs.groupTuple()
+    	demulti_report = dem_res.bar_summary
+ 
+}
+
+ workflow BASECALL_DEMULTIMOD {
+    take: 
+    input_fast5
+    model_folder
+    
+    main:
+     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
+        models = model_folders.collect().map{ [ it ] }
+    	bam = baseCall(input_fast5.combine(models))
     	dem_res = demultiPlex(bam)
     	demulti_bams = dem_res.demulti_bams.transpose().map{
             def bam_name = it[1].getSimpleName()
@@ -208,6 +253,7 @@ process downloadModel {
  
 }
 
+
  workflow BASECALL {
     take: 
     input_fast5
@@ -216,11 +262,12 @@ process downloadModel {
     main:
     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
-    	baseCall(input_fast5.combine(models))
+    	bam = baseCall(input_fast5.combine(models)).basecalled_bam
+    	bam2Fastq(bam)
 
 	emit:
-    	basecalled_fastq = baseCall.out.basecalled_fastq
- 
+    	basecalled_fastq = bam2Fastq.out.basecalled_fastq
+  
 }
 
  workflow BASECALLMOD {
@@ -231,7 +278,7 @@ process downloadModel {
     main:
     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
-    	bam = baseCallMod(input_fast5.combine(models)).basecalled_bam
+    	bam = baseCall(input_fast5.combine(models)).basecalled_bam
     	bam2ModFastq(bam)
 
 	emit:

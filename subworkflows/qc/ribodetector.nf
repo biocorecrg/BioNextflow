@@ -78,7 +78,7 @@ process makeMultiQCReport {
 echo '# id: ribodetector
 # plot_type: bargraph
 # section_name: Ribosome contamination
-# description: % of ribosomal reads 
+# description: Percent of ribosomal reads 
 Filename	reads' > ribo_stats_mqc.txt;
 	awk '{print \$1"\t"\$2}' ${reports} >> ribo_stats_mqc.txt
 	"""
