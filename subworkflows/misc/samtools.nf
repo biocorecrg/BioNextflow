@@ -50,9 +50,9 @@ process getFastqPairs {
     }
     else {
             """
-            samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
-            pigz -p ${task.cpus} ${pair_id}_1.fq
-            pigz -p ${task.cpus} ${pair_id}_2.fq
+            samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq.gz -2 ${pair_id}_2.fq.gz ${reads}
+            #pigz -p ${task.cpus} ${pair_id}_1.fq
+            #pigz -p ${task.cpus} ${pair_id}_2.fq
             """
      
     } 
