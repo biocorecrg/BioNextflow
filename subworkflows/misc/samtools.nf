@@ -275,7 +275,7 @@ process statBam {
     
 	script:
     """    
-	samtools stat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} | head -n 46 > ${pair_id}.stat
+	samtools stat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} | awk 'NR<=47' > ${pair_id}.stat
     """
 }
 
