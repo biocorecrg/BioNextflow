@@ -243,7 +243,7 @@ process viewBam_exclude {
 
 
 
-process statBam {
+process flagStatBam {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -260,6 +260,25 @@ process statBam {
 	samtools flagstat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} > ${pair_id}.stat
     """
 }
+
+process statBam {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}.stat") 
+    
+	script:
+    """    
+	samtools stat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} | head -n 46 > ${pair_id}.stat
+    """
+}
+
 
 process primaryCountFromStat {
     label (params.LABEL)
@@ -325,6 +344,16 @@ workflow DICT {
                 out = dict(genome)
     emit:
         out
+}
+
+workflow FLAGSTAT {
+    take: 
+    reads
+    
+    main:
+		out = flagStatBam(reads)
+    emit:
+    	out
 }
 
 workflow STAT {
