@@ -49,11 +49,38 @@ process getFastqPairs {
 	    """
     }
     else {
-            """
-            samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq.gz -2 ${pair_id}_2.fq.gz ${reads}
-            #pigz -p ${task.cpus} ${pair_id}_1.fq
-            #pigz -p ${task.cpus} ${pair_id}_2.fq
-            """
+        """
+        samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq.gz -2 ${pair_id}_2.fq.gz ${reads}
+        """
+     
+    } 
+
+}
+
+process getFastqPairsOnReadGroup {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+    
+    input:
+    tuple val(pair_id), path(reads), path(readgroup_file)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_1.fq"), path("${pair_id}_2.fq"), optional: true, emit: fastq
+    tuple val(pair_id), path("${pair_id}_1.fq.gz"), path("${pair_id}_2.fq.gz"), optional: true, emit: gzfastq 
+    
+    script:
+    if (params.GZIP != "YES") {
+
+	    """    
+	    samtools view -@ ${task.cpus} -h -R ${readgroup_file} ${reads} | samtools collate -O - | samtools fastq ${params.EXTRAPARS} -@ ${task.cpus} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq 
+	    """
+    }
+    else {
+        """
+	    samtools view -@ ${task.cpus} -h -R ${readgroup_file} ${reads} |  samtools collate -O -| samtools fastq ${params.EXTRAPARS} -@ ${task.cpus} -1 ${pair_id}_1.fq.gz -2 ${pair_id}_2.fq.gz 
+        """
      
     } 
 
@@ -424,12 +451,27 @@ workflow FASTQ_PAIRS {
     
     main:
  		res = getFastqPairs(alns)
-                out = res.fastq.mix(res.gzfastq)
+        out = res.fastq.mix(res.gzfastq)
  
     emit:
     	out
 
 }
+
+workflow FASTQ_PAIRS_ONREADGROUP {
+    take: 
+    alns
+    
+    main:
+    	
+ 		res = getFastqPairsOnReadGroup(alns)
+        out = res.fastq.mix(res.gzfastq)
+ 
+    emit:
+    	out
+
+}
+
 
 
 workflow GET_VERSION {
