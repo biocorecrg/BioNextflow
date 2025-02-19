@@ -1,3 +1,20 @@
+// colors and other
+def colorCodes() {
+    def colorcodes = [:]
+    // font
+    colorcodes['bold']     = "\033[1m"
+    colorcodes['reset']    = "\033[0m"
+    colorcodes['line']     = "\033[0m"
+
+    // colors
+    colorcodes['yellow']     = "\033[0;33m"
+    colorcodes['black']      = "\033[0;30m"
+    colorcodes['red']        = "\033[0;31m"
+    colorcodes['green']      = "\033[0;32m"
+    colorcodes['green']      = "\033[0;32m"
+    return(colorcodes)
+}
+
 // notify
 def notify_slack(text, hook) {
     def myFile = file('./notify.json')
