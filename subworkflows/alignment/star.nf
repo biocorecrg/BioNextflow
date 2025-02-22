@@ -227,8 +227,10 @@ workflow ALL {
     overhang
     
     main:
-		if (overhang == "") {    
-			overhang_val = calcOverhang(input.first())
+		if (overhang == "") {   
+			sorted_sample = input.toSortedList{ it[0] }
+			first_sample = sorted_sample.map { it[0] } 
+			overhang_val = calcOverhang(first_sample)
 		} else {
 			overhang_val = overhang
 		}
