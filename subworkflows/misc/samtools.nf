@@ -225,7 +225,7 @@ process viewBam {
     
 	script:
     """    
-	samtools view -@ ${task.cpus} ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
+	samtools view -@ ${task.cpus} -bh ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
     """
 }
 
@@ -244,7 +244,7 @@ process viewBam_two {
     
 	script:
     """    
-	samtools view -@ ${task.cpus} ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
+	samtools view -@ ${task.cpus} -bh ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
     """
 }
 
@@ -264,7 +264,7 @@ process viewBam_exclude {
     
         script:
     """    
-        samtools view -@ ${task.cpus} -U ${pair_id}_ex.bam ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
+        samtools view -@ ${task.cpus} -bh -U ${pair_id}_ex.bam ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
     """ 
 }  
 
