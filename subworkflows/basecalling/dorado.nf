@@ -66,7 +66,6 @@ process baseCall2Fastq {
 process baseCall {
     tag { idfile }
     label (params.LABELBC)
-	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.bam',  mode: params.OUTPUTMODE ) }
 
     container params.CONTAINER
              
