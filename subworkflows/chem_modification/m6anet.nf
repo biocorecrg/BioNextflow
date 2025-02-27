@@ -82,6 +82,7 @@ process inference {
     script:
 	"""
     m6anet inference --input_dir ./${input} --out_dir ./${sampleID}_inf ${params.EXTRAPARS}
+    for i in ${sampleID}_inf/*.csv; do gzip \$i; done
     """
 
 
