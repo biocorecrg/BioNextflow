@@ -3,11 +3,13 @@ params.OUTPUTST = ""
 params.OUTPUTMODE = "copy"
 params.TYPE = "guppy"
 params.LABEL = ""
+params.CONTAINER = "biocorecrg/pod5:0.2.4"
 
 process preparing_demultiplexing_pod5 {
 
     label (params.LABEL)
     tag "${ idfile }"
+    container = params.CONTAINER
 		
 	input:
 	tuple val(idfile), path("demux_*")
@@ -28,7 +30,7 @@ process extracting_demultiplexed_pod5_seqtagger {
     label (params.LABEL)
     tag "${ idfile }"
 
-    container = "biocorecrg/pod5:0.2.4"
+    container = params.CONTAINER
     
     publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: '*-*')    
    // publishDir(params.OUTPUTST, mode:params.OUTPUTMODE, pattern: 'summaries/*_final_summary.stats', saveAs: { file -> "${file.split('\\/')[-1]}" })    
@@ -50,7 +52,7 @@ process extracting_demultiplexed_pod5_dorado {
     label (params.LABEL)
     tag "${ idfile }"
 
-    container = "biocorecrg/pod5:0.2.4"
+    container = params.CONTAINER
     
     publishDir(params.OUTPUT, mode:params.OUTPUTMODE, pattern: '*---*')    
 	
@@ -67,6 +69,60 @@ process extracting_demultiplexed_pod5_dorado {
 	"""
 } 
 
+
+process split_readids {
+	container "biocorecrg/pod5:0.2.4"
+    label (params.LABEL)
+    tag { sampleID }
+    container = params.CONTAINER
+
+
+    input:
+    tuple val(sampleID), path(pod5), val(num)
+    
+    output:
+    tuple val(sampleID), path("pieces.*")
+
+    script:
+	"""
+		pod5 view -t ${task.cpus} -I -H ${pod5} > read.list
+		split -d -l ${num} read.list pieces.
+	"""
+}
+
+process split_pod5 {
+    container = params.CONTAINER
+    label (params.LABEL)
+    tag { sampleID }
+    publishDir(params.OUTPUT, mode:'copy')
+
+
+    input:
+    tuple val(sampleID), path(pieces), path(pod5)
+    
+    output:
+    tuple val(sampleID), path("*.pod5")
+
+    script:
+    def outfile = "${sampleID}_${pieces}.pod5"
+	"""
+		pod5 filter -t ${task.cpus}  -M -D -i ${pieces} -o ${outfile} ${pod5}
+	"""
+}
+
+workflow SPLIT_POD5 {
+
+    take: 
+    input_pod5
+    read_num    
+    
+    main:
+ 		read_ids = split_readids(input_pod5.combine(read_num))
+		pod5_to_be_split = read_ids.transpose().combine(input_pod5, by: 0)
+		split_pod5(pod5_to_be_split)
+	
+ }
+ 
 
 workflow DEMULTI_POD5 {
 
@@ -116,6 +172,7 @@ workflow DEMULTI_POD5 {
  }
 
 process filterDemuxBarcodes {
+    container = params.CONTAINER
 
     tag "${ idfile }"
 	
