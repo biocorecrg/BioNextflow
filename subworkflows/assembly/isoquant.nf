@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = "quay.io/biocontainers/isoquant:2.0.0--hdfd78af_0"
+params.CONTAINER = "quay.io/biocontainers/isoquant:3.6.3--hdfd78af_0"
 
 include { unzipCmd } from '../global_functions.nf'
 
