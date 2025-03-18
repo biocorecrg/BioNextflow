@@ -172,12 +172,14 @@ process downloadModel {
 
     script:    
     def down_pars = params.EXTRAPARS.split(" ").find { it.contains('@') }
+    def down_pars2 = params.EXTRAPARS.trim().tokenize()[0]
   
     script:
     if (params.DUPLEX == "") {
     
     """
-       if dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
+    	echo "here"
+       if dorado basecaller ${gpu_cmd} ${down_pars2} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
         then
         	echo "Automatic model download succeeded"
         else 
@@ -189,7 +191,7 @@ process downloadModel {
     """
 
 	touch stderr.txt
-	timeout 1m dorado duplex ${gpu_cmd} ${params.EXTRAPARS} --models-directory \$PWD/dorado_models ./ > test.bam 2>stderr.txt || ( [[ \$? -ne 0 ]] &&  echo "Timeout reached" )
+	timeout 1m dorado duplex ${gpu_cmd} ${down_pars2} --models-directory \$PWD/dorado_models ./ > test.bam 2>stderr.txt || ( [[ \$? -ne 0 ]] &&  echo "Timeout reached" )
 
 	# Check if the dorado process succeeded or failed
 	if grep -q "Starting Stereo Duplex pipeline" stderr.txt; then
@@ -268,6 +270,9 @@ process downloadModel {
     	basecalled_fastq = bam2Fastq.out.basecalled_fastq
   
 }
+
+
+
 
  workflow BASECALLMOD {
     take: 

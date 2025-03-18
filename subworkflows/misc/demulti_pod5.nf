@@ -17,16 +17,27 @@ process preparing_demultiplexing_pod5 {
 	output:
 	tuple val(idfile), path("*.files")
 
+   script:
+   switch(params.TYPE) {                      
 	
-	script:
+   	case "seqtagger":   
+		"""
+       zcat demux_*|awk 'FNR <= 1' > dem.files
+       zcat demux_*| grep -v "read_id"|sort|uniq| awk -F "\t" '{OFS="\t"; print \$1,\$2,"bc_"\$3,\$4,\$5 }' >> dem.files
+		"""
+    break;
+    case "dorado":
 	"""
        zcat demux_*|awk 'FNR <= 1' > dem.files
        zcat demux_*| grep -v "read_id"|sort|uniq >> dem.files
 	"""
+    break;  
+ }
 }
 
 
-process extracting_demultiplexed_pod5_seqtagger {
+
+process extracting_demultiplexed_pod5 {
     label (params.LABEL)
     tag "${ idfile }"
 
@@ -43,8 +54,8 @@ process extracting_demultiplexed_pod5_seqtagger {
 		
 	script:
 	"""
-    pod5 subset *.pod5 -f -t ${task.cpus} --summary ${idlist} --template "${idfile}---barcode-{barcode}.pod5" --columns barcode -M --output ./
-	for i in *barcode*.pod5; do mkdir \$(basename "\$i" ".pod5"); cp \$i  \$(basename "\$i" ".pod5"); done
+    pod5 subset *.pod5 -f -t ${task.cpus} --summary ${idlist} --template "${idfile}---{barcode}.pod5" --columns barcode -M --output ./temp_out
+	for i in temp_out/*.pod5; do mkdir \$(basename "\$i" ".pod5"); cp \$i  \$(basename "\$i" ".pod5"); done
 	"""
 } 
 
@@ -134,16 +145,8 @@ workflow DEMULTI_POD5 {
        prep_demux = preparing_demultiplexing_pod5(input_stats)
        pod5s = input_pod5.transpose().groupTuple()
 	   input_data = prep_demux.transpose().combine(pod5s,  by: 0)
-	   
-       switch(params.TYPE) {                      
-          case "dorado":
-   			    extracting_demultiplexed_pod5_dorado(input_data)            
-          break;
-          case "seqtagger":
-   			    extracting_demultiplexed_pod5_seqtagger(input_data)            
-          break;  
-    	}
- 
+	   extracting_demultiplexed_pod5(input_data)
+  
  }
  
  workflow DEMULTI_POD5_FILTER {
@@ -155,25 +158,17 @@ workflow DEMULTI_POD5 {
     
     main:
        prep_demux = preparing_demultiplexing_pod5(input_stats)
-       pod5s = input_pod5.transpose().groupTuple()
-	   filt_prep_demux = filterDemuxBarcodes(prep_demux.combine(barcodes))
+       pod5s = input_pod5.transpose().groupTuple()       
+	   filt_prep_demux = filterDemuxBarcodes(prep_demux.combine(barcodes, by: 0))
 	   input_data = filt_prep_demux.transpose().combine(pod5s,  by: 0)
+   	   extracting_demultiplexed_pod5(input_data)            
        
-       switch(params.TYPE) {                      
-
-          case "dorado":   
-   			    extracting_demultiplexed_pod5_dorado(input_data)            
-          break;
-          case "seqtagger":
-   			    extracting_demultiplexed_pod5_seqtagger(input_data)            
-          break;  
-    	}
  
  }
 
 process filterDemuxBarcodes {
     container = params.CONTAINER
-
+	
     tag "${ idfile }"
 	
 	input:
@@ -183,11 +178,24 @@ process filterDemuxBarcodes {
 	tuple val(idfile), path("new.dem.files")
 
 	script:
+    switch(params.TYPE) {                      
+
+    case "seqtagger":   
+		"""
+		awk -F "---" '{print \$2}' ${barcodes} > selected_barcodes.txt
+		awk 'FNR <= 1' ${dem_files} > new.dem.files
+		awk '{OFS="\t"; split(\$3, a, "_"); print \$1, \$2, "bc_"(length(a) > 1 ? a[2] : \$3)}' ${dem_files} | grep -f selected_barcodes.txt -w >> new.dem.files
+		"""
+    break;
+    case "dorado":
 	"""
 		awk -F "---" '{print \$2}' ${barcodes} > selected_barcodes.txt
 		awk 'FNR <= 1' ${dem_files} > new.dem.files
-		awk '{OFS="\t"; split(\$3,a,"_"); print \$1,\$2,a[2]}' ${dem_files} | grep -f selected_barcodes.txt -w >> new.dem.files
+		awk '{OFS="\t"; split(\$3, a, "_"); print \$1, \$2, (length(a) > 1 ? a[2] : \$3)}' ${dem_files} | grep -f selected_barcodes.txt -w >> new.dem.files
 	"""
-}
+    break;  
+    }
+ }
+
 
 
