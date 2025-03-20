@@ -240,6 +240,7 @@ workflow ALL {
 			index = INDEX_NOANNO(reference)
 		}
 		MAP(input, index)
+		
 	emit:
 		bams = MAP.out.bams
 		logs = MAP.out.logs
