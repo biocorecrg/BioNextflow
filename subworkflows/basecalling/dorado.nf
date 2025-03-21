@@ -22,8 +22,14 @@ if (params.GPU == "OFF") {
 	gpu_cmd = '-x "cpu"'
 }
 
+my_container = params.CONTAINER 
+
+if (params.GPU == "LOCAL") {
+        my_container = ""
+}
+
 process getVersion {
-    container params.CONTAINER
+    container my_container
     label (params.LABELBC)
 
     output:
@@ -40,7 +46,7 @@ process baseCall2Fastq {
     label (params.LABELBC)
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
 
-    container params.CONTAINER
+    container my_container
              
     input:
     tuple val(idfile), path(fast5), path(models)
@@ -67,8 +73,8 @@ process baseCall {
     tag { idfile }
     label (params.LABELBC)
 
-    container params.CONTAINER
-             
+    container my_container
+
     input:
     tuple val(idfile), path(fast5), path(models)
     
@@ -95,8 +101,8 @@ process bam2ModFastq {
     label (params.LABELCONV)
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
 
-    container params.CONTAINER
-             
+    container params.CONTAINER 
+         
     input:
     tuple val(idfile), path(bam)
     
@@ -114,10 +120,10 @@ process bam2ModFastq {
 process bam2Fastq {
     tag { idfile }
     label (params.LABELCONV)
-	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
 
-    container params.CONTAINER
-             
+    container params.CONTAINER 
+
     input:
     tuple val(idfile), path(bam)
     
@@ -138,9 +144,9 @@ process demultiPlex {
     tag { idfile }
     label (params.LABELCONV)
 
- 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
+    container my_container
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
    
-    container params.CONTAINER
              
     input:
     tuple val(idfile), path(bam)
@@ -162,8 +168,8 @@ process downloadModel {
     tag { idfile }
     label (params.LABELBC)
     
-    container params.CONTAINER
-             
+    container my_container
+    
     input:
     tuple val(idfile), path(bam), path(modelfolder)
     
