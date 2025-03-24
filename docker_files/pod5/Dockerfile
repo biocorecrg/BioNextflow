@@ -1,9 +1,11 @@
-# This will do biocorecrg/pod5:0.2.4 
+# This will do biocorecrg/pod5:0.3.23
 
-FROM mambaorg/micromamba:1.5
-COPY --chown=$MAMBA_USER:$MAMBA_USER environment_0.2.4.yml  /tmp/env.yaml
-RUN micromamba install -y -n base -f /tmp/env.yaml && \
-    micromamba clean --all --yes
-RUN rm /tmp/env.yaml
-ENV PATH /opt/conda/bin:$PATH
+FROM python:3.10-slim
 
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install pod5
+RUN pip install --upgrade pip && pip install pod5==0.3.23
