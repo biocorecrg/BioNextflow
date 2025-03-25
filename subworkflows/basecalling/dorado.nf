@@ -167,6 +167,8 @@ process downloadModel {
 
     tag { idfile }
     label (params.LABELBC)
+    // HACK FOR CLEANUP
+    publishDir("/tmp", saveAs: { file -> "myfile" ? "myfile" : null })
     
     container my_container
     
