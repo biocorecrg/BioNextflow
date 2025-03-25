@@ -51,9 +51,7 @@ process map {
     container params.CONTAINER
 
     input:
-    tuple val(idfile), path(fastq_file)
-	path(reference)  
-	path(repetitive)  
+    tuple val(idfile), path(fastq_file), path(reference), path(repetitive)  
 
     output:
     tuple val(idfile), path("${idfile}.bam")
@@ -72,7 +70,7 @@ workflow MAP {
     repetitive
     
     main:
-		map(input, reference, repetitive)
+		map(input.combine(reference).combine(repetitive))
 	emit:
     	bams = map.out
 	
