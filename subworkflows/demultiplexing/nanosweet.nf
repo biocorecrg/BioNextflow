@@ -7,6 +7,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.CONTAINER = 'biocorecrg/nanosweet:0.1'
+params.OUTPUTMODE = "copy"
 
 process getVersion {
     container params.CONTAINER
@@ -24,6 +25,7 @@ process getVersion {
 process demultiplex {
     tag { idfile }
     label (params.LABEL)
+	if (params.OUTPUT != "") { publishDir(params.OUTPUT,  mode: params.OUTPUTMODE ) }
 
     container params.CONTAINER
              
@@ -31,12 +33,13 @@ process demultiplex {
     tuple val(idfile), path(fastqs), path(barcodes)
 
     output:
-	tuple val(idfile), path("demux/*.fq.gz"), emit: demux_files
+	tuple val(idfile), path("${idfile}_*.fq.gz"), emit: demux_files
  
     script:  
     
     """	
 		nanomux -b ${barcodes} ${params.EXTRAPARS} -f ${fastqs} -o ./demux  -j ${task.cpus}
+		for i in ./demux/*; do mv \$i ${idfile}_`basename \$i`; done
     """
 }
 
@@ -53,7 +56,7 @@ process demultiplex {
 		demultiplex(fastq.combine(barcode))
 		
 		out = demultiplex.out.demux_files.transpose().map {
-			def new_id = "${it[0]}---${it[1].getSimpleName()}"
+			def new_id = "${it[1].getName()}".replaceAll("\\.fq\\.gz", "")
 			[ new_id, it[1] ]
 		}        
 
