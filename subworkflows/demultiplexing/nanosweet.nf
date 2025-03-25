@@ -7,6 +7,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.CONTAINER = 'biocorecrg/nanosweet:0.1'
+params.OUTPUTMODE = "copy"
 
 process getVersion {
     container params.CONTAINER
@@ -24,6 +25,7 @@ process getVersion {
 process demultiplex {
     tag { idfile }
     label (params.LABEL)
+	if (params.OUTPUT != "") { publishDir(params.OUTPUT,  mode: params.OUTPUTMODE ) }
 
     container params.CONTAINER
              
