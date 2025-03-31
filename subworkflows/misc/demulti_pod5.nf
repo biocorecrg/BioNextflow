@@ -4,6 +4,7 @@ params.OUTPUTMODE = "copy"
 params.TYPE = "guppy"
 params.LABEL = ""
 params.CONTAINER = "biocorecrg/pod5:0.2.4"
+params.MAX_PROC = 100
 
 process preparing_demultiplexing_pod5 {
 
@@ -106,7 +107,7 @@ process split_pod5 {
     label (params.LABEL)
     tag { sampleID }
     publishDir(params.OUTPUT, mode:'copy')
-
+    maxForks params.MAX_PROC 
 
     input:
     tuple val(sampleID), path(pieces), path(pod5)
