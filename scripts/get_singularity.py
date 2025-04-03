@@ -8,6 +8,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument ('-j','--inspect_json', action='store', required=True, dest='json', help='json output from nextflow inspect command')
 parser.add_argument ('-c','--singularity_cache', action='store', required=True, dest='sinfolder', help='path where to store the singularity images')
+parser.add_argument ('-u','--image_uri', action='store', default="docker://", dest='prefix', help='specify the image URI, default is <docker://>')
 
 args = parser.parse_args()
 
@@ -30,10 +31,11 @@ def get_images(jsonfile, outdir):
 		newname = contname.replace('docker://', '')
 		newname = newname.replace('/', '-')
 		newname = outdir + "/" + newname.replace(':', '-') + ".img"
-		execDict[newname] = "singularity pull --name " + newname + " " + contname
+		execDict[newname] = "singularity pull --name " + newname + " " + args.prefix + contname
  
 	for new_contname in execDict:
 		print("Downloading to " + new_contname)
+		print("Executing " + execDict[new_contname])
 		os.system(execDict[new_contname])
 
 	# Closing file
