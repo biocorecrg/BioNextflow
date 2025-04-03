@@ -105,7 +105,7 @@ process comb {
 	path(index)
 
     output:
-    path("${comb}")
+    path("comb")
 
     script:    
     """
