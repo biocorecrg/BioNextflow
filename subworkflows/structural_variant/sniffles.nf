@@ -11,7 +11,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/sniffles:2.3.3--pyhdfd78af_0"
+params.CONTAINER = "quay.io/biocontainers/sniffles:2.5.2--pyhdfd78af_0"
 
 include { PossiblyUnzipGenome } from '../misc/misc.nf'
 

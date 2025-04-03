@@ -150,8 +150,7 @@ process map {
     if (params.OUTPUTCOUNT != "") { publishDir(params.OUTPUTCOUNT, mode:'copy', pattern: '*ReadsPerGene.out.tab') }
 
     input:
-    path(indexes)
-    tuple val(pair_id), path(reads)
+    tuple val(pair_id), path(reads), path(indexes)
 
     output:
     tuple val(pair_id), path("${pair_id}*.bam"), emit: bams optional true
@@ -178,7 +177,7 @@ workflow MAP {
     indexes
     
     main:
-		map(indexes, input)
+		map(input.combine(indexes))
 	emit:
     	bams = map.out.bams
     	logs = map.out.logs
@@ -228,8 +227,10 @@ workflow ALL {
     overhang
     
     main:
-		if (overhang == "") {    
-			overhang_val = calcOverhang(input.first())
+		if (overhang == "") {   
+			sorted_sample = input.toSortedList{ it[0] }
+			first_sample = sorted_sample.map { it[0] } 
+			overhang_val = calcOverhang(first_sample)
 		} else {
 			overhang_val = overhang
 		}
@@ -239,6 +240,7 @@ workflow ALL {
 			index = INDEX_NOANNO(reference)
 		}
 		MAP(input, index)
+		
 	emit:
 		bams = MAP.out.bams
 		logs = MAP.out.logs

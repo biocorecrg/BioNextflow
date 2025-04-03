@@ -16,18 +16,19 @@ params.type = "dorado"
 def cuda_cont = (params.gpu == 'cuda11' ? 'biocorecrg/mopbasecallc11:0.3' : 'biocorecrg/mopbasecall:0.3')
 
 include { GET_VERSION as GUPPY_VERSION } from "${moduleFolder}/basecalling/guppy" 
-include { print_log_message } from "${moduleFolder}/global_functions.nf"
 include { BASECALL as GUPPY_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(LABEL: params.label, EXTRAPARS_BC: params.extrapars, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode )
 include { BASECALL as GUPPY6_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
 include { BASECALL as GUPPY64_BASECALL } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_BC: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, CONTAINER: cuda_cont, OUTPUTMODE: params.outmode)
-include { BASECALLMOD as DORADO_BASECALL } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALL as DORADO_BASECALL } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALLMOD as DORADO_BASECALLMOD } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALL as DORADO_BASECALL_DUPLEX } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV:params.label2, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, DUPLEX:"YES")
 
 // ADD A CHECK FOR GUPPY FOR DISABLING SCORE
 
 def separateGuppy (fast5) {
 
 	ver = GUPPY_VERSION()
-    ver.view { gver -> print_log_message("The GUPPY VERSION IS: ${gver.trim()}") }
+    //ver.view { gver -> print_log_message("The GUPPY VERSION IS: ${gver.trim()}") }
 	
 	data_and_ver = ver.map{
         def vals = it.split("\\.")
@@ -72,8 +73,25 @@ workflow BASECALL {
                basecalled_fast5 = Channel.empty()
                basecalling_stats = Channel.empty()
                break; 
+
+           case "dorado-mod": 
+               dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists: true)
+               outbc = DORADO_BASECALLMOD (fast5_4_analysis, dorado_models)
+               basecalled_fastq = outbc.basecalled_fastq
+               basecalled_fast5 = Channel.empty()
+               basecalling_stats = Channel.empty()
+               break; 
+
+           case "dorado-duplex": 
+               dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists: true)
+               outbc = DORADO_BASECALL_DUPLEX (fast5_4_analysis, dorado_models)
+               basecalled_fastq = outbc.basecalled_fastq
+               basecalled_fast5 = Channel.empty()
+               basecalling_stats = Channel.empty()
+               break; 
+
         }        
-		
+        		
     emit:
        basecalled_fast5 = basecalled_fast5
        basecalled_fastq = basecalled_fastq

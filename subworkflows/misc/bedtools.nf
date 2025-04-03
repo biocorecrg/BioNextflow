@@ -156,6 +156,29 @@ process multiCov {
 
 }
 
+process unionBedG {
+    label (params.LABEL)
+    tag { id }
+
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(bed_files), path(genome_index)
+
+    output:
+	path("${id}.union.bed")
+    
+	script:
+	def bed_list = bed_files.join(" ")
+	def bed_names = bed_files.join(" ").replaceAll("\\.bedgraph\\.gz", "")
+
+    """
+	bedtools unionbedg ${params.EXTRAPARS} -empty -g ${genome_index}  -names ${bed_names} -i ${bed_list} > ${id}.union.bed
+    """
+
+}
+
 workflow BEDTOFASTA {
     take: 
     bed
@@ -178,6 +201,20 @@ workflow SHUFFLEBED {
     emit:
     	out
 }
+
+
+
+workflow UNIONBEDG {
+    take: 
+    input
+    genomeindex
+    
+    main:
+		out = unionBedG(input.combine(genomeindex))
+    emit:
+    	out
+}
+
 
 workflow MULTIINTER {
     take: 

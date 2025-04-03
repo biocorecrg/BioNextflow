@@ -91,9 +91,7 @@ workflow FASTQC_ID {
     fastqp
     
     main:
-    fastqp.map{
-		[it[0], it[1]]
-	}.set{fastq}	
+    fastqp.transpose().set{fastq}	
     out = fastQC2(fastq)
     
     emit:

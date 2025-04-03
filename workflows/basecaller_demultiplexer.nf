@@ -26,7 +26,9 @@ include { BASECALL_DEMULTI as GUPPY_BASECALL_DEMULTI } from "${moduleFolder}/bas
 include { BASECALL_DEMULTI as GUPPY6_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
 include { BASECALL_DEMULTI as GUPPY65_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/guppy" addParams(VERSION:"6.4", EXTRAPARS_DEM: params.extrapars, LABEL: params.label, GPU: params.gpu, MOP: "YES", OUTPUT: params.output, OUTPUTMODE: params.outmode, CONTAINER: cuda_cont)
 include { BASECALL_DEMULTI as DORADO_BASECALL_DEMULTI } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV: params.label2,  GPU: params.gpu, OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALL_DEMULTIMOD as DORADO_BASECALL_DEMULTIMOD } from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV: params.label2,  GPU: params.gpu, OUTPUT: params.output, OUTPUTMODE: params.outmode)
 include { DEMULTIPLEX as READUCKS_DEMULTIPLEX } from "${moduleFolder}/demultiplexing/readucks" addParams(EXTRAPARS: params.extrapars, LABEL: params.label, OUTPUT: params.output, OUTPUTMODE: params.outmode)
+include { BASECALL_DEMULTI as DORADO_BASECALL_DEMULTI_DUPLEX } from "${moduleFolder}/basecalling/dorado" from "${moduleFolder}/basecalling/dorado" addParams(EXTRAPARS: params.extrapars, LABELBC: params.label, LABELCONV: params.label2,  GPU: params.gpu, OUTPUT: params.output, OUTPUTMODE: params.outmode, DUPLEX:"YES")
 
 
 /*
@@ -67,7 +69,23 @@ workflow BASECALL_DEMULTIPLEX {
                basecalled_fastq = out_demulti.basecalled_fastq
 			   basecalling_stats = out_demulti.demulti_report
 		   break;
-			
+
+           case "dorado-mod":
+           	   dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists:true)
+               //dorado_models = Channel.fromPath("${params.models}/*", type: "dir", checkIfExists:true)
+               out_demulti = DORADO_BASECALL_DEMULTIMOD(fast5_4_analysis, dorado_models)
+               basecalled_fastq = out_demulti.basecalled_fastq
+			   basecalling_stats = out_demulti.demulti_report
+		   break;
+
+           case "dorado-duplex": 
+               dorado_models = Channel.fromPath("${params.models}", type: "dir", checkIfExists: true)
+               outbc = DORADO_BASECALL_DEMULTI_DUPLEX (fast5_4_analysis, dorado_models)
+               basecalled_fastq = outbc.basecalled_fastq
+               basecalled_fast5 = Channel.empty()
+               basecalling_stats = Channel.empty()
+               break; 
+
         }        
 
     emit:

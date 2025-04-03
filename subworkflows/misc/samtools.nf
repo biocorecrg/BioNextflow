@@ -49,11 +49,38 @@ process getFastqPairs {
 	    """
     }
     else {
-            """
-            samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq ${reads}
-            pigz -p ${task.cpus} ${pair_id}_1.fq
-            pigz -p ${task.cpus} ${pair_id}_2.fq
-            """
+        """
+        samtools fastq -@ ${task.cpus} ${params.EXTRAPARS} -1 ${pair_id}_1.fq.gz -2 ${pair_id}_2.fq.gz ${reads}
+        """
+     
+    } 
+
+}
+
+process getFastqPairsOnReadGroup {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+    
+    input:
+    tuple val(pair_id), path(reads), path(readgroup_file)
+
+    output:
+    tuple val(pair_id), path("${pair_id}_1.fq"), path("${pair_id}_2.fq"), optional: true, emit: fastq
+    tuple val(pair_id), path("${pair_id}_1.fq.gz"), path("${pair_id}_2.fq.gz"), optional: true, emit: gzfastq 
+    
+    script:
+    if (params.GZIP != "YES") {
+
+	    """    
+	    samtools view -@ ${task.cpus} -h -R ${readgroup_file} ${reads} | samtools collate -O - | samtools fastq ${params.EXTRAPARS} -@ ${task.cpus} -1 ${pair_id}_1.fq -2 ${pair_id}_2.fq 
+	    """
+    }
+    else {
+        """
+	    samtools view -@ ${task.cpus} -h -R ${readgroup_file} ${reads} |  samtools collate -O -| samtools fastq ${params.EXTRAPARS} -@ ${task.cpus} -1 ${pair_id}_1.fq.gz -2 ${pair_id}_2.fq.gz 
+        """
      
     } 
 
@@ -198,7 +225,7 @@ process viewBam {
     
 	script:
     """    
-	samtools view -@ ${task.cpus} ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
+	samtools view -@ ${task.cpus} -bh ${params.EXTRAPARS} ${reads} > ${pair_id}_f.bam
     """
 }
 
@@ -217,7 +244,7 @@ process viewBam_two {
     
 	script:
     """    
-	samtools view -@ ${task.cpus} ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
+	samtools view -@ ${task.cpus} -bh ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
     """
 }
 
@@ -237,13 +264,13 @@ process viewBam_exclude {
     
         script:
     """    
-        samtools view -@ ${task.cpus} -U ${pair_id}_ex.bam ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
+        samtools view -@ ${task.cpus} -bh -U ${pair_id}_ex.bam ${params.EXTRAPARS} ${extrafile} ${reads} > ${pair_id}_f.bam
     """ 
 }  
 
 
 
-process statBam {
+process flagStatBam {
     label (params.LABEL)
     tag { pair_id }
     container params.CONTAINER
@@ -260,6 +287,25 @@ process statBam {
 	samtools flagstat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} > ${pair_id}.stat
     """
 }
+
+process statBam {
+    label (params.LABEL)
+    tag { pair_id }
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:params.OUTPUTMODE) }
+
+    input:
+    tuple val(pair_id), path(reads)
+
+    output:
+    tuple val(pair_id), path("${pair_id}.stat") 
+    
+	script:
+    """    
+	samtools stat -@ ${task.cpus} ${params.EXTRAPARS} ${reads} | awk 'NR<=47' > ${pair_id}.stat
+    """
+}
+
 
 process primaryCountFromStat {
     label (params.LABEL)
@@ -325,6 +371,16 @@ workflow DICT {
                 out = dict(genome)
     emit:
         out
+}
+
+workflow FLAGSTAT {
+    take: 
+    reads
+    
+    main:
+		out = flagStatBam(reads)
+    emit:
+    	out
 }
 
 workflow STAT {
@@ -424,12 +480,27 @@ workflow FASTQ_PAIRS {
     
     main:
  		res = getFastqPairs(alns)
-                out = res.fastq.mix(res.gzfastq)
+        out = res.fastq.mix(res.gzfastq)
  
     emit:
     	out
 
 }
+
+workflow FASTQ_PAIRS_ONREADGROUP {
+    take: 
+    alns
+    
+    main:
+    	
+ 		res = getFastqPairsOnReadGroup(alns)
+        out = res.fastq.mix(res.gzfastq)
+ 
+    emit:
+    	out
+
+}
+
 
 
 workflow GET_VERSION {

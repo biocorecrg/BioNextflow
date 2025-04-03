@@ -13,6 +13,7 @@ params.OUTPUTMODE = "copy"
 params.MOP = ""
 params.CONTAINER = "ontresearch/dorado:shaa2ceb44eb92c08f9a3a53f97077904d7e23e28ec"
 params.GPU = ""
+params.DUPLEX = ""
 
 def gpu_cmd = ""
 def library_export = ""
@@ -21,8 +22,14 @@ if (params.GPU == "OFF") {
 	gpu_cmd = '-x "cpu"'
 }
 
+my_container = params.CONTAINER 
+
+if (params.GPU == "LOCAL") {
+        my_container = ""
+}
+
 process getVersion {
-    container params.CONTAINER
+    container my_container
     label (params.LABELBC)
 
     output:
@@ -34,12 +41,12 @@ process getVersion {
     """
 }
 
-process baseCall {
+process baseCall2Fastq {
     tag { idfile }
     label (params.LABELBC)
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
 
-    container params.CONTAINER
+    container my_container
              
     input:
     tuple val(idfile), path(fast5), path(models)
@@ -48,20 +55,26 @@ process baseCall {
     tuple val(idfile), path("*.fastq.gz"), emit: basecalled_fastq
 
     script:
-
+    if (params.DUPLEX == "") {
+    
     """
           dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --emit-fastq ./ > ${idfile}.fastq
           bgzip -@ ${task.cpus} ${idfile}.fastq
     """
+    } else {
+    """
+          dorado duplex ${gpu_cmd} ${params.EXTRAPARS} --emit-fastq ./ > ${idfile}.fastq
+          bgzip -@ ${task.cpus} ${idfile}.fastq
+    """
+    }
 }
 
-process baseCallMod {
+process baseCall {
     tag { idfile }
     label (params.LABELBC)
-	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.bam',  mode: params.OUTPUTMODE ) }
 
-    container params.CONTAINER
-             
+    container my_container
+
     input:
     tuple val(idfile), path(fast5), path(models)
     
@@ -70,9 +83,17 @@ process baseCallMod {
 
     script:
 
+    script:
+    if (params.DUPLEX == "") {
+    
     """
-          dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} ./ > ${idfile}.bam
+          dorado basecaller ${gpu_cmd} --models-directory ./ ${params.EXTRAPARS} ./ > ${idfile}.bam
     """
+    } else {
+    """
+          dorado duplex ${gpu_cmd} --models-directory ./ ${params.EXTRAPARS} ./ > ${idfile}.bam
+    """
+	}
 }
 
 process bam2ModFastq {
@@ -80,8 +101,8 @@ process bam2ModFastq {
     label (params.LABELCONV)
 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
 
-    container params.CONTAINER
-             
+    container params.CONTAINER 
+         
     input:
     tuple val(idfile), path(bam)
     
@@ -96,15 +117,36 @@ process bam2ModFastq {
     """
 }
 
+process bam2Fastq {
+    tag { idfile }
+    label (params.LABELCONV)
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
+
+    container params.CONTAINER 
+
+    input:
+    tuple val(idfile), path(bam)
+    
+    output:
+    tuple val(idfile), path("*.fastq.gz"), emit: basecalled_fastq
+
+    script:
+
+    """
+          samtools fastq -@ ${task.cpus} ${bam} > ${idfile}.fastq
+          bgzip -@ ${task.cpus} ${idfile}.fastq
+    """
+}
+
 
 process demultiPlex {
 
     tag { idfile }
     label (params.LABELCONV)
 
- 	if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
+    container my_container
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, pattern: '*.fastq.gz',  mode: params.OUTPUTMODE ) }
    
-    container params.CONTAINER
              
     input:
     tuple val(idfile), path(bam)
@@ -125,9 +167,11 @@ process downloadModel {
 
     tag { idfile }
     label (params.LABELBC)
-   
-    container params.CONTAINER
-             
+    // HACK FOR CLEANUP
+    publishDir("/tmp", saveAs: { file -> null })
+    
+    container my_container
+    
     input:
     tuple val(idfile), path(bam), path(modelfolder)
     
@@ -136,10 +180,14 @@ process downloadModel {
 
     script:    
     def down_pars = params.EXTRAPARS.split(" ").find { it.contains('@') }
-
+    def down_pars2 = params.EXTRAPARS.trim().tokenize()[0]
+  
+    script:
+    if (params.DUPLEX == "") {
     
     """
-        if dorado basecaller ${gpu_cmd} ${params.EXTRAPARS} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
+    	echo "here"
+       if dorado basecaller ${gpu_cmd} ${down_pars2} --max-reads 1 --models-directory \$PWD/${modelfolder} ./ > test.bam; 
         then
         	echo "Automatic model download succeeded"
         else 
@@ -147,7 +195,23 @@ process downloadModel {
 	        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
 	    fi
     """
-}
+    } else {
+    """
+
+	touch stderr.txt
+	timeout 1m dorado duplex ${gpu_cmd} ${down_pars2} --models-directory \$PWD/dorado_models ./ > test.bam 2>stderr.txt || ( [[ \$? -ne 0 ]] &&  echo "Timeout reached" )
+
+	# Check if the dorado process succeeded or failed
+	if grep -q "Starting Stereo Duplex pipeline" stderr.txt; then
+    	    echo "Automatic model download succeeded"
+	else
+        echo "Trying the manual download..."
+        dorado download --model ${down_pars} --models-directory \$PWD/${modelfolder}
+	fi
+
+	"""
+    }
+ }
 
 
  workflow BASECALL_DEMULTI {
@@ -158,7 +222,31 @@ process downloadModel {
     main:
      	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
-    	bam = baseCallMod(input_fast5.combine(models))
+    	bam = baseCall(input_fast5.combine(models))
+    	dem_res = demultiPlex(bam)
+    	demulti_bams = dem_res.demulti_bams.transpose().map{
+            def bam_name = it[1].getSimpleName()
+            def barcode = "${bam_name}".split("_").last()
+    	    def new_id = "${it[0]}.${barcode}"
+    		[ new_id, it[1] ]
+    	}
+    	demulti_fastqs = bam2Fastq(demulti_bams)
+
+	emit:
+    	basecalled_fastq = demulti_fastqs.groupTuple()
+    	demulti_report = dem_res.bar_summary
+ 
+}
+
+ workflow BASECALL_DEMULTIMOD {
+    take: 
+    input_fast5
+    model_folder
+    
+    main:
+     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
+        models = model_folders.collect().map{ [ it ] }
+    	bam = baseCall(input_fast5.combine(models))
     	dem_res = demultiPlex(bam)
     	demulti_bams = dem_res.demulti_bams.transpose().map{
             def bam_name = it[1].getSimpleName()
@@ -174,6 +262,7 @@ process downloadModel {
  
 }
 
+
  workflow BASECALL {
     take: 
     input_fast5
@@ -182,12 +271,16 @@ process downloadModel {
     main:
     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
-    	baseCall(input_fast5.combine(models))
+    	bam = baseCall(input_fast5.combine(models)).basecalled_bam
+    	bam2Fastq(bam)
 
 	emit:
-    	basecalled_fastq = baseCall.out.basecalled_fastq
- 
+    	basecalled_fastq = bam2Fastq.out.basecalled_fastq
+  
 }
+
+
+
 
  workflow BASECALLMOD {
     take: 
@@ -197,7 +290,7 @@ process downloadModel {
     main:
     	model_folders = downloadModel(input_fast5.first().combine(model_folder))
         models = model_folders.collect().map{ [ it ] }
-    	bam = baseCallMod(input_fast5.combine(models)).basecalled_bam
+    	bam = baseCall(input_fast5.combine(models)).basecalled_bam
     	bam2ModFastq(bam)
 
 	emit:

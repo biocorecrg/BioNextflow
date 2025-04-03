@@ -6,7 +6,9 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = 'lpryszcz/seqtagger:1.0c'
+params.CONTAINER = 'biocorecrg/nanosweet:0.1'
+params.OUTPUTMODE = "copy"
+
 process getVersion {
     container params.CONTAINER
     label (params.LABEL)
@@ -16,48 +18,50 @@ process getVersion {
     
     shell:
     """
-	mRNA --version
+	echo nothing
     """
 }
 
 process demultiplex {
     tag { idfile }
     label (params.LABEL)
+	if (params.OUTPUT != "") { publishDir(params.OUTPUT,  mode: params.OUTPUTMODE ) }
 
     container params.CONTAINER
              
     input:
-    tuple val(idfile), path(fast5), path("*")
+    tuple val(idfile), path(fastqs), path(barcodes)
 
     output:
-	tuple val(idfile), path("${idfile}_demux.tsv.gz"), emit: demux_files
-	tuple val(idfile), path("${idfile}.boxplot.pdf"), emit: demux_boxplot
+	tuple val(idfile), path("${idfile}_*.fq.gz"), emit: demux_files
  
     script:  
+    
     """	
-        mkdir tmp
-        export MPLCONFIGDIR=$PWD/tmp
-    	mRNA ${params.EXTRAPARS} -r -i ./ -o temp_output -t ${task.cpus}
-    	mv temp_output/..demux.tsv.gz ${idfile}_demux.tsv.gz
-    	mv temp_output/..demux.tsv.gz.boxplot.pdf ${idfile}.boxplot.pdf
+		nanomux -b ${barcodes} ${params.EXTRAPARS} -f ${fastqs} -o ./demux  -j ${task.cpus}
+		for i in ./demux/*; do mv \$i ${idfile}_`basename \$i`; done
     """
 }
+
 
 
 
  workflow DEMULTIPLEX {
  
     take: 
-    	input_fast5
-    	model_folder
+    	fastq
+    	barcode
     
     main:
-        models = model_folder.collect().map{ [ it ] }
-		demultiplex(input_fast5.combine(models))
-        
+		demultiplex(fastq.combine(barcode))
+		
+		out = demultiplex.out.demux_files.transpose().map {
+			def new_id = "${it[1].getName()}".replaceAll("\\.fq\\.gz", "")
+			[ new_id, it[1] ]
+		}        
 
 	emit:
-    	demultiplex.out.demux_files
+    	out
   
 }
 
