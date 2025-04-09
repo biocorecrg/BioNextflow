@@ -164,19 +164,19 @@ process demultiPlex {
 }
 
 process downloadModel {
-
+    // HACK FOR CLEANUP
+    scratch true 
+ 
     tag { idfile }
     label (params.LABELBC)
-    // HACK FOR CLEANUP
-    publishDir("/tmp", saveAs: { file -> null })
-    
     container my_container
     
     input:
     tuple val(idfile), path(bam), path(modelfolder)
     
     output:
-    path("${modelfolder}/*", type:'dir')
+    path "${modelfolder}/*", type:'dir'
+
 
     script:    
     def down_pars = params.EXTRAPARS.split(" ").find { it.contains('@') }
@@ -199,7 +199,7 @@ process downloadModel {
     """
 
 	touch stderr.txt
-	timeout 1m dorado duplex ${gpu_cmd} ${down_pars2} --models-directory \$PWD/dorado_models ./ > test.bam 2>stderr.txt || ( [[ \$? -ne 0 ]] &&  echo "Timeout reached" )
+	timeout 1m dorado duplex ${gpu_cmd} ${down_pars2} --models-directory \$PWD/${modelfolder} ./ > test.bam 2>stderr.txt || ( [[ \$? -ne 0 ]] &&  echo "Timeout reached" )
 
 	# Check if the dorado process succeeded or failed
 	if grep -q "Starting Stereo Duplex pipeline" stderr.txt; then
