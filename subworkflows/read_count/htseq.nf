@@ -42,12 +42,13 @@ process HtseqCount {
 
 }
 
+
 workflow COUNT {
     take: 
     annotation
     aln_data
     
-    main:
+    main:    
     out = HtseqCount(aln_data.combine(annotation), "no")
     
     emit:
