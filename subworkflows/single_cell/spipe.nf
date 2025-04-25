@@ -54,12 +54,15 @@ process index {
     ${cmd_annot}
 
     split-pipe \
-	   --mode mkref {params.EXTRAPARSINDEX} \
+	   --mode mkref ${params.EXTRAPARSINDEX} \
 	   --genome_name ${indexname}  \
 	   --fasta ${genome_name} \
        --genes ${anno_name} \
        --nthreads ${task.cpus} \
-	   --output_dir ./indexname
+	   --output_dir ./${indexname}
+
+	# Fix for missing version
+	sed -i s/'"."'/'"1.3.1"'/ ${indexname}/process/mkref_def.json
 
     ${clean_genome}
     ${clean_anno}    

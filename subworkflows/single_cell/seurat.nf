@@ -3,7 +3,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = 'biocorecrg/seurat:5.0.0'
+params.CONTAINER = 'biocorecrg/sc_benchmark:0.2'
 
 params.OUTPUT = ""
 
@@ -142,9 +142,8 @@ library("stringr")
 expression_matrix <- ReadParseBio("${quants_folder}/DGE_filtered")
 gene_genomes <- read.csv(paste0("${quants_folder}/DGE_filtered", "/all_genes.csv"))
 
-comb_gene<-paste(gene_genomes\$genome, rownames(expression_matrix), sep="-")
-
-rownames(expression_matrix) <- comb_gene
+# For multi species... 
+#comb_gene<-paste(gene_genomes\$genome, rownames(expression_matrix), sep="-")
 
 # if empty gene names are present, name them unknown.
 rownames(expression_matrix)[rownames(expression_matrix) == ""] <- "unknown"
