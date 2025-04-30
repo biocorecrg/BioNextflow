@@ -78,11 +78,13 @@ process indexWithAnno {
     container params.CONTAINER
     if (params.STOREDIR != "") { storeDir(params.STOREDIR) }
 
+    afterScript "sleep 10; ls *"
+
     input:
     val(overhang)
     val(indexname)
     path(reference)
-	path(annotation)  
+    path(annotation)  
 
     output:
     path("${indexname}")
@@ -97,11 +99,11 @@ process indexWithAnno {
     def anno_name = unzip_anno[0]
     def clean_anno = unzip_anno[2]
     """
-		${cmd_ref} 
-		${cmd_anno}
+	${cmd_ref} 
+	${cmd_anno}
         mkdir ${indexname}
         STAR --runMode genomeGenerate --genomeDir ${indexname} \
-        	--sjdbOverhang ${overhang} --sjdbGTFfile ${anno_name} \
+            --sjdbOverhang ${overhang} --sjdbGTFfile ${anno_name} \
             --runThreadN ${task.cpus} \
             --genomeFastaFiles ${ref_name} ${params.EXTRAPARSINDEX} \
             --outFileNamePrefix ${indexname}
@@ -115,6 +117,7 @@ process indexNoAnno {
     label (params.LABELINDEX)
 
     if (params.STOREDIR != "") { storeDir(params.STOREDIR) }
+    afterScript "sleep 10; ls *"
 
     tag { reference }
     container params.CONTAINER
