@@ -26,11 +26,13 @@
 params.LABEL = ""
 params.LABELINDEX = ""
 params.EXTRAPARS = ""
+params.EXTRAPARSINDEX = ""
 params.OUTPUT = ""
 params.OUTPUTALN = ""
 params.OUTPUTCOUNT = ""
 params.CONTAINER = "quay.io/biocontainers/star:2.7.7a--0"
 params.STOREDIR = ""
+
 
 include { unzipCmd } from '../global_functions.nf'
 
@@ -101,7 +103,7 @@ process indexWithAnno {
         STAR --runMode genomeGenerate --genomeDir ${indexname} \
         	--sjdbOverhang ${overhang} --sjdbGTFfile ${anno_name} \
             --runThreadN ${task.cpus} \
-            --genomeFastaFiles ${ref_name} \
+            --genomeFastaFiles ${ref_name} ${params.EXTRAPARSINDEX} \
             --outFileNamePrefix ${indexname}
         ${clean_ref}
         ${clean_anno}
@@ -134,7 +136,7 @@ process indexNoAnno {
         mkdir ${indexname}
         STAR --runMode genomeGenerate --genomeDir ${indexname} \
             --runThreadN ${task.cpus} \
-            --genomeFastaFiles ${ref_name} \
+            --genomeFastaFiles ${ref_name} ${params.EXTRAPARSINDEX} \
             --outFileNamePrefix ${indexname}
         ${clean_ref}
     """
