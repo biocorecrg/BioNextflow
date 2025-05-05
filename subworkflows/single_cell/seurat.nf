@@ -195,8 +195,16 @@ library("stringr")
  
 seurObj <-readRDS("input_ori.rds")
 
+# Extract mitochondrial genes (case-insensitive)
+mt_genes <- grep("^mt-", rownames(seurObj[["RNA"]]), value = TRUE, ignore.case = TRUE)
 
-seurObj[["percent.mt"]] <- PercentageFeatureSet(seurObj, pattern = "^MT-",  assay = 'RNA')
+# Check if any mitochondrial genes were found
+if (length(mt_genes) == 0) {
+  stop("No mitochondrial genes (starting with 'mt-' or 'MT-'') found in the dataset.")
+}
+
+# Compute percent mitochondrial content
+seurObj[["percent.mt"]] <- PercentageFeatureSet(seurObj, features = mt_genes, assay = 'RNA')
 seurObj[["percent.rb"]] <- PercentageFeatureSet(seurObj, pattern = "^RP[SL]",  assay = 'RNA')
 
 pdf(paste("${id}", "_vp.pdf", sep=""), width=10, height=20)
