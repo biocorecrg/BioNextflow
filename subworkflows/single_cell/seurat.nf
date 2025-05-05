@@ -176,11 +176,40 @@ process seurat {
 
     input:
     tuple val(id), path("input_ori.rds")
+    val(genome)
 
     output:
     tuple val(id), path("${id}.rds"),  path("${id}_*.pdf")
 
     script:
+    
+    def script_anno = ""
+    
+    if (genome == "human" || genome == "mouse") {
+    	if (genome == "human") {
+			script_anno = "ref.data <- HumanPrimaryCellAtlasData()"
+    	} else if (genome == "mouse") {
+        	script_anno = "ref.data <- MouseRNAseqData()"
+    	}
+    	script_anno = script_anno + """    
+sce <- as.SingleCellExperiment(DietSeurat(seurObj))
+
+predictions.main <- SingleR(test=sce, assay.type.test=1, 
+    ref=ref.data, labels=ref.data\$label.main)
+
+table(predictions.main\$labels)
+
+seurObj@meta.data\$predictions.main <- predictions.main\$labels
+
+seurObj <- SetIdent(seurObj, value = "predictions.main")
+
+pdf(paste("${id}", "_ann.pdf", sep=""), width=10, height=10)
+DimPlot(seurObj, label = T , repel = T, label.size = 3) + NoLegend()
+dev.off()
+"""
+	} 	
+
+  
 	"""
 cat > CMD.R << 'EOL'
 
@@ -280,24 +309,7 @@ pdf(paste("${id}", "_hm.pdf", sep=""), width=10, height=20)
 DoHeatmap(seurObj, features = top10\$gene) + NoLegend()
 dev.off()
 
-# We use HumanPrimaryCell as default annotation
-
-ref.data <- HumanPrimaryCellAtlasData()
-sce <- as.SingleCellExperiment(DietSeurat(seurObj))
-
-predictions.main <- SingleR(test=sce, assay.type.test=1, 
-    ref=ref.data, labels=ref.data\$label.main)
-
-table(predictions.main\$labels)
-
-seurObj@meta.data\$predictions.main <- predictions.main\$labels
-
-seurObj <- SetIdent(seurObj, value = "predictions.main")
-
-pdf(paste("${id}", "_ann.pdf", sep=""), width=10, height=10)
-DimPlot(seurObj, label = T , repel = T, label.size = 3) + NoLegend()
-dev.off()
-
+${script_anno}
 
 # save seurat object
 saveRDS(seurObj, file = "${id}.rds")
@@ -317,6 +329,7 @@ workflow PREPROCESS {
     input
     type
     tx2gene
+    genome
     
     main:
     if(type == "alevin") {
@@ -329,7 +342,7 @@ workflow PREPROCESS {
     else {
 		 error "ERROR!!! Specify a method for import\n" 
     }
-    out = seurat(rds)
+    out = seurat(rds, genome)
     
     emit:
     out
