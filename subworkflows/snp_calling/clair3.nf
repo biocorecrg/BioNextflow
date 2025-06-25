@@ -34,7 +34,7 @@ process clair3 {
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
     input:
-    tuple val(comp_id), path(bam) , path(bai), path(reference), path(refai), path(model)
+    tuple val(comp_id), path(bam) , path(bai), path(reference), path(refai), path("*")
 
     output:
     tuple val(comp_id), path(comp_id), emit: folder
@@ -64,12 +64,16 @@ workflow RUN {
     
     main:
         ref_genome = CHECK_FASTA(reference)
-        out = clair3(bams.combine(ref_genome).combine(reffai).combine(model))
+        models = model.map {
+            [ it ] 
+        }
+        mydata = bams.combine(ref_genome).combine(reffai).combine(models)
+       
+        out = clair3(mydata)
         
 	emit:
     	vcf = out.vcf
     	folder = out.folder
-	
 }
 
 
