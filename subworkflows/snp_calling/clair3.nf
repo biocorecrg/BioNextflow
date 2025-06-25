@@ -39,6 +39,7 @@ process clair3 {
     output:
     tuple val(comp_id), path(comp_id), emit: folder
     tuple val(comp_id), path("${comp_id}/*.vcf.gz"), emit: vcf
+    tuple val(comp_id), path("${comp_id}/*.bam"), path("${comp_id}/*.bai"), emit: phased_bam
     
     script:
     """
@@ -47,7 +48,8 @@ process clair3 {
 	--bam_fn ${bam} \
     --ref_fn ${reference} \
     --output ${comp_id} \
-    --threads ${task.cpus} ${params.EXTRAPARS}
+    --threads ${task.cpus} ${params.EXTRAPARS} 
+    rm -fr ${comp_id}/tmp
     """
 
 }
