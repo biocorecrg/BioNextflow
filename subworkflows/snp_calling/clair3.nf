@@ -38,7 +38,8 @@ process clair3 {
 
     output:
     tuple val(comp_id), path(comp_id), emit: folder
-    tuple val(comp_id), path("${comp_id}/*.vcf.gz"), emit: vcf
+    tuple val(comp_id), path("${comp_id}/merge_output.vcf.gz"), emit: vcf
+    tuple val(comp_id), path("${comp_id}/merge_output.vcf.gz.tbi"), emit: vcfidx
     tuple val(comp_id), path("${comp_id}/*.bam"), path("${comp_id}/*.bai"), emit: phased_bam
     
     script:
