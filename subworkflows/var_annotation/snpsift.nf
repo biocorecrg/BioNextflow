@@ -11,7 +11,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "quay.io/biocontainers/snpsift:5.2--hdfd78af_0"
+params.CONTAINER = "biocorecrg/snpsift:5.2f"
 
 
 process getVersion {
@@ -42,11 +42,72 @@ process snpsift_ann {
     script:
     def name_ref = vcf_ref.simpleName
     """
-    SnpSift annotate ${vcf_ref} ${vcf} > ${id}.on.${name_ref}.vcf
+    snpsift annotate ${params.EXTRAPARS} ${vcf_ref} ${vcf} > ${id}.on.${name_ref}.vcf
     gzip ${id}.on.${name_ref}.vcf
     """
 }
 
+
+process snpsift_makedb {
+    label (params.LABEL)
+    tag "${id}"
+    container params.CONTAINER
+
+    
+    input:
+    tuple val(id), path(vcf_ref), path(vcf_ref_idx)
+
+    output:
+    tuple val(id), path("*.snpsift.vardb")
+    
+    script:
+    // We need to make all the fields in a variable since it does not work without -fields
+    """
+FIELDS=\$(zcat ${vcf_ref} | awk 'BEGIN { first_data_line = 1 }
+  \$0 !~ /^#/ && first_data_line {
+    split(\$NF, a, ";")
+    for (i = 1; i <= length(a); i++) {
+      split(a[i], b, "=")
+      keys[i] = b[1]
+    }
+    for (i = 1; i <= length(keys); i++) {
+      printf "%s", keys[i]
+      if (i < length(keys)) printf ","
+    }
+    print ""
+    first_data_line = 0
+  }
+')
+
+    snpsift  -Xmx${task.memory.giga}g annmem \
+    -create \
+    -dbfile ${vcf_ref} -fields "\$FIELDS" 
+    """
+    
+}
+
+process annotate_mem {
+    label (params.LABEL)
+    tag "${id}"
+    container params.CONTAINER
+
+    
+    input:
+    tuple val(id), path(vcf), path(dbs)
+
+    output:
+    tuple val(id), path("${id}.ann.vcf")
+    
+    script:
+    dbslist = dbs.collect { "-dbfile ${it.toString().replace('.snpsift.vardb', '')}" }.join(' ')
+
+    """
+    snpsift annmem \
+    ${dbslist} \
+    ${vcf} > ${id}.ann.vcf
+    """
+    
+}
 
 workflow ANN {
 
@@ -57,12 +118,30 @@ workflow ANN {
     
     main:
         out = snpsift_ann(vcf.combine(vcf_ref).combine(vcf_ref_idx))
-        
 	emit:
     	out
 	
 }
 
+workflow ANNOTATE_MEM {
+
+    take: 
+    vcf
+    vcf_refs
+    vcf_ref_idxs
+    
+    main:
+		dbs = snpsift_makedb(vcf_refs.combine(vcf_ref_idxs, by:0))
+        db_list = dbs.map{it[1]}.toList().map{
+        	[ it ]
+        }
+
+        annotate_mem(vcf.combine(db_list))
+        
+	emit:
+    	dbs
+	
+}
 
 workflow GET_VERSION {
     main:
