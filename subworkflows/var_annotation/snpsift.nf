@@ -90,21 +90,22 @@ process annotate_mem {
     label (params.LABEL)
     tag "${id}"
     container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy', pattern: '*.vcf.gz') }
 
     
     input:
     tuple val(id), path(vcf), path(dbs)
 
     output:
-    tuple val(id), path("${id}.ann.vcf")
+    tuple val(id), path("*.vcf.gz")
     
     script:
     dbslist = dbs.collect { "-dbfile ${it.toString().replace('.snpsift.vardb', '')}" }.join(' ')
 
     """
-    snpsift annmem \
+    snpsift -Xmx${task.memory.giga}g annmem \
     ${dbslist} \
-    ${vcf} > ${id}.ann.vcf
+    ${vcf} | gzip -c > ${id}.ann.ondbs.vcf.gz
     """
     
 }
