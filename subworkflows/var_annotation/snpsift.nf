@@ -42,7 +42,7 @@ process snpsift_ann {
     script:
     def name_ref = vcf_ref.simpleName
     """
-    snpsift annotate ${params.EXTRAPARS} ${vcf_ref} ${vcf} > ${id}.on.${name_ref}.vcf
+    snpsift annotate ${params.EXTRAPARS} -XX:+PerfDisableSharedMem ${vcf_ref} ${vcf} > ${id}.on.${name_ref}.vcf
     gzip ${id}.on.${name_ref}.vcf
     """
 }
@@ -79,7 +79,7 @@ FIELDS=\$(zcat ${vcf_ref} | awk 'BEGIN { first_data_line = 1 }
   }
 ')
 
-    snpsift  -Xmx${task.memory.giga}g annmem \
+    snpsift -Xmx${task.memory.giga}g annmem \
     -create \
     -dbfile ${vcf_ref} -fields "\$FIELDS" 
     """
@@ -103,6 +103,8 @@ process annotate_mem {
     dbslist = dbs.collect { "-dbfile ${it.toString().replace('.snpsift.vardb', '')}" }.join(' ')
 
     """
+    export JAVA_TOOL_OPTIONS="-XX:-UsePerfData"
+
     snpsift -Xmx${task.memory.giga}g annmem \
     ${dbslist} \
     ${vcf} | gzip -c > ${id}.ann.ondbs.vcf.gz

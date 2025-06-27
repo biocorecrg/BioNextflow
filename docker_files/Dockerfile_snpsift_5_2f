@@ -1,0 +1,15 @@
+# This will do biocorecrg/snpsift:5.2f
+
+FROM biocorecrg/debian-perlbrew-pyenv3-java-21:bookworm
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential wget zip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip and install 
+RUN pip install --upgrade pip 
+
+RUN wget https://snpeff.blob.core.windows.net/versions/snpEff_latest_core.zip
+RUN unzip snpEff_latest_core.zip
+ENV PATH="/project/snpEff/exec:${PATH}"
