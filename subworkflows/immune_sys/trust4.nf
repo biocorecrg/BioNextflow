@@ -39,7 +39,7 @@ process run_se {
     """
 }
 
-process run_pe {
+process run_pe_white {
     label (params.LABEL)
     tag "${id}"
     container params.CONTAINER
@@ -65,6 +65,32 @@ process run_pe {
     """
 }
 
+process run_pe {
+    label (params.LABEL)
+    tag "${id}"
+    container params.CONTAINER
+    if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
+
+    input:
+    tuple val(id), path(readsA), path(readsB), path(reference), path(coord_f)
+
+    output:
+    tuple val(id), path("${id}*"), emit: results 
+         
+	script:
+    """    
+    run-trust4 -f ${coord_f} \
+        --ref ${reference} \
+        -1 ${readsA} \
+        -2 ${readsB} \
+        --barcode ${readsA} \
+        -t ${task.cpus} ${params.EXTRAPARS} + \
+        --od ${id}
+    """
+}
+
+
+
 workflow RUN {
     take: 
     reference
@@ -82,11 +108,15 @@ workflow RUNPE {
     take: 
     reference
     coord_f
-    whiteBC
     reads
+    whiteBC
     
     main:
-		out = run_pe(reads.combine(whiteBC, by: 0).combine(reference).combine(coord_f))
+        if (whiteBC.size() == 0) {
+			out = run_pe(reads.combine(reference).combine(coord_f))
+		} else {
+			out = run_pe_white(reads.combine(whiteBC, by: 0).combine(reference).combine(coord_f))
+		}
 	emit:
     	out
  	
