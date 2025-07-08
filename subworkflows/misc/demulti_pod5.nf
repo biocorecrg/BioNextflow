@@ -60,6 +60,9 @@ process extracting_demultiplexed_pod5 {
 	"""
 } 
 
+/**
+**/
+
 process extracting_demultiplexed_pod5_dorado {
     label (params.LABEL)
     tag "${ idfile }"
@@ -144,7 +147,7 @@ workflow DEMULTI_POD5 {
     
     main:
        prep_demux = preparing_demultiplexing_pod5(input_stats)
-       pod5s = input_pod5.transpose().groupTuple()
+       pod5s = input_pod5.transpose().groupTuple()       
 	   input_data = prep_demux.transpose().combine(pod5s,  by: 0)
 	   extracting_demultiplexed_pod5(input_data)
   
@@ -160,7 +163,7 @@ workflow DEMULTI_POD5 {
     main:
        prep_demux = preparing_demultiplexing_pod5(input_stats)
        pod5s = input_pod5.transpose().groupTuple()       
-	   filt_prep_demux = filterDemuxBarcodes(prep_demux.combine(barcodes, by: 0))
+	   filt_prep_demux = filxterDemuxBarcodes(prep_demux.combine(barcodes, by: 0))
 	   input_data = filt_prep_demux.transpose().combine(pod5s,  by: 0)
    	   extracting_demultiplexed_pod5(input_data)            
        
