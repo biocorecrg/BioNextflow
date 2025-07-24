@@ -6,7 +6,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = 'lpryszcz/seqtagger:1.0c'
+params.CONTAINER = 'lpryszcz/seqtagger:1.0d'
 process getVersion {
     container params.CONTAINER
     label (params.LABEL)
