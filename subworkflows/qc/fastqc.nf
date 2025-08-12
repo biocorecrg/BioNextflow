@@ -32,6 +32,8 @@ process fastQC2 {
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
+    array 100
+    
     input:
     tuple val(id), path(fastq)
 

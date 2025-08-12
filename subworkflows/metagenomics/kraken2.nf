@@ -88,6 +88,8 @@ process kraken2 {
   container params.CONTAINER
   if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
+  array 100
+  
   input:
   tuple val(pair_id), path(reads), path(database)
   
