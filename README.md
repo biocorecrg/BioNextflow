@@ -20,7 +20,7 @@ The modules can be downloaded and used as they are or can be embedded as submodu
 To embed the submodules you can do:
 
 ```bash
-git submodule add https://github.com/biocorecrg/BioNextflow
+git submodule add -b v3.0 https://github.com/biocorecrg/BioNextflow
 ...
 
 Cloning into 'BioNextflow'...
