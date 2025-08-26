@@ -1,0 +1,28 @@
+# This will do biocorecrg/multiqc:1.28
+
+# Use an official Python runtime as a parent image
+FROM python:3.10.12-slim
+RUN apt-get update && \
+    apt-get install -y procps && \
+    rm -rf /var/lib/apt/lists/*
+
+# Set a working directory inside the container
+#WORKDIR /multiqc_pca
+
+# Install MultiQC
+# Inpandasul2.0.0
+RUN pip install multiqc==1.28
+RUN pip install pandas==2.2.3
+
+# Copy the MultiQC plugin into the container
+
+COPY PCAplots /multiqc_pca/PCAplots/
+COPY test_data /multiqc_pca/test_data/
+COPY setup.py /multiqc_pca/
+COPY README.md /multiqc_pca/
+COPY LICENSE /multiqc_pca/
+COPY pyproject.toml /multiqc_pca/
+COPY multiqc_config.yaml /multiqc_pca/
+
+# Change directory to the plugin and install it
+RUN cd /multiqc_pca/ && pip install -e .
