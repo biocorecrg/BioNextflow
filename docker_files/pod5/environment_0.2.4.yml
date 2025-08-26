@@ -1,6 +1,0 @@
-name: pod5
-channels:
-  - conda-forge
-  - bioconda
-dependencies:
-  - jannessp::pod5==0.2.4
