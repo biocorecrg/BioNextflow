@@ -15,6 +15,8 @@ process fastqScreen {
     container params.CONTAINER
     if (params.OUTPUT != "") { publishDir(params.OUTPUT, mode:'copy') }
 
+    array 100
+
     input:
     path(conf)
     tuple val(id), path(fastq)

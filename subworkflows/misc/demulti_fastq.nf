@@ -50,13 +50,13 @@ workflow DEMULTI_FASTQ {
     basecalled_fastq
     
     main:
+       out = channel.empty()
        switch(params.TYPE) {                      
            case "seqtagger":
                 out = extract_seqtagger_fastq(basecalled_tsv.join(basecalled_fastq))
            break;
            case "deeplexicon":
 				out = extract_deeplexicon_fastq(basecalled_tsv.join(basecalled_fastq))
-
     	}
     	
     emit:

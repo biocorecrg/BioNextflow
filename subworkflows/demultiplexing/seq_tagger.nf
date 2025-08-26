@@ -6,7 +6,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = 'lpryszcz/seqtagger:1.0c'
+params.CONTAINER = 'lpryszcz/seqtagger:1.0d'
 process getVersion {
     container params.CONTAINER
     label (params.LABEL)
@@ -16,7 +16,7 @@ process getVersion {
     
     shell:
     """
-	mRNA --version
+	run --version
     """
 }
 
@@ -37,7 +37,7 @@ process demultiplex {
     """	
         mkdir tmp
         export MPLCONFIGDIR=$PWD/tmp
-    	mRNA ${params.EXTRAPARS} -r -i ./ -o temp_output -t ${task.cpus}
+    	run ${params.EXTRAPARS} -r -i ./ -o temp_output -t ${task.cpus}
     	mv temp_output/..demux.tsv.gz ${idfile}_demux.tsv.gz
     	mv temp_output/..demux.tsv.gz.boxplot.pdf ${idfile}.boxplot.pdf
     """
