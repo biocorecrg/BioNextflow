@@ -29,14 +29,6 @@ remote: Counting objects: 100% (306/306), done.
 ...
 ```
 
-You need then make a soft link in your pipeline modules folder:
-
-```
-cd modules;
-ln -s ../BioNextflow/modules/local/ local
-
-``` 
-
 then you can add the .gitmodule file that is generated:
 
 ```bash
