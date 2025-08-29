@@ -3,7 +3,7 @@
 */
 
 params.LABEL = ""
-params.CONTAINER = "biocorecrg/debian-perlbrew:buster"
+params.CONTAINER = "quay.io/nf-core/cellranger:9.0.1"
 params.EXTRAPARS = ""
 params.EXTRAPARSINDEX = ""
 params.OUTPUT = ""
