@@ -56,6 +56,54 @@ EOL
 
 }
 
+process preproc_for_cellranger_multi {
+    tag "${id}"
+    label (params.LABEL)
+    container params.CONTAINER
+
+
+    input:
+    tuple val(id), path(quants_folder)
+
+    output:
+    tuple val(id), path("${id}.rds")
+
+    script:
+	"""
+cat > CMD.R << 'EOL'
+
+library(dplyr)
+library(Seurat)
+library(patchwork)
+library(tximport)
+library("ggplot2")
+library("SingleR")
+library("celldex")
+library("stringr")
+ 
+data_dir <- "${quants_folder}/count/sample_filtered_feature_bc_matrix"
+data <- Read10X(data.dir = data_dir)
+
+
+if(is.list(data)) {
+	olddata <- data
+	data <- olddata[["Gene Expression"]]
+}
+
+seurObj = CreateSeuratObject(counts = data)
+# save seurat object
+saveRDS(seurObj, file = "${id}.rds")
+quit("no")
+
+EOL
+
+	Rscript CMD.R 
+
+	"""
+
+
+}
+
 process preproc_for_alevin {
 
     tag "${id}"
@@ -182,7 +230,8 @@ process seurat {
     tuple val(id), path("${id}.rds"),  path("${id}_*.pdf")
 
     script:
-    
+    def globalsMax = (task.memory.toBytes() / 2) as long
+
     def script_anno = ""
     
     if (genome == "human" || genome == "mouse") {
@@ -209,6 +258,7 @@ dev.off()
 """
 	} 	
 
+
   
 	"""
 cat > CMD.R << 'EOL'
@@ -222,6 +272,8 @@ library("SingleR")
 library("celldex")
 library("stringr")
  
+options(future.globals.maxSize = ${globalsMax} ) 
+
 seurObj <-readRDS("input_ori.rds")
 
 # Extract mitochondrial genes (case-insensitive)
@@ -338,6 +390,9 @@ workflow PREPROCESS {
     	rds = preproc_for_cellranger(input)
     } else if (type == "parse") {
 		rds =  preproc_for_parse(input)
+    }
+    else if (type == "cellranger_multi") {
+    	rds = preproc_for_cellranger_multi(input)
     }
     else {
 		 error "ERROR!!! Specify a method for import\n" 
