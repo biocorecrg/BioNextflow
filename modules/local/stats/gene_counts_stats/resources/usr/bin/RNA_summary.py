@@ -21,9 +21,9 @@ experiment = args.experiment
 if args.rna_type:
     small_RNAs = [rna.strip() for rna in args.rna_type.split(",") if rna.strip()]
 elif experiment == "rnaseq":
-    small_RNAs = ["protein_coding", "lncRNA", "pseudogene","miRNA"]
+    small_RNAs = ["protein_coding", "lncRNA","rRNA"]
 else:
-    small_RNAs = ["miRNA", "snoRNA", "snRNA", "misc_RNA", "Mt_rRNA", "Mt_tRNA", "rRNA", "scaRNA", "scRNA", "sRNA"]
+    small_RNAs = ["miRNA","snoRNA","rRNA","protein-coding"] 
 
 # --- check files exist ---
 for f in [desc_file, annotated_file]:
