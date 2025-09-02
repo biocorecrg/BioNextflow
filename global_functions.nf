@@ -163,12 +163,58 @@ def addPrefixToFiles(input_nf_ch, prefix) {
 }
 
 // remove the metamap from a channel 
-def metaToCanonical(input_nf_ch) {
-	output_nf_ch = []
-	output_nf_ch = input_nf_ch.map{ 
-		meta, files ->  
-    	[ meta.id, files ]  
-	}
-    return (output_nf_ch)
+def metaToCanonical(input_nf_ch, flat=false) {
+    input_nf_ch.map { meta, files ->
+        if (flat) {
+            // produce [id, file1, file2, ...]
+            [ meta.id ] + files.flatten()
+        } else {
+            // produce [id, [file1, file2, ...]]
+            [ meta.id, files.flatten() ]
+        }
+    }
 }
+
+def flattenToTuple(input_ch) {
+	tuples = input_ch.map{ 
+		[ it[0], it[1..-1]  ]
+	}
+	return(tuples)
+}
+
+
+// remove the metamap from a channel 
+def canonicalToMeta(input_ch) {
+	nfcore_ch = input_ch.map { id, files ->
+		if( files.size() == 2 ) {
+			[ [ id: id, single_end : false], files ]
+
+		} else {
+			[ [ id: id, single_end : true], files ]
+		}
+	}
+   return (nfcore_ch)
+}
+
+def subsetReads (reads, subset_num) {
+
+    reads_types = reads.branch { meta, files ->
+        pe: meta.single_end == false
+        se: meta.single_end == true
+    }
+
+    flat_reads_pe = metaToCanonical(reads_types.pe, true)
+    flat_reads_se = metaToCanonical(reads_types.se, true)
+
+    splitted_pe = flat_reads_pe.splitFastq( by: subset_num, decompress:true, file:true, limit:subset_num, pe: true )
+    splitted_se = flat_reads_se.splitFastq( by: subset_num, decompress:true, file:true, limit:subset_num )
+	splitted = splitted_pe.mix(splitted_se)
+	tuples = flattenToTuple(splitted)
+	
+	return (canonicalToMeta(tuples))
+
+
+}
+
+
 
