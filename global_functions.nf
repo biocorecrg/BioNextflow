@@ -133,7 +133,7 @@ def fromStringToNFCoreSeqs(input_string, parseid = false) {
 	  } else {
      	     myseqs = mypars.map {[ [id: it[0], single_end:true],  it[1] ] }
 	  }
-        }
+    }
     return (myseqs)
 }
 
