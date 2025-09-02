@@ -1,28 +1,23 @@
-process GENE_COUNTS_STATS {
+process STATS {
 
-    container 'biocorecrg/multiqc:1.28'
+    container 'quay.io/biocontainers/ribodetector:0.3.1--pyhdfd78af_0'
     label     'low'
 
     
     input:
-    path(desc_file)         // desc.txt file 
-    path(annotated_file)    // norm_counts.genes file output by multiq_pca as emit: norm_counts
-    val(experiment)         // "rnaseq" or "smallrnaseq"
-    val(rna_type)           // If rna_type = "" is set a default list for smallrnaseq and rnaseq
-
+    tuple val(meta), path(reports)         
+ 
     output:
-    path("*.csv")               , emit: csv          // file for multiqc to create RNA stats table
-    path("versions.yml")        , emit: versions
+    tuple val(meta), path("ribo_stats_mqc.txt")     , emit: log         
+
 
     script:
-    def rna_type_flag = rna_type != "" ? "--rna_type ${rna_type}" : ""
-    
     """
-    RNA_summary.py --desc ${desc_file} --annotation ${annotated_file} --experiment ${experiment} ${rna_type_flag}
-    
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        container: "${task.container}"
-    END_VERSIONS
+    echo '# id: ribodetector
+    # plot_type: bargraph
+    # section_name: Ribosome contamination
+    # description: Percent of ribosomal reads 
+    Filename	reads' > ribo_stats_mqc.txt;
+	    awk '{print \$1"\t"\$2}' ${reports} >> ribo_stats_mqc.txt
     """
 }
