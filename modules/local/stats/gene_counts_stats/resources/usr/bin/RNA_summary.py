@@ -23,7 +23,7 @@ if args.rna_type:
 elif experiment == "rnaseq":
     small_RNAs = ["protein_coding", "lncRNA","rRNA"]
 else:
-    small_RNAs = ["miRNA","snoRNA","rRNA","protein-coding"] 
+    small_RNAs = ["miRNA","snoRNA","rRNA","protein-coding"."intergenic"] 
 
 # --- check files exist ---
 for f in [desc_file, annotated_file]:
