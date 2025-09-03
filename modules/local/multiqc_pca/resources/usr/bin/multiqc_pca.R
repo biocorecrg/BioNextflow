@@ -50,6 +50,8 @@ if (args$add_batch) {
 
 # Removing ~ for the condition field
 condition<-gsub("~","",args$Assay_field) 
+print(args$Number_principal_components)
+
 p<-plotPCA_plus(vsd, intgroup=condition, returnData = TRUE,pcnum=args$Number_principal_components)
 
 # Defining PCA data and variance from the list 
@@ -78,7 +80,7 @@ if (args$Desc_genes != "") {
 
     # Get results
     desc <- makeDesc(args$Desc_genes)
-    printCounts(vsd, desc)
+    printCounts(dds, desc)
 
 
 }

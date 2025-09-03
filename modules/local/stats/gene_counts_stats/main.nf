@@ -15,7 +15,7 @@ process GENE_COUNTS_STATS {
     path("versions.yml")        , emit: versions
 
     script:
-    def rna_type_flag = rna_type != "" ? "--rna_type ${rna_type}" : ""
+    def rna_type_flag = rna_type != "" ? "-r ${rna_type}" : ""
     
     """
     RNA_summary.py --desc ${desc_file} --annotation ${annotated_file} --experiment ${experiment} ${rna_type_flag}
