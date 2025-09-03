@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser(description="Creates table for each type of sma
 parser.add_argument("-d","--desc", help="Path to the desc.txt file.")
 parser.add_argument("-a","--annotation", help="Path to the annotated_counts.txt file.")
 parser.add_argument("-e","--experiment", help='Indicate experiment data comes from: "rnaseq" or "smallrnaseq"')
-parser.add_argument("-r","--rna_type", type=str, help="Comma-separated list of RNA types to display in the bargraph (e.g. 'miRNA,snRNA')")
+parser.add_argument("-r","--biotype", type=str, help="Comma-separated list of RNA types to display in the bargraph (e.g. 'miRNA,snRNA')")
 args = parser.parse_args()
 
 
@@ -18,12 +18,12 @@ annotated_file = args.annotation
 experiment = args.experiment
 
 # Set small_RNAs default based on experiment if not provided
-if args.rna_type:
-    small_RNAs = [rna.strip() for rna in args.rna_type.split(",") if rna.strip()]
+if args.biotype:
+    biotypes = [rna.strip() for rna in args.biotype.split(",") if rna.strip()]
 elif experiment == "rnaseq":
-    small_RNAs = ["protein_coding", "lncRNA","rRNA"]
+    biotypes = ["protein_coding", "lncRNA","rRNA"]
 else:
-    small_RNAs = ["miRNA","snoRNA","rRNA","protein-coding"."intergenic"] 
+    biotypes = ["miRNA","snoRNA","rRNA","protein-coding","intergenic"] 
 
 # --- check files exist ---
 for f in [desc_file, annotated_file]:
@@ -81,7 +81,7 @@ for sample in sample_names:
     # counts for each RNA type
     counts = []
     sum_small = 0
-    for small in small_RNAs:
+    for small in biotypes:
         small_count = subsample.loc[(subsample["gene.type"] == small) & ~subsample["gene.type"].str.contains(",", na=False), "count"].sum()
         counts.append(small_count)
         sum_small += small_count
@@ -93,6 +93,6 @@ for sample in sample_names:
 
 
 # --- save output ---
-columns = ["sample_name"] + small_RNAs + ["ambiguous", "other"]
+columns = ["sample_name"] + biotypes + ["ambiguous", "other"]
 summary_df = pd.DataFrame(rows, columns=columns)
 summary_df.to_csv("RNAstats_mqc.csv", sep=",", index=False)
