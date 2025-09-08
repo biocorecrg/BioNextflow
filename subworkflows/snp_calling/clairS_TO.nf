@@ -11,7 +11,7 @@
 params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
-params.CONTAINER = "hkubal/clairs-to:v0.1.0"
+params.CONTAINER = "hkubal/clairs-to:v0.4.1"
 
 
 include { CHECK_FASTA } from '../misc/misc.nf'
