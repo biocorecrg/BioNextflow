@@ -6,17 +6,18 @@
 [![Nextflow version](https://img.shields.io/badge/Nextflow-21.04.1-brightgreen)](https://www.nextflow.io/)
 [![Nextflow DSL2](https://img.shields.io/badge/Nextflow-DSL2-brightgreen)](https://www.nextflow.io/)
 
-
 BioNextflow is a collection of modules and sub-workflows that can be used in any [Nextflow DSL2 pipeline](https://www.nextflow.io/docs/latest/dsl2.html). They are created with the idea in mind of having a single file per tool, containing different sub-workflows and modules.
 
-The version v3.0 follows the rules from nf-core (less strict).
+The version v3.0 follows the rules from nf-core (less strict so far).
 
 General functions are placed in **global_functions.nf** file and can be called from modules / subworkflows.
 
 # Installation
+
 The modules can be downloaded and used as they are or can be embedded as submodules.
 
 ## Submodules
+
 To embed the submodules you can do:
 
 ```bash
@@ -48,5 +49,3 @@ git add BioNextflow
 git commit -m "upgrading bioNextflow"
 git push
 ```
-
-
