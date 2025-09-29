@@ -11,7 +11,7 @@ params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.MOP = ""
-params.CONTAINER = "docker pull ontresearch/dorado:shae423e761540b9d08b526a1eb32faf498f32e8f22"
+params.CONTAINER = "ontresearch/dorado:shae423e761540b9d08b526a1eb32faf498f32e8f22"
 
 params.GPU = ""
 params.DUPLEX = ""
