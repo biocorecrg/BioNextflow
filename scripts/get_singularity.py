@@ -31,7 +31,8 @@ def get_images(jsonfile, outdir):
 		newname = contname.replace('docker://', '')
 		newname = newname.replace('/', '-')
 		newname = outdir + "/" + newname.replace(':', '-') + ".img"
-		execDict[newname] = "singularity pull --name " + newname + " " + args.prefix + contname
+		uri = contname if contname.startswith("docker://") else args.prefix + contname
+		execDict[newname] = "singularity pull --name " + newname + " " + uri
  
 	for new_contname in execDict:
 		print("Downloading to " + new_contname)
