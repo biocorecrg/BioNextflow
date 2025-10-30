@@ -113,7 +113,7 @@ process bam2ModFastq {
     script:
 
     """
-          samtools fastq -@ ${task.cpus} -T MN,MM,ML,mv,pt,ts ${bam} > ${idfile}.fastq
+          samtools fastq -@ ${task.cpus} -T MN,MM,ML,mv,pt,ts,pi,ns,sp ${bam} > ${idfile}.fastq
           bgzip -@ ${task.cpus} ${idfile}.fastq
     """
 }
