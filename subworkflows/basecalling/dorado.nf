@@ -11,7 +11,7 @@ params.EXTRAPARS_DEM = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
 params.MOP = ""
-params.CONTAINER = "ontresearch/dorado:shae423e761540b9d08b526a1eb32faf498f32e8f22"
+params.CONTAINER = "ontresearch/dorado:sha00aa724a69ddc5f47d82bd413039f912fdaf4e77"
 
 params.GPU = ""
 params.DUPLEX = ""
