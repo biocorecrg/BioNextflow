@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = "quay.io/biocontainers/ont-modkit:0.4.1--h5c23e0d_0"
+params.CONTAINER = "quay.io/biocontainers/ont-modkit:0.6.1--hcdda2d0_0"
 
 include { FAIDX as SAMTOOLS_FAIDX } from "../misc/samtools" addParams(EXTRAPARS: "", OUTPUT: "")
 
