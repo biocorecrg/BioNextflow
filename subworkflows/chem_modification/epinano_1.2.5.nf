@@ -6,7 +6,7 @@ params.LABEL = ""
 params.EXTRAPARS = ""
 params.OUTPUT = ""
 params.OUTPUTMODE = "copy"
-params.CONTAINER = "biocorecrg/mopepinano1.2.5"
+params.CONTAINER = "biocorecrg/mopepinano:1.2.5"
 
 /*
 */
