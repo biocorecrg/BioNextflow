@@ -41,6 +41,7 @@ process calcVarFrequencies {
     
     script:
 	"""
+        export XDG_CACHE_HOME="./tmp"
 	Epinano_Variants.py -c ${task.cpus} -r ${reference} -b ${alnfile}
         shopt -s nullglob
 	for i in *.csv; do gzip \$i; done
